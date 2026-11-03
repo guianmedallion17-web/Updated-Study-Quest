@@ -1,0 +1,1430 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#183b2a">
+<title>StudyQuest | Level Up Your Learning</title>
+
+<style>
+:root {
+  --bg: #f4f7ef;
+  --panel: #ffffff;
+  --panel2: #edf4e7;
+  --green: #276844;
+  --green2: #428c55;
+  --lime: #b9df83;
+  --text: #20362a;
+  --muted: #788779;
+  --border: #dfe8d9;
+  --gold: #f0b94d;
+  --shadow: 0 8px 28px #183b2a0a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  transition: .25s;
+}
+body.dark {
+  --bg: #101b15;
+  --panel: #1b2a20;
+  --panel2: #273a2c;
+  --green: #8bd3a0;
+  --green2: #63b97c;
+  --lime: #456b3c;
+  --text: #edf5ec;
+  --muted: #a2b5a3;
+  --border: #344938;
+  --shadow: 0 8px 28px #0002;
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid var(--lime);
+  outline-offset: 2px;
+}
+button:disabled { opacity: .5; cursor: not-allowed; }
+.app {
+  display: grid;
+  grid-template-columns: 245px minmax(0,1fr);
+  min-height: 100vh;
+}
+.sidebar {
+  background: #183b2a;
+  color: #f3f8ee;
+  padding: 25px 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.brand { padding: 6px 8px 20px; }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 25px;
+  font-weight: 850;
+  letter-spacing: -.8px;
+}
+.logo-icon {
+  display: grid;
+  place-items: center;
+  background: #b9df83;
+  color: #183b2a;
+  border-radius: 13px;
+  width: 43px;
+  height: 43px;
+  font-size: 25px;
+}
+.brand p { color: #c0d4c0; font-size: 13px; }
+.nav-label {
+  color: #8fac95;
+  font-size: 10px;
+  letter-spacing: 1.7px;
+  margin: 4px 12px 10px;
+  font-weight: 800;
+}
+nav { display: grid; gap: 6px; }
+.nav-btn {
+  border: 0;
+  border-radius: 11px;
+  padding: 13px;
+  text-align: left;
+  color: #d6e5d7;
+  background: transparent;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+}
+.nav-btn:hover, .nav-btn.active {
+  background: #31563e;
+  color: white;
+}
+.nav-btn.active { box-shadow: inset 3px 0 #b9df83; }
+.nav-icon { width: 21px; text-align: center; font-size: 17px; }
+.side-bottom {
+  margin-top: auto;
+  background: #254b34;
+  border: 1px solid #42674a;
+  padding: 16px;
+  border-radius: 15px;
+}
+.side-bottom .seed { font-size: 29px; }
+.side-bottom p { font-size: 12px; color: #c2d6c3; line-height: 1.5; }
+main { padding: 30px; min-width: 0; max-width: 1600px; width: 100%; margin: auto; }
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.eyebrow {
+  color: var(--green2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+h1,h2,h3,p { overflow-wrap: anywhere; }
+.topbar h1 { font-size: clamp(24px,3vw,34px); margin: 6px 0; letter-spacing: -1px; }
+.topbar p { color: var(--muted); margin: 0; font-size: 14px; }
+.top-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--panel);
+}
+.avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: var(--lime);
+  border-radius: 13px;
+  font-weight: 800;
+}
+.view { display: none; }
+.view.active { display: block; animation: appear .2s ease; }
+@keyframes appear { from {opacity:0;transform:translateY(5px)} to {opacity:1;transform:translateY(0)} }
+.card {
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 21px;
+  box-shadow: var(--shadow);
+}
+.card h3 { margin: 0 0 14px; font-size: 16px; }
+.hero {
+  background: linear-gradient(115deg,#173d29,#286742 65%,#4a8550);
+  color: white;
+  border-radius: 21px;
+  padding: 27px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  min-height: 185px;
+}
+.hero:after {
+  content: "🌿";
+  font-size: 155px;
+  position: absolute;
+  right: 15px;
+  bottom: -32px;
+  opacity: .15;
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; max-width: 500px; }
+.hero .eyebrow { color: #c3e9a4; }
+.hero h2 { font-size: clamp(25px,3vw,35px); margin: 9px 0; letter-spacing: -.8px; }
+.hero p { color: #d3e6d5; font-size: 14px; line-height: 1.6; margin-bottom: 18px; }
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 15px;
+  background: var(--green);
+  color: white;
+  font-size: 13px;
+  font-weight: 750;
+  transition: transform .15s, opacity .15s;
+}
+.btn:hover { transform: translateY(-1px); opacity: .9; }
+.btn-light { background: #b9df83; color: #183b2a; }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-danger { background: #a94444; color: white; }
+.hero .btn { background: #c5e998; color: #183b2a; }
+.hero-plant { font-size: 72px; position: relative; z-index: 1; margin-right: 25px; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 13px;
+  margin-bottom: 19px;
+}
+.stat { padding: 17px; }
+.stat-top { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+.stat-icon {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  background: var(--panel2);
+  border-radius: 11px;
+  font-size: 18px;
+}
+.stat-value { font-size: 27px; font-weight: 850; margin: 13px 0 4px; letter-spacing: -.8px; }
+.stat-label { font-size: 12px; color: var(--muted); }
+.progress-track { background: var(--panel2); height: 8px; border-radius: 20px; overflow: hidden; margin: 12px 0 7px; }
+.progress-fill { height: 100%; background: var(--green2); border-radius: 20px; width: 0%; transition: width .3s; }
+.muted { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 13px;
+}
+.section-heading h2 { margin: 0; font-size: 19px; letter-spacing: -.3px; }
+.section-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0,1.15fr) minmax(280px,.85fr);
+  gap: 18px;
+  align-items: start;
+}
+.column { display: grid; gap: 18px; min-width: 0; }
+.task-list { display: grid; gap: 8px; }
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.task-check {
+  accent-color: var(--green2);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.task-info { flex: 1; min-width: 0; }
+.task-title { font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+.task-meta { margin-top: 5px; font-size: 11px; color: var(--muted); }
+.task-row.done .task-title { text-decoration: line-through; color: var(--muted); }
+.task-xp { font-size: 11px; color: var(--green2); font-weight: 800; white-space: nowrap; }
+.delete-btn { border: 0; background: transparent; color: var(--muted); font-size: 16px; }
+.empty { text-align: center; color: var(--muted); padding: 25px 8px; font-size: 13px; }
+.add-form { display: grid; grid-template-columns: minmax(0,1fr) 135px auto; gap: 8px; margin-top: 14px; }
+input, select {
+  width: 100%;
+  padding: 11px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-width: 0;
+  font-size: 13px;
+}
+.quests { display: grid; gap: 10px; }
+.quest {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 14px;
+}
+.quest-top { display: flex; align-items: start; gap: 10px; }
+.quest-emoji { font-size: 23px; }
+.quest-info { flex: 1; }
+.quest-info strong { font-size: 13px; display: block; }
+.quest-info p { margin: 5px 0; font-size: 11px; color: var(--muted); }
+.quest-reward { font-size: 11px; color: var(--green2); font-weight: 800; white-space: nowrap; }
+.quest .progress-track { margin-top: 12px; }
+.quest-status { font-size: 11px; color: var(--muted); }
+.garden {
+  min-height: 190px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg,#e6f3db 0%,#f0f5d9 65%,#c9e1ac 65%,#b1d294 100%);
+  border-radius: 15px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  padding: 20px;
+  gap: 8px;
+}
+body.dark .garden { background: linear-gradient(180deg,#2c4531,#344b30 65%,#42653c 65%,#304b2e 100%); }
+.garden-plant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  min-width: 55px;
+  height: 120px;
+}
+.garden-plant .emoji { font-size: 38px; filter: drop-shadow(0 3px 2px #0001); }
+.garden-plant .plant-name { font-size: 10px; color: #315638; margin-top: 5px; font-weight: 750; }
+body.dark .garden-plant .plant-name { color: #e3f3d9; }
+.garden-lock { opacity: .55; filter: grayscale(1); }
+.garden-caption { font-size: 11px; color: var(--muted); margin-top: 12px; }
+.garden-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
+.garden-toolbar h2 { margin:0; font-size:19px; }
+.garden-toolbar select { width:auto; max-width:130px; }
+.calendar-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:15px; }
+.calendar-header h3 { margin:0; }
+.calendar-header button { background:var(--panel2); color:var(--text); border:0; border-radius:8px; padding:8px 12px; }
+.calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; text-align:center; }
+.weekday { color:var(--muted); font-size:10px; padding:8px 0; }
+.day { position:relative; border:0; border-radius:9px; background:transparent; color:var(--text); min-height:34px; font-size:12px; }
+.day:hover { background:var(--panel2); }
+.day.today { background:var(--green); color:white; }
+.day.selected { outline:2px solid var(--green2); }
+.day.has-task:after { content:""; position:absolute; bottom:3px; left:calc(50% - 2px); width:4px; height:4px; background:var(--green2); border-radius:50%; }
+.day.today.has-task:after { background:white; }
+.timer-display { text-align:center; font-size:clamp(42px,6vw,58px); font-weight:850; font-variant-numeric:tabular-nums; letter-spacing:-2px; margin:16px 0; }
+.timer-controls { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+.timer-modes { display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:13px; }
+.timer-modes button { border:1px solid var(--border); border-radius:20px; padding:7px 10px; background:transparent; color:var(--muted); font-size:11px; }
+.timer-modes button.active { background:var(--panel2); color:var(--green); border-color:var(--green2); }
+.timer-message { text-align:center; margin:14px 0 0; }
+.quiz-question { font-size:18px; font-weight:800; line-height:1.5; margin:18px 0; }
+.quiz-options { display:grid; gap:9px; }
+.quiz-option { padding:13px; border:1px solid var(--border); background:var(--bg); color:var(--text); text-align:left; border-radius:11px; font-size:13px; }
+.quiz-option:hover:not(:disabled) { border-color:var(--green2); }
+.quiz-option.correct { background:#e2f4d9; border-color:#6bad59; color:#224e2d; }
+.quiz-option.wrong { background:#fbe5df; border-color:#cf7770; color:#8a312c; }
+body.dark .quiz-option.correct { background:#294d32; color:#d9f3d7; }
+body.dark .quiz-option.wrong { background:#542c2b; color:#ffdfd9; }
+.quiz-feedback { min-height:25px; font-size:13px; line-height:1.6; margin:12px 0; }
+.quiz-footer { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:17px; }
+.badges-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.badge-card { border:1px solid var(--border); background:var(--bg); border-radius:13px; padding:16px 8px; text-align:center; }
+.badge-card .badge-icon { font-size:31px; }
+.badge-card strong { display:block; font-size:12px; margin:8px 0 4px; }
+.badge-card p { font-size:10px; color:var(--muted); margin:0; }
+.badge-card.locked { opacity:.5; filter:grayscale(1); }
+.profile-row { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
+.profile-avatar { width:56px; height:56px; background:var(--panel2); display:grid; place-items:center; border-radius:15px; font-size:27px; }
+.profile-info { flex:1; }
+.profile-info strong { font-size:14px; }
+.profile-info p { margin:5px 0 0; font-size:12px; color:var(--muted); }
+.toast {
+  position:fixed;
+  z-index:10;
+  bottom:22px;
+  left:50%;
+  transform:translate(-50%,20px);
+  background:#183b2a;
+  color:white;
+  padding:13px 20px;
+  border-radius:12px;
+  font-size:13px;
+  box-shadow:0 8px 30px #0002;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  max-width:calc(100vw - 30px);
+  text-align:center;
+}
+.toast.show { opacity:1; transform:translate(-50%,0); }
+footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size:11px; }
+[hidden] { display:none !important; }
+
+@media(min-width:1400px) {
+  main { padding:36px 42px; }
+  .dashboard-grid { grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr); }
+}
+@media(max-width:1050px) {
+  .app { grid-template-columns:205px minmax(0,1fr); }
+  main { padding:22px; }
+  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .dashboard-grid { grid-template-columns:1fr; }
+  .right-column { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .right-column .card:last-child { grid-column:1/-1; }
+}
+@media(max-width:720px) {
+  .app { grid-template-columns:1fr; }
+  .sidebar { padding:12px; gap:10px; }
+  .brand { padding:0 5px; }
+  .brand p, .side-bottom, .nav-label { display:none; }
+  .logo { font-size:20px; }
+  .logo-icon { width:34px; height:34px; }
+  nav { display:flex; overflow-x:auto; gap:5px; }
+  .nav-btn { flex-shrink:0; padding:10px; font-size:12px; gap:7px; }
+  .nav-icon { font-size:15px; }
+  main { padding:15px; }
+  .topbar { margin-bottom:18px; }
+  .hero { padding:22px; min-height:165px; }
+  .hero-plant { font-size:52px; margin-right:0; }
+  .stats { gap:9px; }
+  .stat { padding:14px; }
+  .right-column { grid-template-columns:1fr; }
+  .right-column .card:last-child { grid-column:auto; }
+}
+@media(max-width:420px) {
+  .topbar h1 { font-size:23px; }
+  .topbar p { font-size:12px; }
+  main { padding:11px; }
+  .hero { padding:18px; }
+  .hero-plant { font-size:38px; }
+  .card { padding:15px; }
+  .stat-value { font-size:23px; }
+  .add-form { grid-template-columns:1fr 1fr; }
+  .add-form input:first-child { grid-column:1/-1; }
+  .add-form button { grid-column:1/-1; }
+  .badges-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation:none !important; transition:none !important; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="logo"><span class="logo-icon"></span> StudyQuest</div>
+    <p>Level up your learning.</p>
+  </div>
+
+  <div>
+    <div class="nav-label">YOUR ADVENTURE</div>
+    <nav>
+      <button class="nav-btn active" data-view="home"><span class="nav-icon">⌂</span> Dashboard</button>
+      <button class="nav-btn" data-view="tasks"><span class="nav-icon">☑</span> My Tasks</button>
+      <button class="nav-btn" data-view="quests"><span class="nav-icon">⚔</span> Daily Quests</button>
+      <button class="nav-btn" data-view="garden"><span class="nav-icon">♧</span> My Garden</button>
+      <button class="nav-btn" data-view="quiz"><span class="nav-icon">✎</span> Quiz Arena</button>
+      <button class="nav-btn" data-view="focus"><span class="nav-icon">◷</span> Focus Room</button>
+      <button class="nav-btn" data-view="achievements"><span class="nav-icon">♜</span> Achievements</button>
+      <button class="nav-btn" data-view="settings"><span class="nav-icon">⚙</span> Settings</button>
+    </nav>
+  </div>
+
+  <div class="side-bottom">
+    <div class="seed">🌿</div>
+    <strong>Keep growing!</strong>
+    <p>Every focused minute plants a seed for your future.</p>
+  </div>
+</aside>
+
+<main>
+<header class="topbar">
+  <div>
+    <div class="eyebrow" id="dateGreeting">YOUR LEARNING ADVENTURE</div>
+    <h1 id="pageTitle">Welcome back, Scholar! 👋</h1>
+    <p>Small steps today. Big achievements tomorrow.</p>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
+    <div class="avatar" title="Your profile">🎓</div>
+  </div>
+</header>
+
+<!-- DASHBOARD -->
+<section class="view active" id="home">
+  <div class="hero">
+    <div class="hero-content">
+      <div class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</div>
+      <h2>Ready to level up?</h2>
+      <p>Complete your quests, earn XP, and watch your knowledge garden grow. Every little win counts!</p>
+      <button class="btn" id="heroQuestBtn">Explore Daily Quests →</button>
+    </div>
+    <div class="hero-plant">🪴</div>
+  </div>
+
+  <div class="stats">
+    <div class="card stat">
+      <div class="stat-top"><span class="stat-label">TOTAL EXPERIENCE</span><span class="stat-icon">⚡</span></div>
+      <div class="stat-value" id="xpStat">0 XP</div>
+      <div class="muted">Your effort adds up</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-top"><span class="stat-label">CURRENT LEVEL</span><span class="stat-icon">🏆</span></div>
+      <div class="stat-value" id="levelStat">Level 1</div>
+      <div class="progress-track"><div class="progress-fill" id="levelBar"></div></div>
+      <div class="muted" id="levelProgress">0 / 100 XP to next level</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-top"><span class="stat-label">TASKS COMPLETED</span><span class="stat-icon">✓</span></div>
+      <div class="stat-value" id="taskStat">0</div>
+      <div class="muted">One win at a time</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-top"><span class="stat-label">FOCUS SESSIONS</span><span class="stat-icon">◷</span></div>
+      <div class="stat-value" id="focusStat">0</div>
+      <div class="muted">Deep work pays off</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="column">
+      <div class="card">
+        <div class="section-heading">
+          <div><h2>📚 Your Missions</h2><p>Your next small wins start here.</p></div>
+          <button class="btn btn-outline" id="allTasksBtn">View all</button>
+        </div>
+        <div class="task-list" id="dashboardTasks"></div>
+        <p class="muted">Complete a task to earn XP. Each task rewards XP only once.</p>
+      </div>
+
+      <div class="card">
+        <div class="section-heading">
+          <div><h2>⚔ Daily Quests</h2><p>Bonus rewards for building good habits.</p></div>
+          <button class="btn btn-outline" id="allQuestsBtn">View all</button>
+        </div>
+        <div class="quests" id="dashboardQuests"></div>
+      </div>
+    </div>
+
+    <div class="column">
+      <div class="card">
+        <div class="section-heading">
+          <div><h2>🌱 Your Knowledge Garden</h2><p>Grow your garden as you progress.</p></div>
+          <button class="btn btn-outline" id="gardenBtn">Visit</button>
+        </div>
+        <div class="garden" id="miniGarden"></div>
+        <p class="garden-caption" id="gardenCaption">Earn XP to unlock more plants.</p>
+      </div>
+
+      <div class="card">
+        <div class="section-heading">
+          <div><h2>⏱ Focus Room</h2><p>One session at a time.</p></div>
+          <span class="stat-icon">🎯</span>
+        </div>
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div class="timer-controls">
+          <button class="btn" id="timerStart">▶ Start</button>
+          <button class="btn btn-outline" id="timerPause">Ⅱ Pause</button>
+          <button class="btn btn-outline" id="timerReset">↻ Reset</button>
+        </div>
+        <div class="timer-modes">
+          <button class="active" data-minutes="25">Focus 25m</button>
+          <button data-minutes="5">Short break 5m</button>
+          <button data-minutes="15">Long break 15m</button>
+        </div>
+        <p class="muted timer-message" id="timerMessage">Ready when you are. 🌿</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TASKS -->
+<section class="view" id="tasks">
+  <div class="card">
+    <div class="section-heading">
+      <div><h2>📚 My Tasks</h2><p>Turn your assignments into achievable missions.</p></div>
+    </div>
+    <form id="taskForm" class="add-form">
+      <input id="taskInput" placeholder="e.g. Review CC100 Chapter 4" maxlength="100" required>
+      <input id="taskDate" type="date" aria-label="Task deadline">
+      <button class="btn" type="submit">+ Add Task</button>
+    </form>
+    <div class="section-heading" style="margin-top:24px">
+      <h2>Mission Board</h2>
+      <select id="taskFilter" style="width:auto">
+        <option value="all">All tasks</option>
+        <option value="active">Incomplete</option>
+        <option value="done">Completed</option>
+      </select>
+    </div>
+    <div class="task-list" id="allTasks"></div>
+    <div id="taskSummary" class="muted" style="margin-top:14px"></div>
+  </div>
+</section>
+
+<!-- DAILY QUESTS -->
+<section class="view" id="quests">
+  <div class="card">
+    <div class="section-heading">
+      <div><h2>⚔ Daily Quest Board</h2><p>Complete your daily challenges for bonus XP.</p></div>
+      <span class="stat-icon">✨</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="questOverallBar"></div></div>
+    <p class="muted" id="questOverallText"></p>
+    <div class="quests" id="allQuests"></div>
+    <p class="muted">Daily quests refresh at midnight according to your device's local date. Rewards are saved locally.</p>
+  </div>
+</section>
+
+<!-- GARDEN -->
+<section class="view" id="garden">
+  <div class="card">
+    <div class="garden-toolbar">
+      <div><h2>🌿 Your Knowledge Garden</h2><p class="muted">Every achievement helps your garden flourish.</p></div>
+      <select id="gardenTheme" aria-label="Garden theme">
+        <option value="day">Daylight</option>
+        <option value="night">Moonlight</option>
+      </select>
+    </div>
+    <div class="garden" id="fullGarden" style="min-height:290px"></div>
+    <div class="section-heading" style="margin-top:24px">
+      <div><h2>Garden Collection</h2><p>Unlock new plants as you reach XP milestones.</p></div>
+    </div>
+    <div class="badges-grid" id="plantCollection"></div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="view" id="quiz">
+  <div class="card">
+    <div class="eyebrow">KNOWLEDGE IS POWER</div>
+    <h2 style="margin-bottom:5px">✎ Quiz Arena</h2>
+    <p class="muted">Test your computing knowledge. Earn 10 XP for every correct answer.</p>
+    <div class="progress-track"><div class="progress-fill" id="quizBar"></div></div>
+    <div class="muted" id="quizCounter">Question 1</div>
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback" aria-live="polite"></div>
+    <div class="quiz-footer">
+      <span class="muted" id="quizScore">Score: 0</span>
+      <button class="btn" id="quizNext" disabled>Next question →</button>
+    </div>
+    <div id="quizEnd" hidden style="text-align:center;padding:20px">
+      <div style="font-size:45px">🏆</div>
+      <h2>Quiz completed!</h2>
+      <p id="quizResult"></p>
+      <button class="btn" id="quizAgain">Play Again</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOCUS -->
+<section class="view" id="focus">
+  <div class="card" style="max-width:650px;margin:auto">
+    <div class="eyebrow" style="text-align:center">YOUR PERSONAL STUDY SPACE</div>
+    <h2 style="text-align:center">🎯 Focus Room</h2>
+    <p class="muted" style="text-align:center">Put distractions aside and give one task your attention.</p>
+    <div class="timer-display" id="timerDisplay2">25:00</div>
+    <div class="timer-controls">
+      <button class="btn" id="timerStart2">▶ Start Focus</button>
+      <button class="btn btn-outline" id="timerPause2">Ⅱ Pause</button>
+      <button class="btn btn-outline" id="timerReset2">↻ Reset</button>
+    </div>
+    <div class="timer-modes">
+      <button class="active" data-minutes="25">Focus 25m</button>
+      <button data-minutes="5">Short break 5m</button>
+      <button data-minutes="15">Long break 15m</button>
+    </div>
+    <p class="timer-message muted" id="timerMessage2">Choose a task, then press Start.</p>
+    <div class="card" style="margin-top:22px;background:var(--bg);box-shadow:none">
+      <h3>💡 Focus tip</h3>
+      <p class="muted">Keep only the materials you need nearby. Try to finish one small goal before switching to another.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ACHIEVEMENTS -->
+<section class="view" id="achievements">
+  <div class="card">
+    <div class="section-heading">
+      <div><h2>🏆 Achievement Hall</h2><p>Celebrate your progress, one milestone at a time.</p></div>
+    </div>
+    <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div class="card stat"><div class="stat-label">BADGES UNLOCKED</div><div class="stat-value" id="badgeCount">0</div></div>
+      <div class="card stat"><div class="stat-label">TOTAL XP EARNED</div><div class="stat-value" id="badgeXP">0</div></div>
+    </div>
+    <div class="badges-grid" id="achievementGrid"></div>
+  </div>
+</section>
+
+<!-- SETTINGS -->
+<section class="view" id="settings">
+  <div class="card">
+    <h2>⚙ Settings & Profile</h2>
+    <div class="profile-row">
+      <div class="profile-avatar">🎓</div>
+      <div class="profile-info">
+        <strong id="profileLevel">Level 1 Scholar</strong>
+        <p id="profileSummary">Your adventure is just beginning.</p>
+      </div>
+    </div>
+    <form id="nameForm" style="margin-top:20px">
+      <label for="playerName" class="muted">Your display name</label>
+      <div style="display:flex;gap:8px;margin-top:7px">
+        <input id="playerName" maxlength="25" placeholder="Enter your name" required>
+        <button class="btn" type="submit">Save</button>
+      </div>
+    </form>
+    <div class="profile-row" style="margin-top:15px">
+      <div class="profile-info"><strong>Appearance</strong><p>Switch between light and dark mode.</p></div>
+      <button class="btn btn-outline" id="themeBtn2">Toggle theme</button>
+    </div>
+    <div class="profile-row">
+      <div class="profile-info"><strong>Reset progress</strong><p>Erase tasks, XP, badges, and saved game data.</p></div>
+      <button class="btn btn-danger" id="resetGame">Reset</button>
+    </div>
+    <p class="muted" style="margin-top:18px">Your game is stored in this browser using local storage. This prototype does not use online accounts or synchronize progress across devices.</p>
+  </div>
+</section>
+
+<footer>STUDYQUEST © 2026 · LEVEL UP YOUR LEARNING 🌱</footer>
+</main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+// ===============================
+// STUDYQUEST GAME DATA
+// ===============================
+const KEY = "studyquest_save_v1";
+const THEME_KEY = "studyquest_theme_v1";
+
+function localDate(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,"0");
+  const d = String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+
+function newGame() {
+  return {
+    name: "Scholar",
+    xp: 0,
+    tasks: [],
+    nextId: 1,
+    completedTotal: 0,
+    focusSessions: 0,
+    focusMinutes: 0,
+    lastFocusDate: "",
+    gardenTheme: "day",
+    questDate: localDate(),
+    questClaims: [],
+    quizBest: 0,
+    quizCorrect: 0,
+    quizAnswered: [],
+    lastLoginDate: localDate()
+  };
+}
+
+function loadGame() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    if (saved && typeof saved === "object") {
+      const base = newGame();
+      return {
+        ...base,
+        ...saved,
+        tasks: Array.isArray(saved.tasks) ? saved.tasks : [],
+        questClaims: Array.isArray(saved.questClaims) ? saved.questClaims : [],
+        quizAnswered: Array.isArray(saved.quizAnswered) ? saved.quizAnswered : []
+      };
+    }
+  } catch (e) {}
+  return newGame();
+}
+
+let game = loadGame();
+let toastTimer;
+let selectedView = "home";
+
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(game));
+  } catch (e) {
+    showToast("Storage unavailable. Your progress may not persist.");
+  }
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  })[char]);
+}
+
+function getLevel() {
+  return Math.floor(game.xp / 100) + 1;
+}
+function xpIntoLevel() {
+  return game.xp % 100;
+}
+function getXPToNext() {
+  return 100 - xpIntoLevel();
+}
+
+function awardXP(amount, message) {
+  const before = getLevel();
+  game.xp += amount;
+  save();
+  renderAll();
+  const after = getLevel();
+  showToast(message + " +" + amount + " XP!");
+  if (after > before) {
+    setTimeout(() => showToast("🎉 LEVEL UP! You reached Level " + after + "!"), 650);
+  }
+}
+
+function refreshDailyQuests() {
+  const today = localDate();
+  if (game.questDate !== today) {
+    game.questDate = today;
+    game.questClaims = [];
+    save();
+  }
+}
+refreshDailyQuests();
+
+// ===============================
+// NAVIGATION
+// ===============================
+const viewTitles = {
+  home:"Welcome back",
+  tasks:"My Missions",
+  quests:"Daily Quest Board",
+  garden:"Knowledge Garden",
+  quiz:"Quiz Arena",
+  focus:"Focus Room",
+  achievements:"Achievement Hall",
+  settings:"Settings & Profile"
+};
+
+document.querySelectorAll(".nav-btn").forEach(button => {
+  button.addEventListener("click", () => openView(button.dataset.view));
+});
+
+function openView(view) {
+  selectedView = view;
+  document.querySelectorAll(".nav-btn").forEach(button => {
+    button.classList.toggle("active", button.dataset.view === view);
+  });
+  document.querySelectorAll(".view").forEach(section => {
+    section.classList.toggle("active", section.id === view);
+  });
+  document.getElementById("pageTitle").textContent =
+    viewTitles[view] + (view === "home" ? ", " + game.name + "! 👋" : "");
+  if (view === "quiz" && quizIndex >= quiz.length) startQuiz();
+  if (view === "settings") document.getElementById("playerName").value = game.name;
+  renderAll();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.getElementById("heroQuestBtn").addEventListener("click", () => openView("quests"));
+document.getElementById("allTasksBtn").addEventListener("click", () => openView("tasks"));
+document.getElementById("allQuestsBtn").addEventListener("click", () => openView("quests"));
+document.getElementById("gardenBtn").addEventListener("click", () => openView("garden"));
+
+// ===============================
+// THEME
+// ===============================
+function applyTheme(theme) {
+  document.body.classList.toggle("dark", theme === "dark");
+  localStorage.setItem(THEME_KEY, theme);
+  document.getElementById("themeBtn").textContent = theme === "dark" ? "☀" : "☾";
+}
+applyTheme(localStorage.getItem(THEME_KEY) || "light");
+document.getElementById("themeBtn").addEventListener("click", () => {
+  applyTheme(document.body.classList.contains("dark") ? "light" : "dark");
+});
+document.getElementById("themeBtn2").addEventListener("click", () => {
+  applyTheme(document.body.classList.contains("dark") ? "light" : "dark");
+});
+
+// ===============================
+// TASKS AND XP
+// ===============================
+const taskForm = document.getElementById("taskForm");
+const taskInput = document.getElementById("taskInput");
+const taskDate = document.getElementById("taskDate");
+
+taskForm.addEventListener("submit", event => {
+  event.preventDefault();
+  const title = taskInput.value.trim();
+  if (!title) return;
+  game.tasks.push({
+    id: game.nextId++,
+    title,
+    date: taskDate.value,
+    done: false,
+    rewarded: false,
+    created: localDate()
+  });
+  save();
+  taskInput.value = "";
+  taskDate.value = "";
+  renderAll();
+  showToast("New mission added! Good luck. 📚");
+});
+
+document.getElementById("taskFilter").addEventListener("change", renderTasks);
+
+function toggleTask(id, checked) {
+  const task = game.tasks.find(item => item.id === id);
+  if (!task || task.done === checked) return;
+  task.done = checked;
+
+  if (checked) {
+    game.completedTotal++;
+    if (!task.rewarded) {
+      task.rewarded = true;
+      game.xp += 20;
+      showToast("Mission complete! +20 XP ⚡");
+    } else {
+      showToast("Mission marked complete again.");
+    }
+  } else {
+    showToast("Mission reopened. Your earned XP stays yours.");
+  }
+  save();
+  renderAll();
+}
+
+function deleteTask(id) {
+  if (!confirm("Delete this mission?")) return;
+  game.tasks = game.tasks.filter(task => task.id !== id);
+  save();
+  renderAll();
+  showToast("Mission removed.");
+}
+
+function taskMarkup(task) {
+  const due = task.date
+    ? "Due " + new Date(task.date + "T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"})
+    : "No deadline";
+  const overdue = task.date && task.date < localDate() && !task.done;
+  return `
+    <div class="task-row ${task.done ? "done" : ""}">
+      <input class="task-check" type="checkbox" data-check="${task.id}"
+        ${task.done ? "checked" : ""} aria-label="Complete ${escapeHTML(task.title)}">
+      <div class="task-info">
+        <div class="task-title">${escapeHTML(task.title)}</div>
+        <div class="task-meta">${overdue ? "⚠ Overdue · " : ""}${escapeHTML(due)}</div>
+      </div>
+      <span class="task-xp">${task.rewarded ? "✓ Earned" : "+20 XP"}</span>
+      <button class="delete-btn" data-delete="${task.id}" aria-label="Delete task">×</button>
+    </div>`;
+}
+
+function bindTaskActions(container) {
+  container.querySelectorAll("[data-check]").forEach(input => {
+    input.addEventListener("change", () =>
+      toggleTask(Number(input.dataset.check), input.checked));
+  });
+  container.querySelectorAll("[data-delete]").forEach(button => {
+    button.addEventListener("click", () => deleteTask(Number(button.dataset.delete)));
+  });
+}
+
+function renderTasks() {
+  const dashboard = document.getElementById("dashboardTasks");
+  const all = document.getElementById("allTasks");
+  const filter = document.getElementById("taskFilter").value;
+
+  const incomplete = game.tasks.filter(task => !task.done);
+  dashboard.innerHTML = incomplete.length
+    ? incomplete.slice(0,4).map(taskMarkup).join("")
+    : '<div class="empty">🌱 No pending missions! Add a task to begin your next adventure.</div>';
+
+  const filtered = game.tasks.filter(task =>
+    filter === "all" || (filter === "active" && !task.done) ||
+    (filter === "done" && task.done)
+  ).slice().sort((a,b) => Number(a.done)-Number(b.done));
+
+  all.innerHTML = filtered.length
+    ? filtered.map(taskMarkup).join("")
+    : '<div class="empty">Nothing here yet. Add a mission above!</div>';
+
+  bindTaskActions(dashboard);
+  bindTaskActions(all);
+
+  document.getElementById("taskSummary").textContent =
+    game.tasks.filter(task => task.done).length + " completed · " +
+    incomplete.length + " remaining · " + game.tasks.length + " total";
+}
+
+// ===============================
+// DAILY QUESTS
+// ===============================
+const questDefinitions = [
+  {id:"task",icon:"📚",title:"Mission Accomplished",desc:"Complete one school task.",reward:25,goal:1},
+  {id:"focus",icon:"🎯",title:"Focus Explorer",desc:"Finish one 25-minute focus session.",reward:30,goal:1},
+  {id:"quiz",icon:"🧠",title:"Knowledge Seeker",desc:"Answer three quiz questions correctly.",reward:25,goal:3}
+];
+
+function questProgress(q) {
+  if (q.id === "task") return Math.min(1, game.tasks.filter(t => t.done && t.created === localDate()).length);
+  if (q.id === "focus") return game.lastFocusDate === localDate() ? 1 : 0;
+  if (q.id === "quiz") return Math.min(3, game.quizAnswered.filter(x => x.date === localDate() && x.correct).length);
+  return 0;
+}
+
+function claimQuest(id) {
+  refreshDailyQuests();
+  const q = questDefinitions.find(item => item.id === id);
+  if (!q || game.questClaims.includes(id) || questProgress(q) < q.goal) return;
+  game.questClaims.push(id);
+  awardXP(q.reward, "Daily quest completed!");
+}
+
+function questMarkup(q) {
+  const progress = questProgress(q);
+  const claimed = game.questClaims.includes(q.id);
+  const percent = Math.round(progress / q.goal * 100);
+  const action = claimed
+    ? '<button class="btn btn-outline" disabled>✓ Claimed</button>'
+    : progress >= q.goal
+      ? `<button class="btn" data-claim="${q.id}">Claim reward</button>`
+      : `<span class="quest-status">${progress}/${q.goal} completed</span>`;
+
+  return `<div class="quest">
+    <div class="quest-top">
+      <div class="quest-emoji">${q.icon}</div>
+      <div class="quest-info"><strong>${q.title}</strong><p>${q.desc}</p></div>
+      <div class="quest-reward">+${q.reward} XP</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px">
+      <span class="quest-status">${claimed ? "Reward collected!" : progress >= q.goal ? "Quest completed!" : "Keep going!"}</span>
+      ${action}
+    </div>
+  </div>`;
+}
+
+function renderQuests() {
+  refreshDailyQuests();
+  const containers = [
+    document.getElementById("dashboardQuests"),
+    document.getElementById("allQuests")
+  ];
+  containers.forEach((container,index) => {
+    const list = index === 0 ? questDefinitions.slice(0,2) : questDefinitions;
+    container.innerHTML = list.map(questMarkup).join("");
+    container.querySelectorAll("[data-claim]").forEach(button => {
+      button.addEventListener("click", () => claimQuest(button.dataset.claim));
+    });
+  });
+
+  const completed = questDefinitions.filter(q =>
+    questProgress(q) >= q.goal || game.questClaims.includes(q.id)
+  ).length;
+  document.getElementById("questOverallBar").style.width =
+    Math.round(completed / questDefinitions.length * 100) + "%";
+  document.getElementById("questOverallText").textContent =
+    completed + " of " + questDefinitions.length + " daily quests completed or claimed.";
+}
+
+// ===============================
+// GARDEN AND UNLOCKS
+// ===============================
+const plants = [
+  {level:1,icon:"🌱",name:"Little Sprout"},
+  {level:2,icon:"🌷",name:"Tulip"},
+  {level:3,icon:"🌻",name:"Sunflower"},
+  {level:4,icon:"🌵",name:"Cactus"},
+  {level:5,icon:"🌳",name:"Mighty Tree"},
+  {level:7,icon:"🌴",name:"Palm Tree"},
+  {level:10,icon:"🌸",name:"Cherry Blossom"},
+  {level:15,icon:"🌲",name:"Evergreen"}
+];
+
+function renderGarden() {
+  const unlocked = plants.filter(p => getLevel() >= p.level);
+  const locked = plants.filter(p => getLevel() < p.level);
+  const selected = game.gardenTheme;
+
+  document.querySelectorAll("#miniGarden,#fullGarden").forEach(container => {
+    container.style.background = selected === "night"
+      ? "linear-gradient(180deg,#1d3148 0%,#34495b 65%,#4b6944 65%,#304b2e 100%)"
+      : "";
+    container.innerHTML = unlocked.map(p =>
+      `<div class="garden-plant"><div class="emoji">${p.icon}</div><div class="plant-name">${p.name}</div></div>`
+    ).join("") + locked.slice(0, Math.max(0, 4-unlocked.length)).map(p =>
+      `<div class="garden-plant garden-lock"><div class="emoji">🔒</div><div class="plant-name">Level ${p.level}</div></div>`
+    ).join("");
+  });
+
+  document.getElementById("gardenCaption").textContent =
+    unlocked.length + " plants unlocked. Your garden grows with your level!";
+
+  document.getElementById("plantCollection").innerHTML = plants.map(p => {
+    const isUnlocked = getLevel() >= p.level;
+    return `<div class="badge-card ${isUnlocked ? "" : "locked"}">
+            <div class="badge-icon">${isUnlocked ? p.icon : "🔒"}</div>
+      <strong>${p.name}</strong>
+      <p>${isUnlocked ? "Unlocked!" : "Reach Level " + p.level}</p>
+    </div>`;
+  }).join("");
+}
+
+document.getElementById("gardenTheme").addEventListener("change",event => {
+  game.gardenTheme = event.target.value;
+  save();
+  renderGarden();
+});
+
+// ===============================
+// QUIZ ARENA
+// ===============================
+const quiz = [
+  {q:"Which component is often called the brain of a computer?",o:["RAM","CPU","SSD","Monitor"],a:1,e:"The CPU executes instructions and processes data."},
+  {q:"Which HTML tag creates a hyperlink?",o:["<link>","<a>","<href>","<p>"],a:1,e:"The anchor tag <a> creates a clickable hyperlink."},
+  {q:"Which CSS property changes text color?",o:["font-style","background","color","text-size"],a:2,e:"The color property sets the foreground text color."},
+  {q:"Which JavaScript keyword declares a block-scoped variable that can be reassigned?",o:["const","let","static","define"],a:1,e:"let declares a block-scoped variable that can be reassigned."},
+  {q:"What does RAM primarily provide?",o:["Temporary working memory","Permanent file storage","Internet access","Printed output"],a:0,e:"RAM holds data and instructions currently in use."},
+  {q:"Which device forwards data between different networks?",o:["Keyboard","Router","Printer","Microphone"],a:1,e:"Routers forward packets between networks."},
+  {q:"What does CSS stand for?",o:["Computer Styling System","Cascading Style Sheets","Creative System Software","Colorful Style Syntax"],a:1,e:"CSS stands for Cascading Style Sheets."},
+  {q:"Which operator checks strict equality in JavaScript?",o:["=","==","===","!="],a:2,e:"=== checks equality without converting the operand types."},
+  {q:"Which is an example of an input device?",o:["Monitor","Speaker","Keyboard","Projector"],a:2,e:"A keyboard sends user input to a computer."},
+  {q:"What is the purpose of a loop in programming?",o:["Repeat instructions","Delete all variables","Connect a monitor","Format a hard drive"],a:0,e:"Loops repeat instructions while a condition or iteration rule allows."},
+  {q:"Which unit is commonly used to measure network speed?",o:["Kilograms","Bits per second","Degrees Celsius","Pixels only"],a:1,e:"Network data rates are commonly measured in bits per second."},
+  {q:"What does HTML mainly define?",o:["Web page structure","Network encryption","CPU speed","Database hardware"],a:0,e:"HTML defines the structure and content of a web page."}
+];
+
+let quizIndex = 0;
+let quizScore = 0;
+let quizLocked = false;
+let quizRunId = 0;
+
+function startQuiz() {
+  quizIndex = 0;
+  quizScore = 0;
+  quizLocked = false;
+  quizRunId++;
+  document.getElementById("quizEnd").hidden = true;
+  document.getElementById("quizQuestion").hidden = false;
+  document.getElementById("quizOptions").hidden = false;
+  document.getElementById("quizCounter").hidden = false;
+  document.getElementById("quizScore").hidden = false;
+  document.getElementById("quizNext").hidden = false;
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  quizLocked = false;
+  const q = quiz[quizIndex];
+  document.getElementById("quizCounter").textContent =
+    "Question " + (quizIndex+1) + " of " + quiz.length;
+  document.getElementById("quizBar").style.width =
+    (quizIndex / quiz.length * 100) + "%";
+  document.getElementById("quizQuestion").textContent = q.q;
+  document.getElementById("quizFeedback").textContent = "";
+  document.getElementById("quizScore").textContent = "Score: " + quizScore;
+  document.getElementById("quizNext").disabled = true;
+  document.getElementById("quizNext").textContent =
+    quizIndex === quiz.length-1 ? "See results →" : "Next question →";
+
+  document.getElementById("quizOptions").innerHTML = q.o.map((option,i) =>
+    `<button class="quiz-option" data-answer="${i}">${escapeHTML(option)}</button>`
+  ).join("");
+
+  document.querySelectorAll("[data-answer]").forEach(button => {
+    button.addEventListener("click", () => answerQuiz(Number(button.dataset.answer)));
+  });
+}
+
+function answerQuiz(answer) {
+  if (quizLocked) return;
+  quizLocked = true;
+  const q = quiz[quizIndex];
+  const correct = answer === q.a;
+
+  if (correct) {
+    quizScore++;
+    game.quizCorrect++;
+    game.xp += 10;
+    showToast("Correct answer! +10 XP ⚡");
+  } else {
+    showToast("Keep learning! The explanation is below.");
+  }
+
+  game.quizAnswered.push({date:localDate(),correct});
+  if (game.quizAnswered.length > 300) game.quizAnswered = game.quizAnswered.slice(-300);
+
+  document.querySelectorAll("[data-answer]").forEach(button => {
+    const choice = Number(button.dataset.answer);
+    button.disabled = true;
+    if (choice === q.a) button.classList.add("correct");
+    if (choice === answer && !correct) button.classList.add("wrong");
+  });
+
+  document.getElementById("quizFeedback").textContent =
+    (correct ? "✓ Correct! " : "✗ Not quite. ") + q.e;
+  document.getElementById("quizScore").textContent = "Score: " + quizScore;
+  document.getElementById("quizNext").disabled = false;
+  save();
+  renderAll();
+}
+
+document.getElementById("quizNext").addEventListener("click", () => {
+  if (!quizLocked) return;
+  if (quizIndex < quiz.length-1) {
+    quizIndex++;
+    renderQuizQuestion();
+  } else {
+    finishQuiz();
+  }
+});
+
+function finishQuiz() {
+  const runScore = quizScore;
+  game.quizBest = Math.max(game.quizBest,runScore);
+  save();
+  renderAll();
+  document.getElementById("quizBar").style.width = "100%";
+  document.getElementById("quizQuestion").hidden = true;
+  document.getElementById("quizOptions").hidden = true;
+  document.getElementById("quizCounter").hidden = true;
+  document.getElementById("quizScore").hidden = true;
+  document.getElementById("quizNext").hidden = true;
+  document.getElementById("quizEnd").hidden = false;
+  document.getElementById("quizResult").textContent =
+    "You scored " + runScore + " out of " + quiz.length +
+    ". Correct answers also earned XP. " +
+    (runScore >= 9 ? "Excellent work, Scholar!" : "Keep practicing to improve your score!");
+}
+
+document.getElementById("quizAgain").addEventListener("click",startQuiz);
+
+// ===============================
+// FOCUS TIMER
+// ===============================
+let timerMinutes = 25;
+let remaining = 25*60;
+let timerInterval = null;
+let timerEndAt = null;
+let timerRunId = 0;
+
+function displayTime() {
+  const text = String(Math.floor(remaining/60)).padStart(2,"0") + ":" +
+    String(remaining%60).padStart(2,"0");
+  document.getElementById("timerDisplay").textContent = text;
+  document.getElementById("timerDisplay2").textContent = text;
+  document.title = text + " | StudyQuest";
+}
+
+function pauseTimer() {
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timerEndAt = null;
+}
+
+function resetTimer() {
+  pauseTimer();
+  timerRunId++;
+  remaining = timerMinutes * 60;
+  displayTime();
+  setTimerMessage("Ready when you are. 🌿");
+}
+
+function setTimerMessage(message) {
+  document.getElementById("timerMessage").textContent = message;
+  document.getElementById("timerMessage2").textContent = message;
+}
+
+function startTimer() {
+  if (timerInterval !== null) return;
+  if (remaining <= 0) remaining = timerMinutes*60;
+
+  const thisRun = ++timerRunId;
+  timerEndAt = Date.now() + remaining*1000;
+  setTimerMessage("You're in focus mode. Keep going! 🎯");
+
+  timerInterval = setInterval(() => {
+    if (thisRun !== timerRunId) return;
+    remaining = Math.max(0,Math.ceil((timerEndAt-Date.now())/1000));
+    displayTime();
+
+    if (remaining <= 0) {
+      pauseTimer();
+      if (timerMinutes === 25) {
+        game.focusSessions++;
+        game.focusMinutes += 25;
+        game.lastFocusDate = localDate();
+        save();
+        awardXP(25,"Focus session complete!");
+        renderAll();
+        setTimerMessage("Fantastic work! Take a well-deserved break. 🌱");
+      } else {
+        setTimerMessage("Break complete! Ready to focus again?");
+        showToast("Your break is over. You can do this!");
+      }
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+        try { new Notification("StudyQuest", {body:"Your timer is complete!"}); } catch(e) {}
+      } else {
+        alert("Your " + (timerMinutes === 25 ? "focus session" : "break") + " is complete!");
+      }
+    }
+  },250);
+}
+
+document.getElementById("timerStart").addEventListener("click",startTimer);
+document.getElementById("timerStart2").addEventListener("click",startTimer);
+document.getElementById("timerPause").addEventListener("click",pauseTimer);
+document.getElementById("timerPause2").addEventListener("click",pauseTimer);
+document.getElementById("timerReset").addEventListener("click",resetTimer);
+document.getElementById("timerReset2").addEventListener("click",resetTimer);
+
+document.querySelectorAll("[data-minutes]").forEach(button => {
+  button.addEventListener("click", () => {
+    timerMinutes = Number(button.dataset.minutes);
+    document.querySelectorAll("[data-minutes]").forEach(b => {
+      b.classList.toggle("active",b.dataset.minutes === button.dataset.minutes);
+    });
+    resetTimer();
+  });
+});
+
+document.getElementById("timerPause").addEventListener("click",() =>
+  setTimerMessage("Timer paused. Resume whenever you're ready."));
+document.getElementById("timerPause2").addEventListener("click",() =>
+  setTimerMessage("Timer paused. Resume whenever you're ready."));
+
+// ===============================
+// ACHIEVEMENTS
+// ===============================
+const achievements = [
+  {id:"first",icon:"🌱",name:"First Steps",desc:"Complete your first task.",test:()=>game.completedTotal>=1},
+  {id:"five",icon:"📚",name:"Bookworm",desc:"Complete 5 tasks.",test:()=>game.completedTotal>=5},
+  {id:"ten",icon:"🎓",name:"Dedicated Scholar",desc:"Complete 10 tasks.",test:()=>game.completedTotal>=10},
+  {id:"level3",icon:"⭐",name:"Rising Star",desc:"Reach Level 3.",test:()=>getLevel()>=3},
+  {id:"level5",icon:"🏆",name:"High Achiever",desc:"Reach Level 5.",test:()=>getLevel()>=5},
+  {id:"focus",icon:"🎯",name:"Deep Focus",desc:"Complete a focus session.",test:()=>game.focusSessions>=1},
+  {id:"quiz",icon:"🧠",name:"Quick Thinker",desc:"Answer 5 quiz questions correctly.",test:()=>game.quizCorrect>=5},
+  {id:"xp",icon:"⚡",name:"XP Collector",desc:"Earn 250 XP.",test:()=>game.xp>=250},
+  {id:"quests",icon:"⚔",name:"Quest Hunter",desc:"Claim all daily quests in one day.",test:()=>game.questClaims.length>=3}
+];
+
+function renderAchievements() {
+  const unlocked = achievements.filter(a => a.test());
+  document.getElementById("badgeCount").textContent = unlocked.length + "/" + achievements.length;
+  document.getElementById("badgeXP").textContent = game.xp;
+  document.getElementById("achievementGrid").innerHTML = achievements.map(a =>
+    `<div class="badge-card ${a.test() ? "" : "locked"}">
+      <div class="badge-icon">${a.test() ? a.icon : "🔒"}</div>
+      <strong>${a.name}</strong><p>${a.test() ? "Achievement unlocked!" : a.desc}</p>
+    </div>`
+  ).join("");
+}
+
+// ===============================
+// PROFILE AND SETTINGS
+// ===============================
+document.getElementById("nameForm").addEventListener("submit",event => {
+  event.preventDefault();
+  const name = document.getElementById("playerName").value.trim().slice(0,25);
+  if (!name) return;
+  game.name = name;
+  save();
+  renderAll();
+  showToast("Profile updated. Welcome, " + name + "!");
+});
+
+document.getElementById("resetGame").addEventListener("click",() => {
+  if (!confirm("Reset ALL StudyQuest progress? Your tasks, XP, achievements, and statistics will be erased.")) return;
+  pauseTimer();
+  game = newGame();
+  save();
+  quizIndex = 0;
+  quizScore = 0;
+  startQuiz();
+  resetTimer();
+  renderAll();
+  openView("home");
+  showToast("A fresh adventure begins! 🌱");
+});
+
+// ===============================
+// DASHBOARD AND STARTUP
+// ===============================
+function renderStats() {
+  const level = getLevel();
+  const inLevel = xpIntoLevel();
+  const done = game.tasks.filter(t => t.done).length;
+
+  document.getElementById("xpStat").textContent = game.xp + " XP";
+  document.getElementById("levelStat").textContent = "Level " + level;
+  document.getElementById("levelBar").style.width = inLevel + "%";
+  document.getElementById("levelProgress").textContent =
+    inLevel + " / 100 XP · " + getXPToNext() + " XP to next level";
+  document.getElementById("taskStat").textContent = done;
+  document.getElementById("focusStat").textContent = game.focusSessions;
+  document.getElementById("profileLevel").textContent = "Level " + level + " " + game.name;
+  document.getElementById("profileSummary").textContent =
+    game.xp + " XP · " + done + " tasks completed · " + game.focusSessions + " focus sessions";
+  document.getElementById("dateGreeting").textContent =
+    new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"}).toUpperCase();
+}
+
+function renderAll() {
+  refreshDailyQuests();
+  renderStats();
+  renderTasks();
+  renderQuests();
+  renderGarden();
+  renderAchievements();
+  document.getElementById("gardenTheme").value = game.gardenTheme;
+}
+
+startQuiz();
+renderAll();
+displayTime();
+</script>
+</body>
+</html>
