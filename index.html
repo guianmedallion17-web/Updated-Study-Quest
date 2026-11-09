@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#183b2a">
@@ -431,7 +431,16 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   *, *::before, *::after { animation:none !important; transition:none !important; }
 }
 </style>
-</head>
+<!-- PDF Reader -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- Word Document Reader -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+</script>
 
 <body>
 <div class="app">
@@ -570,11 +579,23 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     <div class="section-heading">
       <div><h2>📚 My Tasks</h2><p>Turn your assignments into achievable missions.</p></div>
     </div>
-    <form id="taskForm" class="add-form">
-      <input id="taskInput" placeholder="e.g. Review CC100 Chapter 4" maxlength="100" required>
-      <input id="taskDate" type="date" aria-label="Task deadline">
-      <button class="btn" type="submit">+ Add Task</button>
-    </form>
+<form id="taskForm" class="add-form">
+  <input id="taskInput" placeholder="e.g. Review CC100 Chapter 4" maxlength="100" required>
+  <input id="taskDate" type="date" aria-label="Task deadline">
+
+  <div style="grid-column:1/-1">
+    <label for="lessonFile">📄 Upload your lesson (TXT, PDF, or DOCX)</label>
+    <input
+      id="lessonFile"
+      type="file"
+      accept=".txt,.pdf,.docx"
+      style="width:100%;margin-top:8px"
+    >
+    <small class="muted">Your uploaded lesson will be used to generate your practice test.</small>
+  </div>
+
+  <button class="btn" type="submit">+ Add Task</button>
+</form>
     <div class="section-heading" style="margin-top:24px">
       <h2>Mission Board</h2>
       <select id="taskFilter" style="width:auto">
@@ -905,7 +926,7 @@ taskForm.addEventListener("submit", event => {
     created: localDate()
   });
   save();
-  taskInput.value = "";
+taskInput.value = "";
   taskDate.value = "";
   renderAll();
   showToast("New mission added! Good luck. 📚");
@@ -916,20 +937,30 @@ document.getElementById("taskFilter").addEventListener("change", renderTasks);
 function toggleTask(id, checked) {
   const task = game.tasks.find(item => item.id === id);
   if (!task || task.done === checked) return;
+
+  // Require the AI quiz before completing uploaded lessons
+  if (checked && task.lessonText && !task.verified) {
+    showToast("Pass the AI quiz first! You need at least 7/10.");
+    renderAll();
+    return;
+  }
+
   task.done = checked;
 
   if (checked) {
     game.completedTotal++;
+
     if (!task.rewarded) {
       task.rewarded = true;
-      game.xp += 20;
-      showToast("Mission complete! +20 XP ⚡");
+      game.xp += 30;
+      showToast("Mission complete! +30 XP ⚡");
     } else {
       showToast("Mission marked complete again.");
     }
   } else {
     showToast("Mission reopened. Your earned XP stays yours.");
   }
+
   save();
   renderAll();
 }
@@ -944,19 +975,56 @@ function deleteTask(id) {
 
 function taskMarkup(task) {
   const due = task.date
-    ? "Due " + new Date(task.date + "T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"})
+    ? "Due " + new Date(task.date + "T12:00:00").toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric"
+      })
     : "No deadline";
+
   const overdue = task.date && task.date < localDate() && !task.done;
+
   return `
     <div class="task-row ${task.done ? "done" : ""}">
-      <input class="task-check" type="checkbox" data-check="${task.id}"
-        ${task.done ? "checked" : ""} aria-label="Complete ${escapeHTML(task.title)}">
+      <input class="task-check"
+        type="checkbox"
+        data-check="${task.id}"
+        ${task.done ? "checked" : ""}
+        ${task.lessonText && !task.verified ? "disabled" : ""}
+        aria-label="Complete ${escapeHTML(task.title)}">
+
       <div class="task-info">
         <div class="task-title">${escapeHTML(task.title)}</div>
-        <div class="task-meta">${overdue ? "⚠ Overdue · " : ""}${escapeHTML(due)}</div>
+
+        <div class="task-meta">
+          ${overdue ? "⚠ Overdue · " : ""}
+          ${escapeHTML(due)}
+        </div>
+
+        ${
+          task.lessonText
+            ? `<div class="task-meta">
+                ${task.verified ? "✅ Test verified" : "📖 Lesson uploaded · Test required"}
+              </div>`
+            : ""
+        }
+
+        ${
+          task.lessonText && !task.verified
+            ? `<button class="btn" data-generate-quiz="${task.id}"
+                style="margin-top:8px">
+                🧠 ${task.quizQuestions?.length ? "Retake AI Quiz" : "Generate AI Quiz"}
+              </button>`
+            : ""
+        }
       </div>
-      <span class="task-xp">${task.rewarded ? "✓ Earned" : "+20 XP"}</span>
-      <button class="delete-btn" data-delete="${task.id}" aria-label="Delete task">×</button>
+
+      <span class="task-xp">
+        ${task.rewarded ? "✓ Earned" : "+30 XP"}
+      </span>
+
+      <button class="delete-btn"
+        data-delete="${task.id}"
+        aria-label="Delete task">×</button>
     </div>`;
 }
 
@@ -1104,7 +1172,7 @@ function renderGarden() {
   document.getElementById("plantCollection").innerHTML = plants.map(p => {
     const isUnlocked = getLevel() >= p.level;
     return `<div class="badge-card ${isUnlocked ? "" : "locked"}">
-            <div class="badge-icon">${isUnlocked ? p.icon : "🔒"}</div>
+      <div class="badge-icon">${isUnlocked ? p.icon : "🔒"}</div>
       <strong>${p.name}</strong>
       <p>${isUnlocked ? "Unlocked!" : "Reach Level " + p.level}</p>
     </div>`;
@@ -1389,7 +1457,247 @@ document.getElementById("resetGame").addEventListener("click",() => {
   openView("home");
   showToast("A fresh adventure begins! 🌱");
 });
+// ===============================
+// STUDYQUEST LESSON FILE READER
+// ===============================
 
+async function extractLessonText(file) {
+  const extension = file.name.split(".").pop().toLowerCase();
+
+  if (extension === "txt") {
+    return await file.text();
+  }
+
+  if (extension === "pdf") {
+    const buffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+
+    let text = "";
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+
+      text += content.items.map(item => item.str).join(" ") + "\n";
+    }
+
+    return text;
+  }
+
+  if (extension === "docx") {
+    const buffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+    return result.value;
+  }
+
+  throw new Error("Unsupported file format.");
+}
+
+// Intercept task creation when a lesson file is attached
+taskForm.addEventListener("submit", async event => {
+  const fileInput = document.getElementById("lessonFile");
+  const file = fileInput?.files?.[0];
+
+  if (!file) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  const title = taskInput.value.trim();
+  if (!title) return;
+
+  try {
+    showToast("Reading your lesson file... 📖");
+
+    const lessonText = await extractLessonText(file);
+
+    if (lessonText.trim().length < 150) {
+      throw new Error("Not enough readable text in this file.");
+    }
+
+    game.tasks.push({
+      id: game.nextId++,
+      title,
+      date: taskDate.value,
+      done: false,
+      rewarded: false,
+      created: localDate(),
+      lessonText: lessonText,
+      verified: false,
+      quizQuestions: [],
+      testScore: null
+    });
+
+    save();
+    taskInput.value = "";
+    taskDate.value = "";
+    fileInput.value = "";
+
+    renderAll();
+    showToast("Lesson uploaded successfully! 🌱");
+
+  } catch (error) {
+    showToast(error.message || "Unable to read this file.");
+  }
+}, true);
+  // ===============================
+// STUDYQUEST AI QUIZ GENERATOR
+// ===============================
+
+// Add your deployed backend URL here later.
+window.STUDYQUEST_API_URL = "PASTE_YOUR_VERCEL_API_URL_HERE";
+
+async function generateStudyQuiz(taskId) {
+  const task = game.tasks.find(t => t.id === Number(taskId));
+
+  if (!task || !task.lessonText) {
+    showToast("Please upload a lesson file first.");
+    return;
+  }
+
+  if (!window.STUDYQUEST_API_URL ||
+      window.STUDYQUEST_API_URL.includes("PASTE_YOUR")) {
+    showToast("The AI backend still needs to be connected.");
+    return;
+  }
+
+  try {
+    showToast("Generating your 10-question quiz... 🧠");
+
+    const response = await fetch(window.STUDYQUEST_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lessonText: task.lessonText,
+        taskTitle: task.title
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Quiz generation failed.");
+    }
+
+    if (!Array.isArray(result.questions) ||
+        result.questions.length !== 10) {
+      throw new Error("The AI did not return exactly 10 questions.");
+    }
+
+    task.quizQuestions = result.questions;
+    save();
+
+    displayStudyQuiz(task);
+
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Unable to generate quiz.");
+  }
+}
+
+// Display the generated questions
+function displayStudyQuiz(task) {
+  const oldModal = document.getElementById("studyQuizModal");
+  if (oldModal) oldModal.remove();
+
+  const questionsHTML = task.quizQuestions.map((q, index) => `
+    <div style="margin:20px 0;padding:16px;background:var(--surface-2, #f4f7f4);border-radius:12px">
+      <h3>${index + 1}. ${escapeHTML(q.question)}</h3>
+
+      ${(q.options || []).map((option, optionIndex) => `
+        <label style="display:block;margin:10px 0">
+          <input type="radio"
+            name="studyQuestion${index}"
+            value="${optionIndex}"
+            required>
+          ${escapeHTML(option)}
+        </label>
+      `).join("")}
+    </div>
+  `).join("");
+
+  const modal = document.createElement("div");
+  modal.id = "studyQuizModal";
+
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    background:rgba(0,0,0,.75);
+    overflow-y:auto;
+    padding:20px;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      max-width:700px;
+      margin:20px auto;
+      padding:24px;
+      border-radius:18px;
+      background:var(--card, white);
+      color:var(--text, #222);
+    ">
+      <h2>🧠 StudyQuest Mock Test</h2>
+      <p>${escapeHTML(task.title)}</p>
+      <p>Answer all 10 questions. You need at least 7 correct answers to verify this task.</p>
+
+      <form id="studyQuizForm">
+        ${questionsHTML}
+
+        <button class="btn" type="submit">
+          Submit Answers
+        </button>
+
+        <button class="btn" type="button"
+          onclick="document.getElementById('studyQuizModal').remove()">
+          Close Quiz
+        </button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("studyQuizForm")
+    .addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      let score = 0;
+
+      task.quizQuestions.forEach((q, index) => {
+        const selected = document.querySelector(
+          `input[name="studyQuestion${index}"]:checked`
+        );
+
+        if (selected &&
+            Number(selected.value) === Number(q.answerIndex)) {
+          score++;
+        }
+      });
+
+      task.testScore = score;
+      task.verified = score >= 7;
+
+      save();
+      modal.remove();
+      renderAll();
+
+      if (task.verified) {
+        showToast(`Excellent! ${score}/10. Task verified! 🎉`);
+      } else {
+        showToast(`${score}/10. Review your lesson and try again! 📚`);
+      }
+    });
+}
+
+// Listen for AI Quiz button clicks
+document.addEventListener("click", function(event) {
+  const button = event.target.closest("[data-generate-quiz]");
+
+  if (button) {
+    generateStudyQuiz(button.dataset.generateQuiz);
+  }
+});
 // ===============================
 // DASHBOARD AND STARTUP
 // ===============================
