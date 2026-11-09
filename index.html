@@ -341,6 +341,7 @@ body.dark .garden-plant .plant-name { color: #e3f3d9; }
     #a9d58b 72%,
     #82bd70 100%
   );
+  transition: background .3s ease;
 }
 
 .garden-sun {
@@ -375,8 +376,8 @@ body.dark .garden-plant .plant-name { color: #e3f3d9; }
 .garden-tree-art {
   position: relative;
   z-index: 2;
-  width: min(75%, 260px);
-  height: 230px;
+  width: min(75%, 290px);
+  height: 235px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -387,6 +388,18 @@ body.dark .garden-plant .plant-name { color: #e3f3d9; }
   height: 100%;
   overflow: visible;
   filter: drop-shadow(0 5px 4px #355b3522);
+  animation: treeAppear .7s ease;
+}
+
+@keyframes treeAppear {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .garden-scene[data-theme="night"] {
@@ -434,6 +447,22 @@ body.dark .garden-plant .plant-name { color: #e3f3d9; }
   margin-top: 12px;
   font-size: 12px;
   font-weight: 700;
+}
+
+.garden-stage-progress-track {
+  height: 10px;
+  margin-top: 9px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.garden-stage-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #78bd70, #b1d982);
+  transition: width .5s ease;
 }
   
 .garden-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
@@ -822,26 +851,55 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
 <!-- GARDEN -->
 <section class="view" id="garden">
   <div class="card">
+
     <div class="garden-toolbar">
-      <div><h2>🌿 Your Knowledge Garden</h2><p class="muted">Every achievement helps your garden flourish.</p></div>
+      <div>
+        <h2>🌿 Your Knowledge Garden</h2>
+        <p class="muted">Every achievement helps your garden flourish.</p>
+      </div>
+
       <select id="gardenTheme" aria-label="Garden theme">
         <option value="day">Daylight</option>
         <option value="night">Moonlight</option>
       </select>
     </div>
-<div class="garden-scene" id="fullGarden" data-theme="day">
-  <div class="garden-sun"></div>
-  <div class="garden-cloud">☁️</div>
-  <div class="garden-ground"></div>
 
-  <div class="garden-tree-art" id="gardenTreeArt">
-    <div style="font-size:70px">🌱</div>
-  </div>
-</div>
-    <div class="section-heading" style="margin-top:24px">
-      <div><h2>Garden Collection</h2><p>Unlock new plants as you reach XP milestones.</p></div>
+    <div class="garden-scene" id="fullGarden" data-theme="day">
+      <div class="garden-sun"></div>
+      <div class="garden-cloud">☁️</div>
+      <div class="garden-ground"></div>
+
+      <div class="garden-tree-art" id="gardenTreeArt"></div>
     </div>
+
+    <div class="garden-stage-info">
+      <h3 id="gardenStageName">Seed</h3>
+      <p id="gardenStageDescription">
+        Every great journey begins with a tiny seed.
+      </p>
+
+      <div class="garden-xp-text">
+        <span id="gardenStageProgress">Growth Progress</span>
+        <span id="gardenStageXP">0 / 100 XP</span>
+      </div>
+
+      <div class="garden-stage-progress-track">
+        <div
+          class="garden-stage-progress-fill"
+          id="gardenStageProgressBar"
+        ></div>
+      </div>
+    </div>
+
+    <div class="section-heading" style="margin-top:24px">
+      <div>
+        <h2>Garden Collection</h2>
+        <p>Unlock new plants as you reach XP milestones.</p>
+      </div>
+    </div>
+
     <div class="badges-grid" id="plantCollection"></div>
+
   </div>
 </section>
 
@@ -1525,48 +1583,231 @@ const plants = [
   {level:15,icon:"🌲",name:"Evergreen"}
 ];
 const treeStages = [
-  { level: 1, name: "Seed", description: "Every great journey begins with a tiny seed." },
-  { level: 2, name: "Sprout", description: "Your first efforts are beginning to grow." },
-  { level: 3, name: "Seedling", description: "Your knowledge is taking root." },
-  { level: 4, name: "Sapling", description: "Keep learning and growing stronger." },
-  { level: 5, name: "Young Tree", description: "Your dedication is building a strong foundation." },
-  { level: 7, name: "Growing Tree", description: "Your progress is becoming something remarkable." },
-  { level: 10, name: "Mature Tree", description: "Your consistent effort has made you stronger." },
-  { level: 15, name: "Flourishing Tree", description: "Your knowledge garden is thriving!" }
+  {
+    level: 1,
+    name: "Seed",
+    description: "Every great journey begins with a tiny seed."
+  },
+  {
+    level: 2,
+    name: "Sprout",
+    description: "Your first efforts are beginning to grow."
+  },
+  {
+    level: 3,
+    name: "Seedling",
+    description: "Your knowledge is taking root."
+  },
+  {
+    level: 4,
+    name: "Sapling",
+    description: "Keep learning and growing stronger."
+  },
+  {
+    level: 5,
+    name: "Young Tree",
+    description: "Your dedication is building a strong foundation."
+  },
+  {
+    level: 7,
+    name: "Growing Tree",
+    description: "Your progress is becoming something remarkable."
+  },
+  {
+    level: 10,
+    name: "Mature Tree",
+    description: "Your consistent effort has made you stronger."
+  },
+  {
+    level: 15,
+    name: "Flourishing Tree",
+    description: "Your knowledge garden is thriving!"
+  }
 ];
-  function getTreeStage() {
+
+function getTreeStage() {
   const level = getLevel();
 
   return [...treeStages]
     .reverse()
     .find(stage => level >= stage.level) || treeStages[0];
+}
+
+function getTreeArtwork(stageIndex) {
+
+  if (stageIndex === 0) {
+    return `
+      <svg viewBox="0 0 260 230" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="130" cy="205" rx="38" ry="9" fill="#639b52"/>
+        <ellipse cx="130" cy="195" rx="13" ry="9" fill="#8b603d"/>
+        <path d="M130 188 Q120 177 130 168 Q140 177 130 188Z" fill="#a97845"/>
+      </svg>
+    `;
   }
+
+  if (stageIndex === 1) {
+    return `
+      <svg viewBox="0 0 260 230" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="130" cy="205" rx="38" ry="9" fill="#639b52"/>
+        <path d="M130 202 Q128 175 133 155" fill="none" stroke="#6d984d" stroke-width="7" stroke-linecap="round"/>
+        <path d="M132 176 Q105 177 100 157 Q123 150 132 176Z" fill="#69ad66"/>
+        <path d="M132 165 Q148 137 169 146 Q165 169 132 165Z" fill="#83c878"/>
+      </svg>
+    `;
+  }
+
+  const trunkHeight = [0, 0, 45, 65, 85, 105, 120, 130][stageIndex];
+  const canopySize = [0, 0, 28, 42, 55, 68, 77, 85][stageIndex];
+  const baseY = 205;
+  const topY = baseY - trunkHeight;
+
+  const leaves = [
+    [130, topY, canopySize, "#72b96d"],
+    [130 - canopySize * .55, topY + canopySize * .45, canopySize * .65, "#65a95f"],
+    [130 + canopySize * .55, topY + canopySize * .45, canopySize * .65, "#83c878"],
+    [130, topY + canopySize * .65, canopySize * .7, "#78bd70"]
+  ];
+
+  if (stageIndex >= 5) {
+    leaves.push(
+      [130 - canopySize * .9, topY + canopySize * .9, canopySize * .48, "#78bd70"],
+      [130 + canopySize * .9, topY + canopySize * .9, canopySize * .48, "#69ad66"]
+    );
+  }
+
+  if (stageIndex >= 6) {
+    leaves.push(
+      [130 - canopySize * .4, topY - canopySize * .25, canopySize * .5, "#91cc7e"],
+      [130 + canopySize * .4, topY - canopySize * .25, canopySize * .5, "#91cc7e"]
+    );
+  }
+
+  const canopy = leaves.map(leaf => `
+    <circle
+      cx="${leaf[0]}"
+      cy="${leaf[1]}"
+      r="${leaf[2]}"
+      fill="${leaf[3]}"
+    />
+  `).join("");
+
+  const flowers = stageIndex >= 7 ? `
+    <circle cx="92" cy="${topY + 28}" r="5" fill="#ffe5a1"/>
+    <circle cx="168" cy="${topY + 35}" r="5" fill="#ffe5a1"/>
+    <circle cx="130" cy="${topY - 20}" r="5" fill="#ffe5a1"/>
+    <circle cx="112" cy="${topY + 70}" r="4" fill="#f7c9d5"/>
+    <circle cx="151" cy="${topY + 65}" r="4" fill="#f7c9d5"/>
+  ` : "";
+
+  return `
+    <svg viewBox="0 0 260 230" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="130" cy="205" rx="75" ry="10" fill="#639b52"/>
+
+      <path
+        d="M130 205
+           Q125 170 127 ${topY + 35}
+           Q130 ${topY} 133 ${topY + 35}
+           Q137 170 130 205Z"
+        fill="#93613e"
+      />
+
+      <path
+        d="M130 ${topY + 65}
+           Q105 ${topY + 45} 102 ${topY + 25}"
+        fill="none"
+        stroke="#93613e"
+        stroke-width="7"
+        stroke-linecap="round"
+      />
+
+      <path
+        d="M132 ${topY + 58}
+           Q155 ${topY + 42} 160 ${topY + 20}"
+        fill="none"
+        stroke="#93613e"
+        stroke-width="7"
+        stroke-linecap="round"
+      />
+
+      ${canopy}
+      ${flowers}
+    </svg>
+  `;
+}
+
 function renderGarden() {
   const unlocked = plants.filter(p => getLevel() >= p.level);
-  const locked = plants.filter(p => getLevel() < p.level);
   const selected = game.gardenTheme;
 
-  document.querySelectorAll("#miniGarden").forEach(container => {
-  container.style.background = selected === "night"
-    ? "linear-gradient(180deg,#1d3148 0%,#344b30 65%,#42653c 65%,#304b2e 100%)"
-    : "";
-});
+  const stage = getTreeStage();
+  const stageIndex = treeStages.indexOf(stage);
+  const nextStage = treeStages[stageIndex + 1];
 
-document.getElementById("fullGarden").dataset.theme = selected;
+  document.querySelectorAll("#miniGarden").forEach(container => {
+    container.style.background = selected === "night"
+      ? "linear-gradient(180deg,#1d3148 0%,#344b30 65%,#42653c 65%,#304b2e 100%)"
+      : "";
+  });
+
+  const fullGarden = document.getElementById("fullGarden");
+  fullGarden.dataset.theme = selected;
+
+  document.getElementById("gardenTreeArt").innerHTML =
+    getTreeArtwork(stageIndex);
+
+  document.getElementById("gardenStageName").textContent =
+    stage.name;
+
+  document.getElementById("gardenStageDescription").textContent =
+    stage.description;
+
+  let progress = 100;
+  let currentXP = 0;
+  let requiredXP = 0;
+
+  if (nextStage) {
+    currentXP = Math.max(0, game.xp - ((stage.level - 1) * 100));
+    requiredXP = (nextStage.level - stage.level) * 100;
+
+    progress = Math.min(
+      100,
+      (currentXP / requiredXP) * 100
+    );
+
+    document.getElementById("gardenStageProgress").textContent =
+      "Next: " + nextStage.name;
+
+    document.getElementById("gardenStageXP").textContent =
+      currentXP + " / " + requiredXP + " XP";
+  } else {
+    document.getElementById("gardenStageProgress").textContent =
+      "Maximum Growth Reached";
+
+    document.getElementById("gardenStageXP").textContent =
+      "Fully Grown!";
+  }
+
+  document.getElementById("gardenStageProgressBar").style.width =
+    progress + "%";
 
   document.getElementById("gardenCaption").textContent =
     unlocked.length + " plants unlocked. Your garden grows with your level!";
 
-  document.getElementById("plantCollection").innerHTML = plants.map(p => {
-    const isUnlocked = getLevel() >= p.level;
-    return `<div class="badge-card ${isUnlocked ? "" : "locked"}">
-      <div class="badge-icon">${isUnlocked ? p.icon : "🔒"}</div>
-      <strong>${p.name}</strong>
-      <p>${isUnlocked ? "Unlocked!" : "Reach Level " + p.level}</p>
-    </div>`;
-  }).join("");
-}
+  document.getElementById("plantCollection").innerHTML =
+    plants.map(p => {
+      const isUnlocked = getLevel() >= p.level;
 
+      return `
+        <div class="badge-card ${isUnlocked ? "" : "locked"}">
+          <div class="badge-icon">
+            ${isUnlocked ? p.icon : "🔒"}
+          </div>
+          <strong>${p.name}</strong>
+          <p>${isUnlocked ? "Unlocked!" : "Reach Level " + p.level}</p>
+        </div>
+      `;
+    }).join("");
+}
 document.getElementById("gardenTheme").addEventListener("change",event => {
   game.gardenTheme = event.target.value;
   save();
