@@ -1156,7 +1156,18 @@ function selectDailyMood(mood) {
   document.getElementById("selectedMoodMessage").textContent =
     "You're feeling " + mood.toLowerCase() + " today. 🌱";
 }
+const todayMotivation = JSON.parse(
+  localStorage.getItem("studyQuestMotivationCurrent_" + today) || "null"
+);
 
+if (todayMotivation && todayMotivation.mood !== mood) {
+  document.getElementById("motivationQuote").textContent =
+    "Your next achievement starts with one small step.";
+
+  document.getElementById("motivationMessage").textContent =
+    "Your mood changed! Generate a new motivation for how you're feeling now.";
+}
+  
 // Connect mood buttons
 document.querySelectorAll("#moodSelector [data-mood]")
   .forEach(button => {
