@@ -1552,6 +1552,7 @@ window.STUDYQUEST_API_URL = "https://updated-study-quest.vercel.app/api/generate
 // STUDYQUEST AI GENERATOR LOADER
 // ===============================
 
+
 function showQuizLoader() {
   const oldLoader = document.getElementById("quizLoadingModal");
   if (oldLoader) oldLoader.remove();
@@ -1560,96 +1561,97 @@ function showQuizLoader() {
   loader.id = "quizLoadingModal";
 
   loader.style.cssText = `
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(0,0,0,.75);
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,.78);
+    color:var(--text);
   `;
 
   loader.innerHTML = `
-    <div style="
-      width:100%;
-      max-width:420px;
-      padding:30px 24px;
-      border-radius:22px;
-      background:var(--card,#fff);
-      color:var(--text,#222);
-      text-align:center;
-      box-shadow:0 15px 50px rgba(0,0,0,.25);
-    ">
+    <style>
+      #quizLoadingModal,
+      #quizLoadingModal * {
+        box-sizing:border-box;
+      }
 
-      <div class="sq-spinner"></div>
+      #quizLoadingModal .sq-loader-card {
+        width:100%;
+        max-width:420px;
+        padding:30px 24px;
+        border-radius:22px;
+        background:var(--panel);
+        color:var(--text);
+        border:1px solid var(--border);
+        text-align:center;
+        box-shadow:0 15px 50px rgba(0,0,0,.3);
+      }
 
-      <h2 style="margin:18px 0 8px">
-        Growing Your Knowledge!
-      </h2>
+      #quizLoadingModal .sq-loader-title {
+        color:var(--text);
+        margin:18px 0 8px;
+        font-size:22px;
+      }
 
-      <p id="quizLoadingStatus" style="opacity:.75">
-        Gemini is analyzing your lesson...
-      </p>
+      #quizLoadingModal .sq-loader-status {
+        color:var(--muted);
+        line-height:1.5;
+      }
 
-      <div style="
+      #quizLoadingModal .sq-progress-track {
         height:12px;
-        background:#dce8dc;
+        background:var(--panel2);
+        border:1px solid var(--border);
         border-radius:20px;
         overflow:hidden;
         margin:24px 0 12px;
-      ">
-        <div id="quizProgressBar" style="
-          height:100%;
-          width:5%;
-          background:#36a66b;
-          border-radius:20px;
-          transition:width .4s ease;
-        "></div>
-      </div>
+      }
 
-      <h2 id="quizProgressText" style="margin:8px 0">
-        5%
-      </h2>
+      #quizLoadingModal #quizProgressBar {
+        height:100%;
+        width:5%;
+        background:var(--green2);
+        border-radius:20px;
+        transition:width .4s ease;
+      }
 
-      <p style="font-size:13px;opacity:.7">
-        Estimated generation progress
-      </p>
+      #quizLoadingModal #quizProgressText {
+        color:var(--green);
+        margin:8px 0;
+      }
 
-      <p id="quizElapsedTime" style="
-        margin-top:18px;
-        font-weight:600;
-      ">
-        Time elapsed: 0 seconds
-      </p>
-
-      <p id="quizRetryCountdown" style="
-        color:#d18a27;
+      #quizLoadingModal .sq-loader-caption {
+        color:var(--muted);
         font-size:13px;
-        font-weight:600;
+      }
+
+      #quizLoadingModal #quizElapsedTime {
+        color:var(--text);
+        margin-top:18px;
+        font-weight:700;
+      }
+
+      #quizLoadingModal #quizRetryCountdown {
+        color:#c58a28;
+        font-size:13px;
+        font-weight:700;
         min-height:20px;
-      "></p>
+      }
 
-      <p style="font-size:12px;opacity:.65">
-        Please keep this window open while your quiz is being generated.
-      </p>
+      body.dark #quizLoadingModal #quizRetryCountdown {
+        color:#f2c66d;
+      }
 
-    </div>
-  `;
-
-  document.body.appendChild(loader);
-
-  if (!document.getElementById("quizLoaderStyles")) {
-    const style = document.createElement("style");
-    style.id = "quizLoaderStyles";
-
-    style.textContent = `
-      .sq-spinner {
+      #quizLoadingModal .sq-spinner {
         width:58px;
         height:58px;
         margin:auto;
-        border:6px solid #dce8dc;
-        border-top:6px solid #36a66b;
+        border:6px solid var(--panel2);
+        border-top:6px solid var(--green2);
         border-radius:50%;
         animation:sqSpin .8s linear infinite;
       }
@@ -1657,13 +1659,51 @@ function showQuizLoader() {
       @keyframes sqSpin {
         to { transform:rotate(360deg); }
       }
-    `;
 
-    document.head.appendChild(style);
-  }
+      @media (max-width:480px) {
+        #quizLoadingModal .sq-loader-card {
+          padding:25px 18px;
+        }
+      }
+    </style>
 
+    <div class="sq-loader-card">
+      <div class="sq-spinner"></div>
+
+      <h2 class="sq-loader-title">
+        Growing Your Knowledge!
+      </h2>
+
+      <p id="quizLoadingStatus" class="sq-loader-status">
+        Gemini is analyzing your lesson...
+      </p>
+
+      <div class="sq-progress-track">
+        <div id="quizProgressBar"></div>
+      </div>
+
+      <h2 id="quizProgressText">5%</h2>
+
+      <p class="sq-loader-caption">
+        Estimated generation progress
+      </p>
+
+      <p id="quizElapsedTime">
+        Time elapsed: 0 seconds
+      </p>
+
+      <p id="quizRetryCountdown"></p>
+
+      <p class="sq-loader-caption">
+        Please keep this window open while your quiz is being generated.
+      </p>
+    </div>
+  `;
+
+  document.body.appendChild(loader);
   return loader;
 }
+
 
 function updateQuizLoader(seconds, progress, status, countdown) {
   const bar = document.getElementById("quizProgressBar");
