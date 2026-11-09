@@ -829,7 +829,15 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
         <option value="night">Moonlight</option>
       </select>
     </div>
-    <div class="garden" id="fullGarden" style="min-height:290px"></div>
+<div class="garden-scene" id="fullGarden" data-theme="day">
+  <div class="garden-sun"></div>
+  <div class="garden-cloud">☁️</div>
+  <div class="garden-ground"></div>
+
+  <div class="garden-tree-art" id="gardenTreeArt">
+    <div style="font-size:70px">🌱</div>
+  </div>
+</div>
     <div class="section-heading" style="margin-top:24px">
       <div><h2>Garden Collection</h2><p>Unlock new plants as you reach XP milestones.</p></div>
     </div>
@@ -1522,16 +1530,13 @@ function renderGarden() {
   const locked = plants.filter(p => getLevel() < p.level);
   const selected = game.gardenTheme;
 
-  document.querySelectorAll("#miniGarden,#fullGarden").forEach(container => {
-    container.style.background = selected === "night"
-      ? "linear-gradient(180deg,#1d3148 0%,#34495b 65%,#4b6944 65%,#304b2e 100%)"
-      : "";
-    container.innerHTML = unlocked.map(p =>
-      `<div class="garden-plant"><div class="emoji">${p.icon}</div><div class="plant-name">${p.name}</div></div>`
-    ).join("") + locked.slice(0, Math.max(0, 4-unlocked.length)).map(p =>
-      `<div class="garden-plant garden-lock"><div class="emoji">🔒</div><div class="plant-name">Level ${p.level}</div></div>`
-    ).join("");
-  });
+  document.querySelectorAll("#miniGarden").forEach(container => {
+  container.style.background = selected === "night"
+    ? "linear-gradient(180deg,#1d3148 0%,#344b30 65%,#42653c 65%,#304b2e 100%)"
+    : "";
+});
+
+document.getElementById("fullGarden").dataset.theme = selected;
 
   document.getElementById("gardenCaption").textContent =
     unlocked.length + " plants unlocked. Your garden grows with your level!";
