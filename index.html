@@ -1070,7 +1070,96 @@ function bindTaskActions(container) {
     button.addEventListener("click", () => deleteTask(Number(button.dataset.delete)));
   });
 }
+  
+// ===============================
+// STUDYQUEST DAILY AI MOTIVATION
+// ===============================
 
+async function generateDailyMotivation() {
+  const quoteElement = document.getElementById("motivationQuote");
+  const messageElement = document.getElementById("motivationMessage");
+  const button = document.getElementById("newMotivationBtn");
+
+  const today = localDate();
+  const historyKey = "studyQuestMotivationHistory_" + today;
+  const currentKey = "studyQuestMotivationCurrent_" + today;
+
+  let history = JSON.parse(localStorage.getItem(historyKey) || "[]");
+
+  button.disabled = true;
+  button.textContent = "✨ Finding motivation...";
+
+  try {
+    const total = game.tasks.length;
+    const completed = game.tasks.filter(task => task.done).length;
+
+    const response = await fetch(
+      "https://updated-study-quest.vercel.app/api/generate-motivation",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskProgress: {
+            total,
+            completed,
+            remaining: total - completed
+          },
+          previousQuotes: history
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to generate motivation.");
+    }
+
+    const normalize = value =>
+      value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    if (history.some(q => normalize(q) === normalize(data.quote))) {
+      throw new Error("That quote has already appeared today. Please try again.");
+    }
+
+    history.push(data.quote);
+
+    localStorage.setItem(historyKey, JSON.stringify(history));
+    localStorage.setItem(currentKey, JSON.stringify(data));
+
+    quoteElement.textContent = data.quote;
+    messageElement.textContent = data.message || "Keep moving forward!";
+
+  } catch (error) {
+    console.error("Motivation error:", error);
+    messageElement.textContent = error.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = "✨ New Motivation";
+  }
+}
+
+function renderDailyMotivation() {
+  const today = localDate();
+  const historyKey = "studyQuestMotivationHistory_" + today;
+  const currentKey = "studyQuestMotivationCurrent_" + today;
+
+  const saved = localStorage.getItem(currentKey);
+
+  if (saved) {
+    const data = JSON.parse(saved);
+    document.getElementById("motivationQuote").textContent = data.quote;
+    document.getElementById("motivationMessage").textContent = data.message || "";
+  } else {
+    generateDailyMotivation();
+  }
+}
+
+document.getElementById("newMotivationBtn").addEventListener("click", function() {
+  generateDailyMotivation();
+});
+  
+renderDailyMotivation();
 function renderTasks() {
   const dashboard = document.getElementById("dashboardTasks");
   const all = document.getElementById("allTasks");
