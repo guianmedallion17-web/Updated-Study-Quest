@@ -580,6 +580,7 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
       <div><h2>📚 My Tasks</h2><p>Turn your assignments into achievable missions.</p></div>
     </div>
     
+
 <div id="motivationCard" style="
   background:var(--panel2);
   border:1px solid var(--border);
@@ -587,10 +588,56 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   padding:20px;
   margin-bottom:20px;
 ">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:15px">
     <span style="font-size:23px">🌱</span>
     <strong style="color:var(--green)">Daily Motivation</strong>
   </div>
+
+  <h3 style="margin:0 0 6px;color:var(--text)">
+    How are you feeling today?
+  </h3>
+
+  <p style="color:var(--muted);font-size:13px;margin:0 0 15px">
+    Your feelings matter. Choose how you're feeling today.
+  </p>
+
+  <div id="moodSelector" style="
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:7px;
+    margin-bottom:18px;
+  ">
+    <button type="button" class="btn btn-outline" data-mood="Very Low"
+      style="padding:10px 3px;font-size:12px">
+      😞<br>Very Low
+    </button>
+
+    <button type="button" class="btn btn-outline" data-mood="Low"
+      style="padding:10px 3px;font-size:12px">
+      😔<br>Low
+    </button>
+
+    <button type="button" class="btn btn-outline" data-mood="Okay"
+      style="padding:10px 3px;font-size:12px">
+      😐<br>Okay
+    </button>
+
+    <button type="button" class="btn btn-outline" data-mood="Good"
+      style="padding:10px 3px;font-size:12px">
+      😊<br>Good
+    </button>
+
+    <button type="button" class="btn btn-outline" data-mood="Very Good"
+      style="padding:10px 3px;font-size:12px">
+      😁<br>Very Good
+    </button>
+  </div>
+
+  <p id="selectedMoodMessage" style="
+    color:var(--muted);
+    font-size:13px;
+    margin:0 0 15px;
+  ">Select your mood to receive personalized motivation.</p>
 
   <p id="motivationQuote" style="
     color:var(--text);
