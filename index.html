@@ -464,7 +464,85 @@ body.dark .garden-plant .plant-name { color: #e3f3d9; }
   background: linear-gradient(90deg, #78bd70, #b1d982);
   transition: width .5s ease;
 }
-  
+  /* TREE GROWTH COLLECTION */
+
+.tree-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tree-stage-card {
+  position: relative;
+  min-width: 0;
+  padding: 12px 8px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel2);
+  text-align: center;
+  transition: .2s ease;
+}
+
+.tree-stage-card.current {
+  border: 2px solid var(--green);
+  background: var(--panel);
+  box-shadow: 0 4px 14px #78bd7022;
+}
+
+.tree-stage-card.locked {
+  opacity: .55;
+}
+
+.tree-stage-art {
+  height: 105px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-stage-art svg {
+  width: 100%;
+  height: 100%;
+  max-width: 125px;
+  overflow: visible;
+}
+
+.tree-stage-card.locked .tree-stage-art {
+  filter: grayscale(1);
+}
+
+.tree-stage-card h4 {
+  margin: 5px 0;
+  font-size: 12px;
+}
+
+.tree-stage-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.tree-stage-status {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 7px;
+  border-radius: 20px;
+  background: var(--border);
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.tree-stage-card.current .tree-stage-status {
+  background: var(--green);
+  color: white;
+}
+
+@media (max-width: 520px) {
+  .tree-stage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .garden-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
 .garden-toolbar h2 { margin:0; font-size:19px; }
 .garden-toolbar select { width:auto; max-width:130px; }
@@ -892,13 +970,13 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     </div>
 
     <div class="section-heading" style="margin-top:24px">
-      <div>
-        <h2>Garden Collection</h2>
-        <p>Unlock new plants as you reach XP milestones.</p>
-      </div>
-    </div>
+  <div>
+    <h2>🌳 Tree Growth Collection</h2>
+    <p>Discover all eight stages of your learning journey.</p>
+  </div>
+</div>
 
-    <div class="badges-grid" id="plantCollection"></div>
+<div class="tree-stage-grid" id="plantCollection"></div>
 
   </div>
 </section>
@@ -1791,22 +1869,32 @@ function renderGarden() {
     progress + "%";
 
   document.getElementById("gardenCaption").textContent =
-    unlocked.length + " plants unlocked. Your garden grows with your level!";
+  stage.name + " unlocked! Keep earning XP to grow your tree.";
 
-  document.getElementById("plantCollection").innerHTML =
-    plants.map(p => {
-      const isUnlocked = getLevel() >= p.level;
+document.getElementById("plantCollection").innerHTML =
+  treeStages.map((treeStage, index) => {
+    const isUnlocked = getLevel() >= treeStage.level;
+    const isCurrent = index === stageIndex;
 
-      return `
-        <div class="badge-card ${isUnlocked ? "" : "locked"}">
-          <div class="badge-icon">
-            ${isUnlocked ? p.icon : "🔒"}
-          </div>
-          <strong>${p.name}</strong>
-          <p>${isUnlocked ? "Unlocked!" : "Reach Level " + p.level}</p>
+    return `
+      <div class="tree-stage-card
+        ${isUnlocked ? "" : "locked"}
+        ${isCurrent ? "current" : ""}">
+
+        <div class="tree-stage-art">
+          ${getTreeArtwork(index)}
         </div>
-      `;
-    }).join("");
+
+        <h4>${treeStage.name}</h4>
+
+        <p>Level ${treeStage.level}</p>
+
+        <span class="tree-stage-status">
+          ${isCurrent ? "CURRENT STAGE" : isUnlocked ? "UNLOCKED" : "🔒 LOCKED"}
+        </span>
+      </div>
+    `;
+  }).join("");
 }
 document.getElementById("gardenTheme").addEventListener("change",event => {
   game.gardenTheme = event.target.value;
