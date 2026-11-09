@@ -1,0 +1,185 @@
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      error: "Method not allowed."
+    });
+  }
+
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "Gemini API key is not configured."
+      });
+    }
+
+    const {
+      materials = [],
+      previousQuestions = []
+    } = req.body || {};
+
+    const validMaterials = Array.isArray(materials)
+      ? materials
+          .filter(m =>
+            m &&
+            typeof m.title === "string" &&
+            typeof m.content === "string"
+          )
+          .slice(0, 20)
+      : [];
+
+    const lessonContent = validMaterials.map((m, i) => `
+FILE ${i + 1}: ${m.title}
+${m.content.slice(0, 12000)}
+`).join("\n\n");
+
+    const history = Array.isArray(previousQuestions)
+      ? previousQuestions
+          .filter(q => typeof q === "string")
+          .slice(-200)
+      : [];
+
+    const prompt = `
+You are StudyQuest's AI flashcard generator.
+
+Generate exactly 10 unique study flashcards.
+
+QUESTION MIX:
+${validMaterials.length > 0
+  ? "- Create 5 questions based on the uploaded study materials.\n- Create 5 general knowledge questions from different subjects."
+  : "- Create 10 general knowledge questions from different subjects."
+}
+
+UPLOADED STUDY MATERIALS:
+${lessonContent || "No study materials have been uploaded."}
+
+PREVIOUSLY USED QUESTIONS:
+${history.map(q => "- " + q).join("\n") || "None"}
+
+IMPORTANT RULES:
+1. Every question must be different.
+2. Never repeat or closely rephrase a previously used question.
+3. Randomize the subjects and topics.
+4. Use information from ALL provided files.
+5. General knowledge questions should cover varied topics such as science, history, geography, technology, culture, and everyday knowledge.
+6. Keep answers accurate, clear, and student-friendly.
+7. Each card must contain one question, one concise answer, and a short explanation.
+8. Do not create multiple-choice questions.
+9. Do not include duplicate questions within this batch.
+10. Return valid JSON only.
+
+Required format:
+{
+  "cards": [
+    {
+      "question": "Question here?",
+      "answer": "Short answer here.",
+      "explanation": "Brief explanation here."
+    }
+  ]
+}
+`;
+
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
+          generationConfig: {
+            temperature: 1,
+            responseMimeType: "application/json"
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini error:", data);
+
+      return res.status(response.status).json({
+        error: data.error?.message ||
+          "Gemini could not generate flashcards."
+      });
+    }
+
+    const output =
+      data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!output) {
+      throw new Error("Empty Gemini response.");
+    }
+
+    const parsed = JSON.parse(output);
+
+    if (
+      !Array.isArray(parsed.cards) ||
+      parsed.cards.length !== 10 ||
+      !parsed.cards.every(card =>
+        typeof card.question === "string" &&
+        card.question.trim() &&
+        typeof card.answer === "string" &&
+        card.answer.trim() &&
+        typeof card.explanation === "string"
+      )
+    ) {
+      throw new Error("Invalid flashcard format.");
+    }
+
+    const normalize = value =>
+      value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    const used = new Set(history.map(normalize));
+    const batch = new Set();
+
+    const uniqueCards = parsed.cards.filter(card => {
+      const key = normalize(card.question);
+
+      if (used.has(key) || batch.has(key)) return false;
+
+      batch.add(key);
+      return true;
+    });
+
+    if (uniqueCards.length < 10) {
+      return res.status(503).json({
+        error: "Some questions were repeated. Please generate a fresh set."
+      });
+    }
+
+    // Shuffle the cards before sending them.
+    for (let i = uniqueCards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [uniqueCards[i], uniqueCards[j]] =
+        [uniqueCards[j], uniqueCards[i]];
+    }
+
+    return res.status(200).json({
+      cards: uniqueCards
+    });
+
+  } catch (error) {
+    console.error("Quiz Arena error:", error);
+
+    return res.status(500).json({
+      error: "Unable to generate flashcards. Please try again."
+    });
+  }
+}
