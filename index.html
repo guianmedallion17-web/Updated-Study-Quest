@@ -1990,68 +1990,228 @@ function renderQuizQuestion() {
 }
 
 function answerQuiz(answer) {
-  if (quizLocked) return;
-  quizLocked = true;
-  const q = quiz[quizIndex];
-  const correct = answer === q.a;
+  
+// ===============================
+// QUIZ ARENA - AI FLASHCARDS
+// ===============================
 
-  if (correct) {
-    quizScore++;
-    game.quizCorrect++;
-    game.xp += 10;
-    showToast("Correct answer! +10 XP ⚡");
-  } else {
-    showToast("Keep learning! The explanation is below.");
+const ARENA_HISTORY_KEY = "studyQuestArenaSeenQuestions_v1";
+
+let arenaCards = [];
+let arenaIndex = 0;
+
+function getArenaHistory() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(ARENA_HISTORY_KEY) || "[]"
+    );
+
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
   }
-
-  game.quizAnswered.push({date:localDate(),correct});
-  if (game.quizAnswered.length > 300) game.quizAnswered = game.quizAnswered.slice(-300);
-
-  document.querySelectorAll("[data-answer]").forEach(button => {
-    const choice = Number(button.dataset.answer);
-    button.disabled = true;
-    if (choice === q.a) button.classList.add("correct");
-    if (choice === answer && !correct) button.classList.add("wrong");
-  });
-
-  document.getElementById("quizFeedback").textContent =
-    (correct ? "✓ Correct! " : "✗ Not quite. ") + q.e;
-  document.getElementById("quizScore").textContent = "Score: " + quizScore;
-  document.getElementById("quizNext").disabled = false;
-  save();
-  renderAll();
 }
 
-document.getElementById("quizNext").addEventListener("click", () => {
-  if (!quizLocked) return;
-  if (quizIndex < quiz.length-1) {
-    quizIndex++;
-    renderQuizQuestion();
-  } else {
-    finishQuiz();
-  }
-});
+function saveArenaQuestion(question) {
+  const history = getArenaHistory();
+  const normalize = value =>
+    value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-function finishQuiz() {
-  const runScore = quizScore;
-  game.quizBest = Math.max(game.quizBest,runScore);
-  save();
-  renderAll();
-  document.getElementById("quizBar").style.width = "100%";
-  document.getElementById("quizQuestion").hidden = true;
-  document.getElementById("quizOptions").hidden = true;
-  document.getElementById("quizCounter").hidden = true;
-  document.getElementById("quizScore").hidden = true;
-  document.getElementById("quizNext").hidden = true;
-  document.getElementById("quizEnd").hidden = false;
-  document.getElementById("quizResult").textContent =
-    "You scored " + runScore + " out of " + quiz.length +
-    ". Correct answers also earned XP. " +
-    (runScore >= 9 ? "Excellent work, Scholar!" : "Keep practicing to improve your score!");
+  const key = normalize(question);
+
+  if (!history.some(q => normalize(q) === key)) {
+    history.push(question);
+  }
+
+  localStorage.setItem(
+    ARENA_HISTORY_KEY,
+    JSON.stringify(history.slice(-300))
+  );
 }
 
-document.getElementById("quizAgain").addEventListener("click",startQuiz);
+function startQuiz() {
+  arenaCards = [];
+  arenaIndex = 0;
 
+  document.getElementById("arenaWelcome").hidden = false;
+  document.getElementById("arenaCardArea").hidden = true;
+  document.getElementById("arenaLoading").hidden = true;
+
+  document.getElementById("arenaStart").textContent =
+    "Generate Flashcards →";
+
+  document.getElementById("arenaCounter").textContent =
+    "Ready when you are!";
+
+  document.getElementById("arenaProgress").style.width = "0%";
+}
+
+async function generateArenaCards() {
+  const startButton = document.getElementById("arenaStart");
+  const welcome = document.getElementById("arenaWelcome");
+  const loading = document.getElementById("arenaLoading");
+  const cardArea = document.getElementById("arenaCardArea");
+
+  startButton.disabled = true;
+  welcome.hidden = true;
+  cardArea.hidden = true;
+  loading.hidden = false;
+
+  document.getElementById("arenaLoadingText").textContent =
+    "Gemini is creating fresh flashcards from your lessons and general knowledge...";
+
+  document.getElementById("arenaCounter").textContent =
+    "Generating a new set...";
+
+  try {
+    const materials = game.tasks
+      .filter(task =>
+        typeof task.lessonText === "string" &&
+        task.lessonText.trim().length > 0
+      )
+      .map(task => ({
+        title: task.title || "Uploaded Lesson",
+        content: task.lessonText
+      }));
+
+    const response = await fetch(
+      "https://updated-study-quest.vercel.app/api/generate-arena-cards",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          materials,
+          previousQuestions: getArenaHistory()
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Unable to generate flashcards."
+      );
+    }
+
+    if (!Array.isArray(data.cards) || data.cards.length === 0) {
+      throw new Error("Gemini did not return any flashcards.");
+    }
+
+    const history = getArenaHistory();
+    const normalize = value =>
+      value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    const used = new Set(history.map(normalize));
+
+    arenaCards = data.cards.filter(card =>
+      card &&
+      typeof card.question === "string" &&
+      typeof card.answer === "string" &&
+      typeof card.explanation === "string" &&
+      !used.has(normalize(card.question))
+    );
+
+    if (arenaCards.length === 0) {
+      throw new Error(
+        "All generated questions were already used. Please try again."
+      );
+    }
+
+    // Shuffle the flashcards.
+    for (let i = arenaCards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arenaCards[i], arenaCards[j]] =
+        [arenaCards[j], arenaCards[i]];
+    }
+
+    arenaIndex = 0;
+    loading.hidden = true;
+    cardArea.hidden = false;
+
+    renderArenaCard();
+
+  } catch (error) {
+    console.error("Quiz Arena error:", error);
+
+    loading.hidden = true;
+    welcome.hidden = false;
+
+    document.getElementById("arenaCounter").textContent =
+      error.message || "Something went wrong. Please try again.";
+
+    startButton.textContent = "Try Again →";
+
+  } finally {
+    startButton.disabled = false;
+  }
+}
+
+function renderArenaCard() {
+  const card = arenaCards[arenaIndex];
+
+  if (!card) return;
+
+  document.getElementById("arenaQuestion").textContent =
+    card.question;
+
+  document.getElementById("arenaAnswer").textContent =
+    card.answer;
+
+  document.getElementById("arenaExplanation").textContent =
+    card.explanation;
+
+  document.getElementById("arenaAnswerArea").hidden = true;
+
+  document.getElementById("arenaReveal").hidden = false;
+  document.getElementById("arenaNext").hidden = true;
+
+  document.getElementById("arenaCounter").textContent =
+    "Flashcard " + (arenaIndex + 1) +
+    " of " + arenaCards.length;
+
+  document.getElementById("arenaProgress").style.width =
+    ((arenaIndex + 1) / arenaCards.length * 100) + "%";
+
+  // Save the question as soon as it is displayed.
+  saveArenaQuestion(card.question);
+}
+
+function revealArenaAnswer() {
+  document.getElementById("arenaAnswerArea").hidden = false;
+  document.getElementById("arenaReveal").hidden = true;
+  document.getElementById("arenaNext").hidden = false;
+}
+
+function nextArenaCard() {
+  if (arenaIndex < arenaCards.length - 1) {
+    arenaIndex++;
+    renderArenaCard();
+    return;
+  }
+
+  // End of the current batch.
+  document.getElementById("arenaCardArea").hidden = true;
+  document.getElementById("arenaWelcome").hidden = false;
+
+  document.getElementById("arenaCounter").textContent =
+    "You've completed this set! Ready for more?";
+
+  document.getElementById("arenaStart").textContent =
+    "Generate More Cards →";
+}
+
+document.getElementById("arenaStart")
+  .addEventListener("click", generateArenaCards);
+
+document.getElementById("arenaReveal")
+  .addEventListener("click", revealArenaAnswer);
+
+document.getElementById("arenaNext")
+  .addEventListener("click", nextArenaCard);
+  
 // ===============================
 // FOCUS TIMER
 // ===============================
