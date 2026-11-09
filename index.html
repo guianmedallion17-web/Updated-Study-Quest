@@ -579,6 +579,39 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     <div class="section-heading">
       <div><h2>📚 My Tasks</h2><p>Turn your assignments into achievable missions.</p></div>
     </div>
+    
+<div id="motivationCard" style="
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:20px;
+">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <span style="font-size:23px">🌱</span>
+    <strong style="color:var(--green)">Daily Motivation</strong>
+  </div>
+
+  <p id="motivationQuote" style="
+    color:var(--text);
+    font-size:16px;
+    font-weight:600;
+    line-height:1.6;
+    margin:0 0 10px;
+  ">Your next achievement starts with one small step.</p>
+
+  <p id="motivationMessage" style="
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.6;
+    margin:0 0 15px;
+  ">Keep going. Every task brings you closer to your goals.</p>
+
+  <button type="button" id="newMotivationBtn" class="btn">
+    ✨ New Motivation
+  </button>
+</div>
+    
 <form id="taskForm" class="add-form">
   <input id="taskInput" placeholder="e.g. Review CC100 Chapter 4" maxlength="100" required>
   <input id="taskDate" type="date" aria-label="Task deadline">
