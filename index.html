@@ -1122,6 +1122,58 @@ function bindTaskActions(container) {
 // STUDYQUEST DAILY AI MOTIVATION
 // ===============================
 
+// ===============================
+// STUDYQUEST MOOD SELECTION
+// ===============================
+
+let selectedDailyMood = "";
+
+function selectDailyMood(mood) {
+  selectedDailyMood = mood;
+
+  const today = localDate();
+
+  localStorage.setItem(
+    "studyQuestMood_" + today,
+    mood
+  );
+
+  document.querySelectorAll("#moodSelector [data-mood]")
+    .forEach(button => {
+      const selected = button.dataset.mood === mood;
+
+      button.style.borderColor = selected
+        ? "var(--green)"
+        : "";
+
+      button.style.background = selected
+        ? "var(--panel2)"
+        : "";
+
+      button.setAttribute("aria-pressed", selected);
+    });
+
+  document.getElementById("selectedMoodMessage").textContent =
+    "You're feeling " + mood.toLowerCase() + " today. 🌱";
+}
+
+// Connect mood buttons
+document.querySelectorAll("#moodSelector [data-mood]")
+  .forEach(button => {
+    button.addEventListener("click", function() {
+      selectDailyMood(this.dataset.mood);
+    });
+  });
+
+// Restore today's selected mood
+const savedMood = localStorage.getItem(
+  "studyQuestMood_" + localDate()
+);
+
+if (savedMood) {
+  selectDailyMood(savedMood);
+}
+  
 async function generateDailyMotivation() {
   const quoteElement = document.getElementById("motivationQuote");
   const messageElement = document.getElementById("motivationMessage");
@@ -1146,13 +1198,14 @@ async function generateDailyMotivation() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          taskProgress: {
-            total,
-            completed,
-            remaining: total - completed
-          },
-          previousQuotes: history
-        })
+  mood: selectedDailyMood,
+  taskProgress: {
+    total,
+    completed,
+    remaining: total - completed
+  },
+  previousQuotes: history
+})
       }
     );
 
@@ -1186,21 +1239,44 @@ async function generateDailyMotivation() {
   }
 }
 
+
 function renderDailyMotivation() {
   const today = localDate();
-  const historyKey = "studyQuestMotivationHistory_" + today;
   const currentKey = "studyQuestMotivationCurrent_" + today;
+  const savedMood = localStorage.getItem("studyQuestMood_" + today);
+
+  if (savedMood) {
+    selectDailyMood(savedMood);
+  }
 
   const saved = localStorage.getItem(currentKey);
 
-  if (saved) {
+  if (saved && savedMood) {
     const data = JSON.parse(saved);
+
     document.getElementById("motivationQuote").textContent = data.quote;
     document.getElementById("motivationMessage").textContent = data.message || "";
   } else {
-    generateDailyMotivation();
+    document.getElementById("motivationQuote").textContent =
+      "Your next achievement starts with one small step.";
+
+    document.getElementById("motivationMessage").textContent =
+      "Select your mood to receive personalized motivation.";
   }
 }
+
+document.getElementById("newMotivationBtn").addEventListener("click", function() {
+  if (!selectedDailyMood) {
+    document.getElementById("selectedMoodMessage").textContent =
+      "Please select how you're feeling first. 🌱";
+    return;
+  }
+
+  generateDailyMotivation();
+});
+
+renderDailyMotivation();
+
 
 document.getElementById("newMotivationBtn").addEventListener("click", function() {
   generateDailyMotivation();
