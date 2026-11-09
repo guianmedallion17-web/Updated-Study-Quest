@@ -320,6 +320,122 @@ body.dark .garden { background: linear-gradient(180deg,#2c4531,#344b30 65%,#4265
 body.dark .garden-plant .plant-name { color: #e3f3d9; }
 .garden-lock { opacity: .55; filter: grayscale(1); }
 .garden-caption { font-size: 11px; color: var(--muted); margin-top: 12px; }
+  
+/* ===============================
+   STUDYQUEST 2D GARDEN DESIGN
+================================ */
+
+.garden-scene {
+  position: relative;
+  min-height: 310px;
+  overflow: hidden;
+  border-radius: 18px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 25px 18px 30px;
+  background: linear-gradient(
+    180deg,
+    #dff2ff 0%,
+    #eff8df 72%,
+    #a9d58b 72%,
+    #82bd70 100%
+  );
+}
+
+.garden-sun {
+  position: absolute;
+  width: 62px;
+  height: 62px;
+  top: 25px;
+  right: 35px;
+  border-radius: 50%;
+  background: #ffe69a;
+  box-shadow: 0 0 35px #ffe69a88;
+}
+
+.garden-cloud {
+  position: absolute;
+  top: 65px;
+  left: 12%;
+  font-size: 38px;
+  opacity: .8;
+}
+
+.garden-ground {
+  position: absolute;
+  bottom: -25px;
+  left: -5%;
+  width: 110%;
+  height: 85px;
+  border-radius: 50% 50% 0 0;
+  background: #78b969;
+}
+
+.garden-tree-art {
+  position: relative;
+  z-index: 2;
+  width: min(75%, 260px);
+  height: 230px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.garden-tree-art svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 5px 4px #355b3522);
+}
+
+.garden-scene[data-theme="night"] {
+  background: linear-gradient(
+    180deg,
+    #253b59 0%,
+    #53647b 72%,
+    #496b48 72%,
+    #304b35 100%
+  );
+}
+
+.garden-scene[data-theme="night"] .garden-sun {
+  background: #f5f0cb;
+  box-shadow: 0 0 35px #f5f0cb66;
+}
+
+.garden-scene[data-theme="night"] .garden-ground {
+  background: #355b3b;
+}
+
+.garden-stage-info {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--panel2);
+}
+
+.garden-stage-info h3 {
+  margin: 0 0 5px;
+  font-size: 17px;
+}
+
+.garden-stage-info p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.garden-xp-text {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+  
 .garden-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
 .garden-toolbar h2 { margin:0; font-size:19px; }
 .garden-toolbar select { width:auto; max-width:130px; }
