@@ -1547,54 +1547,299 @@ taskForm.addEventListener("submit", async event => {
 // Add your deployed backend URL here later.
 window.STUDYQUEST_API_URL = "https://updated-study-quest.vercel.app/api/generate-quiz";
 
+
+// ===============================
+// STUDYQUEST AI GENERATOR LOADER
+// ===============================
+
+function showQuizLoader() {
+  const oldLoader = document.getElementById("quizLoadingModal");
+  if (oldLoader) oldLoader.remove();
+
+  const loader = document.createElement("div");
+  loader.id = "quizLoadingModal";
+
+  loader.style.cssText = `
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,0,0,.75);
+  `;
+
+  loader.innerHTML = `
+    <div style="
+      width:100%;
+      max-width:420px;
+      padding:30px 24px;
+      border-radius:22px;
+      background:var(--card,#fff);
+      color:var(--text,#222);
+      text-align:center;
+      box-shadow:0 15px 50px rgba(0,0,0,.25);
+    ">
+
+      <div class="sq-spinner"></div>
+
+      <h2 style="margin:18px 0 8px">
+        Growing Your Knowledge!
+      </h2>
+
+      <p id="quizLoadingStatus" style="opacity:.75">
+        Gemini is analyzing your lesson...
+      </p>
+
+      <div style="
+        height:12px;
+        background:#dce8dc;
+        border-radius:20px;
+        overflow:hidden;
+        margin:24px 0 12px;
+      ">
+        <div id="quizProgressBar" style="
+          height:100%;
+          width:5%;
+          background:#36a66b;
+          border-radius:20px;
+          transition:width .4s ease;
+        "></div>
+      </div>
+
+      <h2 id="quizProgressText" style="margin:8px 0">
+        5%
+      </h2>
+
+      <p style="font-size:13px;opacity:.7">
+        Estimated generation progress
+      </p>
+
+      <p id="quizElapsedTime" style="
+        margin-top:18px;
+        font-weight:600;
+      ">
+        Time elapsed: 0 seconds
+      </p>
+
+      <p id="quizRetryCountdown" style="
+        color:#d18a27;
+        font-size:13px;
+        font-weight:600;
+        min-height:20px;
+      "></p>
+
+      <p style="font-size:12px;opacity:.65">
+        Please keep this window open while your quiz is being generated.
+      </p>
+
+    </div>
+  `;
+
+  document.body.appendChild(loader);
+
+  if (!document.getElementById("quizLoaderStyles")) {
+    const style = document.createElement("style");
+    style.id = "quizLoaderStyles";
+
+    style.textContent = `
+      .sq-spinner {
+        width:58px;
+        height:58px;
+        margin:auto;
+        border:6px solid #dce8dc;
+        border-top:6px solid #36a66b;
+        border-radius:50%;
+        animation:sqSpin .8s linear infinite;
+      }
+
+      @keyframes sqSpin {
+        to { transform:rotate(360deg); }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  return loader;
+}
+
+function updateQuizLoader(seconds, progress, status, countdown) {
+  const bar = document.getElementById("quizProgressBar");
+  const percent = document.getElementById("quizProgressText");
+  const timer = document.getElementById("quizElapsedTime");
+  const message = document.getElementById("quizLoadingStatus");
+  const retry = document.getElementById("quizRetryCountdown");
+
+  if (!bar) return;
+
+  bar.style.width = `${progress}%`;
+  percent.textContent = `${progress}%`;
+  timer.textContent = `Time elapsed: ${seconds} seconds`;
+
+  if (status) message.textContent = status;
+
+  retry.textContent = countdown
+    ? `Retrying in ${countdown} seconds...`
+    : "";
+}
+
+// ===============================
+// STUDYQUEST AI QUIZ GENERATOR
+// ===============================
+
+window.STUDYQUEST_API_URL =
+  "https://updated-study-quest.vercel.app/api/generate-quiz";
+
 async function generateStudyQuiz(taskId) {
-  const task = game.tasks.find(t => t.id === Number(taskId));
+  const task = game.tasks.find(
+    t => t.id === Number(taskId)
+  );
 
   if (!task || !task.lessonText) {
     showToast("Please upload a lesson file first.");
     return;
   }
 
-  if (!window.STUDYQUEST_API_URL ||
-      window.STUDYQUEST_API_URL.includes("PASTE_YOUR")) {
-    showToast("The AI backend still needs to be connected.");
+  if (!window.STUDYQUEST_API_URL) {
+    showToast("The AI backend is not connected.");
     return;
   }
 
+  const loader = showQuizLoader();
+
+  const startedAt = Date.now();
+  let elapsed = 0;
+  let completed = false;
+
+  const timer = setInterval(() => {
+    elapsed = Math.floor((Date.now() - startedAt) / 1000);
+
+    // Estimated progress, capped until the actual quiz arrives.
+    const estimatedProgress = Math.min(
+      90,
+      5 + Math.floor(elapsed * 2)
+    );
+
+    updateQuizLoader(
+      elapsed,
+      estimatedProgress,
+      "Gemini is analyzing your lesson..."
+    );
+  }, 500);
+
+  const sleep = ms =>
+    new Promise(resolve => setTimeout(resolve, ms));
+
   try {
-    showToast("Generating your 10-question quiz... 🧠");
+    let result = null;
 
-    const response = await fetch(window.STUDYQUEST_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        lessonText: task.lessonText,
-        taskTitle: task.title
-      })
-    });
+    const retryDelays = [2, 4, 8];
 
-    const result = await response.json();
+    for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
+      updateQuizLoader(
+        elapsed,
+        Math.min(90, 10 + attempt * 5),
+        attempt === 0
+          ? "Preparing your personalized quiz..."
+          : "Gemini is trying again..."
+      );
 
-    if (!response.ok) {
-      throw new Error(result.error || "Quiz generation failed.");
+      const response = await fetch(window.STUDYQUEST_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          lessonText: task.lessonText,
+          taskTitle: task.title
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        result = data;
+        break;
+      }
+
+      const temporaryError =
+        response.status === 408 ||
+        response.status === 429 ||
+        response.status >= 500;
+
+      if (!temporaryError || attempt === retryDelays.length) {
+        throw new Error(
+          data.error || "Gemini could not generate the quiz."
+        );
+      }
+
+      const waitSeconds = retryDelays[attempt];
+
+      updateQuizLoader(
+        elapsed,
+        Math.min(90, 15 + attempt * 5),
+        "Gemini is temporarily busy.",
+        waitSeconds
+      );
+
+      for (let remaining = waitSeconds; remaining > 0; remaining--) {
+        elapsed = Math.floor((Date.now() - startedAt) / 1000);
+
+        updateQuizLoader(
+          elapsed,
+          Math.min(90, 15 + attempt * 5),
+          "Waiting before the next attempt...",
+          remaining
+        );
+
+        await sleep(1000);
+      }
     }
 
-    if (!Array.isArray(result.questions) ||
-        result.questions.length !== 10) {
+    if (
+      !result ||
+      !Array.isArray(result.questions) ||
+      result.questions.length !== 10
+    ) {
       throw new Error("The AI did not return exactly 10 questions.");
     }
 
     task.quizQuestions = result.questions;
     save();
 
+    completed = true;
+
+    elapsed = Math.floor((Date.now() - startedAt) / 1000);
+
+    updateQuizLoader(
+      elapsed,
+      100,
+      "Your quiz is ready!"
+    );
+
+    await sleep(700);
+
+    loader.remove();
     displayStudyQuiz(task);
 
   } catch (error) {
-    console.error(error);
-    showToast(error.message || "Unable to generate quiz.");
-  }
-}
+    console.error("StudyQuest quiz error:", error);
 
+    showToast(
+      error.message || "Unable to generate quiz."
+    );
+
+  } finally {
+    clearInterval(timer);
+
+    if (!completed) {
+      loader.remove();
+    }
+  }
+  }
+  
 // Display the generated questions
 function displayStudyQuiz(task) {
   const oldModal = document.getElementById("studyQuizModal");
