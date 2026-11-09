@@ -1,3 +1,4 @@
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -23,9 +24,60 @@ export default async function handler(req, res) {
     }
 
     const {
+      mood = "Okay",
       taskProgress = {},
       previousQuotes = []
     } = req.body || {};
+
+    const validMoods = [
+      "Very Low",
+      "Low",
+      "Okay",
+      "Good",
+      "Very Good"
+    ];
+
+    if (!validMoods.includes(mood)) {
+      return res.status(400).json({
+        error: "Please select a valid mood."
+      });
+    }
+
+    const moodInstructions = {
+      "Very Low": `
+The student is feeling VERY LOW.
+Be gentle, compassionate, and reassuring.
+Acknowledge that difficult days are normal.
+Avoid pressure, guilt, or demanding productivity.
+Encourage one small and manageable step.
+Remind them that their worth is not based on achievements.
+`,
+      "Low": `
+The student is feeling LOW.
+Be understanding, warm, and encouraging.
+Acknowledge their feelings without dismissing them.
+Encourage them to take things one step at a time.
+Remind them that progress does not need to be perfect.
+`,
+      "Okay": `
+The student is feeling OKAY.
+Provide a positive and balanced message.
+Encourage consistency and steady progress.
+Remind them that small efforts still matter.
+`,
+      "Good": `
+The student is feeling GOOD.
+Be uplifting, motivating, and supportive.
+Encourage them to maintain their momentum.
+Celebrate their willingness to keep learning.
+`,
+      "Very Good": `
+The student is feeling VERY GOOD.
+Be enthusiastic, energetic, and inspiring.
+Encourage them to use their positive energy wisely.
+Celebrate their optimism and willingness to grow.
+`
+    };
 
     const history = Array.isArray(previousQuotes)
       ? previousQuotes
@@ -37,9 +89,16 @@ export default async function handler(req, res) {
 You are the motivational companion of StudyQuest,
 a gamified study website for students.
 
-Generate ONE original, meaningful motivational quote.
+Your goal is to provide a personalized motivational
+quote and message based on the student's current mood.
 
-Consider the student's progress:
+STUDENT'S CURRENT FEELING:
+${mood}
+
+MOOD-BASED INSTRUCTIONS:
+${moodInstructions[mood]}
+
+STUDENT'S STUDY PROGRESS:
 - Total tasks: ${taskProgress.total || 0}
 - Completed tasks: ${taskProgress.completed || 0}
 - Remaining tasks: ${taskProgress.remaining || 0}
@@ -47,18 +106,23 @@ Consider the student's progress:
 Previously displayed quotes today:
 ${history.map(q => "- " + q).join("\n") || "None"}
 
-IMPORTANT:
-1. Do not repeat or closely imitate any previous quote.
-2. Make the quote fresh, encouraging, and meaningful.
-3. Keep it short, preferably one sentence.
-4. Avoid generic or overly dramatic wording.
-5. Make it appropriate for students.
-6. Consider the student's progress when choosing the message.
-7. Return valid JSON only in this format:
+IMPORTANT RULES:
+1. Generate ONE original motivational quote.
+2. Do not repeat or closely imitate previous quotes.
+3. Make the quote relevant to the student's selected mood.
+4. Keep the quote short, preferably one sentence.
+5. Make the accompanying message personal and meaningful.
+6. Consider the student's study progress.
+7. Never shame students for unfinished tasks.
+8. Do not dismiss or minimize negative feelings.
+9. Avoid excessive pressure to study or be productive.
+10. Keep everything appropriate for students.
+
+Return valid JSON only in this format:
 
 {
   "quote": "Your original motivational quote here",
-  "message": "A short encouraging message here"
+  "message": "A personalized encouraging message here"
 }
 `;
 
@@ -135,7 +199,8 @@ IMPORTANT:
       message:
         typeof result.message === "string"
           ? result.message.trim()
-          : ""
+          : "",
+      mood
     });
 
   } catch (error) {
