@@ -1246,7 +1246,6 @@ function openView(view) {
   });
   document.getElementById("pageTitle").textContent =
     viewTitles[view] + (view === "home" ? ", " + game.name + "! 👋" : "");
-  if (view === "quiz" && quizIndex >= quiz.length) startQuiz();
   if (view === "settings") document.getElementById("playerName").value = game.name;
   renderAll();
   window.scrollTo({top:0,behavior:"smooth"});
@@ -2283,8 +2282,6 @@ document.getElementById("resetGame").addEventListener("click",() => {
   pauseTimer();
   game = newGame();
   save();
-  quizIndex = 0;
-  quizScore = 0;
   startQuiz();
   resetTimer();
   renderAll();
