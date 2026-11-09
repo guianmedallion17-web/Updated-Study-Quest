@@ -1534,6 +1534,13 @@ const treeStages = [
   { level: 10, name: "Mature Tree", description: "Your consistent effort has made you stronger." },
   { level: 15, name: "Flourishing Tree", description: "Your knowledge garden is thriving!" }
 ];
+  function getTreeStage() {
+  const level = getLevel();
+
+  return [...treeStages]
+    .reverse()
+    .find(stage => level >= stage.level) || treeStages[0];
+  }
 function renderGarden() {
   const unlocked = plants.filter(p => getLevel() >= p.level);
   const locked = plants.filter(p => getLevel() < p.level);
