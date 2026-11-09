@@ -1,6 +1,5 @@
 
 export default async function handler(req, res) {
-  // Allow requests from your StudyQuest website
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -10,7 +9,9 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed." });
+    return res.status(405).json({
+      error: "Method not allowed."
+    });
   }
 
   try {
@@ -34,13 +35,13 @@ Create exactly 10 multiple-choice questions based ONLY on the lesson below.
 Task title: ${taskTitle || "Study Lesson"}
 
 Requirements:
-- Each question must have exactly 4 options.
+- Exactly 10 questions.
+- Exactly 4 options per question.
 - Only one correct answer per question.
-- Make questions clear and student-friendly.
 - Include a short explanation for each answer.
 - Return valid JSON only.
 
-Required JSON format:
+Required format:
 {
   "questions": [
     {
@@ -57,7 +58,7 @@ ${lessonText.slice(0, 30000)}
 `;
 
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
       {
         method: "POST",
         headers: {
@@ -78,13 +79,16 @@ ${lessonText.slice(0, 30000)}
     const data = await response.json();
 
     if (!response.ok) {
-      console.error(data);
-      return res.status(502).json({
-        error: "Gemini could not generate the quiz."
+      console.error("Gemini API error:", data);
+
+      return res.status(response.status).json({
+        error: data.error?.message ||
+          "Gemini could not generate the quiz."
       });
     }
 
-    const output = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const output =
+      data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!output) {
       throw new Error("Empty Gemini response.");
@@ -92,23 +96,27 @@ ${lessonText.slice(0, 30000)}
 
     const parsed = JSON.parse(output);
 
-    if (!Array.isArray(parsed.questions) ||
-        parsed.questions.length !== 10 ||
-        !parsed.questions.every(q =>
-          typeof q.question === "string" &&
-          Array.isArray(q.options) &&
-          q.options.length === 4 &&
-          Number.isInteger(q.answerIndex) &&
-          q.answerIndex >= 0 &&
-          q.answerIndex <= 3
-        )) {
+    if (
+      !Array.isArray(parsed.questions) ||
+      parsed.questions.length !== 10 ||
+      !parsed.questions.every(q =>
+        typeof q.question === "string" &&
+        Array.isArray(q.options) &&
+        q.options.length === 4 &&
+        Number.isInteger(q.answerIndex) &&
+        q.answerIndex >= 0 &&
+        q.answerIndex <= 3 &&
+        typeof q.explanation === "string"
+      )
+    ) {
       throw new Error("Invalid quiz format.");
     }
 
     return res.status(200).json(parsed);
 
   } catch (error) {
-    console.error(error);
+    console.error("Quiz generation error:", error);
+
     return res.status(500).json({
       error: "Unable to generate the quiz. Please try again."
     });
