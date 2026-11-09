@@ -1928,68 +1928,6 @@ document.getElementById("gardenTheme").addEventListener("change",event => {
   save();
   renderGarden();
 });
-
-// ===============================
-// QUIZ ARENA
-// ===============================
-const quiz = [
-  {q:"Which component is often called the brain of a computer?",o:["RAM","CPU","SSD","Monitor"],a:1,e:"The CPU executes instructions and processes data."},
-  {q:"Which HTML tag creates a hyperlink?",o:["<link>","<a>","<href>","<p>"],a:1,e:"The anchor tag <a> creates a clickable hyperlink."},
-  {q:"Which CSS property changes text color?",o:["font-style","background","color","text-size"],a:2,e:"The color property sets the foreground text color."},
-  {q:"Which JavaScript keyword declares a block-scoped variable that can be reassigned?",o:["const","let","static","define"],a:1,e:"let declares a block-scoped variable that can be reassigned."},
-  {q:"What does RAM primarily provide?",o:["Temporary working memory","Permanent file storage","Internet access","Printed output"],a:0,e:"RAM holds data and instructions currently in use."},
-  {q:"Which device forwards data between different networks?",o:["Keyboard","Router","Printer","Microphone"],a:1,e:"Routers forward packets between networks."},
-  {q:"What does CSS stand for?",o:["Computer Styling System","Cascading Style Sheets","Creative System Software","Colorful Style Syntax"],a:1,e:"CSS stands for Cascading Style Sheets."},
-  {q:"Which operator checks strict equality in JavaScript?",o:["=","==","===","!="],a:2,e:"=== checks equality without converting the operand types."},
-  {q:"Which is an example of an input device?",o:["Monitor","Speaker","Keyboard","Projector"],a:2,e:"A keyboard sends user input to a computer."},
-  {q:"What is the purpose of a loop in programming?",o:["Repeat instructions","Delete all variables","Connect a monitor","Format a hard drive"],a:0,e:"Loops repeat instructions while a condition or iteration rule allows."},
-  {q:"Which unit is commonly used to measure network speed?",o:["Kilograms","Bits per second","Degrees Celsius","Pixels only"],a:1,e:"Network data rates are commonly measured in bits per second."},
-  {q:"What does HTML mainly define?",o:["Web page structure","Network encryption","CPU speed","Database hardware"],a:0,e:"HTML defines the structure and content of a web page."}
-];
-
-let quizIndex = 0;
-let quizScore = 0;
-let quizLocked = false;
-let quizRunId = 0;
-
-function startQuiz() {
-  quizIndex = 0;
-  quizScore = 0;
-  quizLocked = false;
-  quizRunId++;
-  document.getElementById("quizEnd").hidden = true;
-  document.getElementById("quizQuestion").hidden = false;
-  document.getElementById("quizOptions").hidden = false;
-  document.getElementById("quizCounter").hidden = false;
-  document.getElementById("quizScore").hidden = false;
-  document.getElementById("quizNext").hidden = false;
-  renderQuizQuestion();
-}
-
-function renderQuizQuestion() {
-  quizLocked = false;
-  const q = quiz[quizIndex];
-  document.getElementById("quizCounter").textContent =
-    "Question " + (quizIndex+1) + " of " + quiz.length;
-  document.getElementById("quizBar").style.width =
-    (quizIndex / quiz.length * 100) + "%";
-  document.getElementById("quizQuestion").textContent = q.q;
-  document.getElementById("quizFeedback").textContent = "";
-  document.getElementById("quizScore").textContent = "Score: " + quizScore;
-  document.getElementById("quizNext").disabled = true;
-  document.getElementById("quizNext").textContent =
-    quizIndex === quiz.length-1 ? "See results →" : "Next question →";
-
-  document.getElementById("quizOptions").innerHTML = q.o.map((option,i) =>
-    `<button class="quiz-option" data-answer="${i}">${escapeHTML(option)}</button>`
-  ).join("");
-
-  document.querySelectorAll("[data-answer]").forEach(button => {
-    button.addEventListener("click", () => answerQuiz(Number(button.dataset.answer)));
-  });
-}
-
-function answerQuiz(answer) {
   
 // ===============================
 // QUIZ ARENA - AI FLASHCARDS
