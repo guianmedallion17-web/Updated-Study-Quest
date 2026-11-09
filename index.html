@@ -981,29 +981,56 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   </div>
 </section>
 
-<!-- QUIZ -->
+
+<!-- QUIZ ARENA -->
 <section class="view" id="quiz">
   <div class="card">
     <div class="eyebrow">KNOWLEDGE IS POWER</div>
     <h2 style="margin-bottom:5px">✎ Quiz Arena</h2>
-    <p class="muted">Test your computing knowledge. Earn 10 XP for every correct answer.</p>
-    <div class="progress-track"><div class="progress-fill" id="quizBar"></div></div>
-    <div class="muted" id="quizCounter">Question 1</div>
-    <div class="quiz-question" id="quizQuestion"></div>
-    <div class="quiz-options" id="quizOptions"></div>
-    <div class="quiz-feedback" id="quizFeedback" aria-live="polite"></div>
-    <div class="quiz-footer">
-      <span class="muted" id="quizScore">Score: 0</span>
-      <button class="btn" id="quizNext" disabled>Next question →</button>
+    <p class="muted">
+      Explore random questions from general knowledge and your uploaded study materials.
+    </p>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="arenaProgress"></div>
     </div>
-    <div id="quizEnd" hidden style="text-align:center;padding:20px">
-      <div style="font-size:45px">🏆</div>
-      <h2>Quiz completed!</h2>
-      <p id="quizResult"></p>
-      <button class="btn" id="quizAgain">Play Again</button>
+
+    <div class="muted" id="arenaCounter">Preparing your flashcards...</div>
+
+    <div id="arenaWelcome" style="text-align:center;padding:25px 10px">
+      <div style="font-size:48px">🧠</div>
+      <h3>Ready to challenge your knowledge?</h3>
+      <p class="muted">Every card brings a new opportunity to learn.</p>
+      <button class="btn" id="arenaStart">Generate Flashcards →</button>
+    </div>
+
+    <div id="arenaCardArea" hidden>
+      <div id="arenaFlashcard"
+        style="background:var(--panel2);border:1px solid var(--border);border-radius:18px;padding:30px 20px;text-align:center;min-height:220px;display:flex;flex-direction:column;justify-content:center;gap:16px">
+        <div class="eyebrow">YOUR QUESTION</div>
+        <h3 id="arenaQuestion" style="line-height:1.5"></h3>
+
+        <div id="arenaAnswerArea" hidden>
+          <div class="divider"></div>
+          <div class="eyebrow">ANSWER</div>
+          <h3 id="arenaAnswer" style="color:var(--green)"></h3>
+          <p class="muted" id="arenaExplanation"></p>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap">
+        <button class="btn secondary" id="arenaReveal">Reveal Answer</button>
+        <button class="btn" id="arenaNext" hidden>Next Card →</button>
+      </div>
+    </div>
+
+    <div id="arenaLoading" hidden style="text-align:center;padding:25px">
+      <div style="font-size:35px">🌱</div>
+      <p id="arenaLoadingText">Gemini is preparing your flashcards...</p>
     </div>
   </div>
 </section>
+  
 
 <!-- FOCUS -->
 <section class="view" id="focus">
