@@ -1524,7 +1524,16 @@ const plants = [
   {level:10,icon:"🌸",name:"Cherry Blossom"},
   {level:15,icon:"🌲",name:"Evergreen"}
 ];
-
+const treeStages = [
+  { level: 1, name: "Seed", description: "Every great journey begins with a tiny seed." },
+  { level: 2, name: "Sprout", description: "Your first efforts are beginning to grow." },
+  { level: 3, name: "Seedling", description: "Your knowledge is taking root." },
+  { level: 4, name: "Sapling", description: "Keep learning and growing stronger." },
+  { level: 5, name: "Young Tree", description: "Your dedication is building a strong foundation." },
+  { level: 7, name: "Growing Tree", description: "Your progress is becoming something remarkable." },
+  { level: 10, name: "Mature Tree", description: "Your consistent effort has made you stronger." },
+  { level: 15, name: "Flourishing Tree", description: "Your knowledge garden is thriving!" }
+];
 function renderGarden() {
   const unlocked = plants.filter(p => getLevel() >= p.level);
   const locked = plants.filter(p => getLevel() < p.level);
