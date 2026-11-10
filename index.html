@@ -1114,6 +1114,9 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   </div>
 
 <div class="card" style="margin-top:16px">
+ <div id="impactTreeArt" style="max-width:280px;margin:18px auto;padding:12px;background:linear-gradient(180deg,#e5f3df 0%,#c5e3b7 100%);border-radius:20px;text-align:center;overflow:hidden">
+</div>
+  
   <h2>🌱 Your Tree Journey</h2>
   <p class="muted">Track how far you've grown in your Knowledge Garden.</p>
 
@@ -3090,6 +3093,10 @@ function renderStats() {
 function renderGreenImpact() {
   const level = getLevel();
   const stage = getTreeStage();
+  const stageIndex = treeStages.indexOf(stage);
+
+document.getElementById("impactTreeArt").innerHTML =
+  getTreeArtwork(stageIndex);
   const completed = level >= 15 ? 1 : 0;
   const progress = Math.min((level / 15) * 100, 100);
 
