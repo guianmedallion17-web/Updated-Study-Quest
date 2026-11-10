@@ -3068,8 +3068,13 @@ function renderStats() {
   document.getElementById("dateGreeting").textContent =
     new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"}).toUpperCase();
 }
+function renderGreenImpact() {
+  const completed = getLevel() >= 15 ? 1 : 0;
 
+  document.getElementById("impactJourneyCount").textContent = completed;
+}
 function renderAll() {
+  renderGreenImpact();
   refreshDailyQuests();
   renderStats();
   renderTasks();
