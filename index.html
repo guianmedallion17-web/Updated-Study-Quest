@@ -682,6 +682,7 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
       <button class="nav-btn" data-view="quests"><span class="nav-icon">⚔</span> Daily Quests</button>
       <button class="nav-btn" data-view="garden"><span class="nav-icon">♧</span> My Garden</button>
       <button class="nav-btn" data-view="quiz"><span class="nav-icon">✎</span> Quiz Arena</button>
+      <button class="nav-btn" data-view="greenImpact"><span class="nav-icon">🌍</span> Our Green Impact</button>
       <button class="nav-btn" data-view="focus"><span class="nav-icon">◷</span> Focus Room</button>
       <button class="nav-btn" data-view="achievements"><span class="nav-icon">♜</span> Achievements</button>
       <button class="nav-btn" data-view="settings"><span class="nav-icon">⚙</span> Settings</button>
@@ -1071,6 +1072,83 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   </div>
 </section>
 
+<!-- OUR GREEN IMPACT -->
+<section class="view" id="greenImpact">
+  <div class="card">
+    <div class="eyebrow">LEARNING THAT GIVES BACK</div>
+    <h2>🌍 Our Green Impact</h2>
+    <p class="muted">
+      Every learning journey can help create a greener future.
+      Grow your knowledge, complete your tree journey, and help
+      make a difference in the real world.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>🌱 Our Mission</h2>
+    <p class="muted">
+      StudyQuest connects personal learning progress with
+      environmental responsibility. When a student completes
+      the entire Knowledge Garden tree journey at Level 15,
+      that achievement becomes eligible for our tree-planting
+      commitment.
+    </p>
+    <p class="muted">
+      Our goal is to turn digital growth into real-world
+      environmental action.
+    </p>
+  </div>
+
+  <div class="stats" style="margin-top:16px">
+    <div class="card stat">
+      <div class="stat-label">YOUR COMPLETED TREE JOURNEY</div>
+      <div class="stat-value" id="impactJourneyCount">0</div>
+      <p class="muted">Complete your tree journey at Level 15.</p>
+    </div>
+
+    <div class="card stat">
+      <div class="stat-label">VERIFIED TREES PLANTED</div>
+      <div class="stat-value" id="impactTreesPlanted">0</div>
+      <p class="muted">Trees will be counted after actual planting.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>🌳 Planting Progress</h2>
+    <p class="muted">
+      Tree-planting arrangements are currently being planned.
+      Completed virtual tree journeys will be tracked separately
+      from actual trees planted.
+    </p>
+    <div class="profile-row">
+      <div class="profile-info">
+        <strong>Planting status</strong>
+        <p class="muted">Planning in progress</p>
+      </div>
+      <span class="badge">In preparation</span>
+    </div>
+    <div class="profile-row">
+      <div class="profile-info">
+        <strong>Planting location / partner</strong>
+        <p class="muted">To be announced</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>📸 Our Activities</h2>
+    <p class="muted">
+      Photos, dates, locations, and updates from our future
+      tree-planting activities will be posted here.
+    </p>
+    <div style="text-align:center;padding:25px 10px">
+      <div style="font-size:38px">🌿</div>
+      <strong>Our first planting activity is coming soon!</strong>
+      <p class="muted">Stay tuned for updates.</p>
+    </div>
+  </div>
+</section>
+  
 <!-- SETTINGS -->
 <section class="view" id="settings">
   <div class="card">
@@ -1226,6 +1304,7 @@ const viewTitles = {
   tasks:"My Missions",
   quests:"Daily Quest Board",
   garden:"Knowledge Garden",
+  greenImpact:"Our Green Impact",
   quiz:"Quiz Arena",
   focus:"Focus Room",
   achievements:"Achievement Hall",
