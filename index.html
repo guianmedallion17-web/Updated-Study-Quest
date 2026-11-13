@@ -2036,6 +2036,52 @@ const ARENA_HISTORY_KEY = "studyQuestArenaSeenQuestions_v1";
 let arenaCards = [];
 let arenaIndex = 0;
 
+  
+const ARENA_COOLDOWN_KEY = "studyQuestArenaCooldownUntil_v1";
+const ARENA_COOLDOWN_MS = 15000;
+
+let arenaGenerating = false;
+let arenaCooldownTimer = null;
+let arenaButtonLabel = "Generate Flashcards →";
+
+function updateArenaCooldown() {
+  const button = document.getElementById("arenaStart");
+  if (!button) return;
+
+  const cooldownUntil = Number(
+    localStorage.getItem(ARENA_COOLDOWN_KEY) || 0
+  );
+
+  const remaining = Math.ceil(
+    (cooldownUntil - Date.now()) / 1000
+  );
+
+  if (remaining > 0) {
+    button.disabled = true;
+    button.textContent = `Please wait ${remaining}s`;
+
+    if (!arenaCooldownTimer) {
+      arenaCooldownTimer = setInterval(
+        updateArenaCooldown,
+        1000
+      );
+    }
+
+    return;
+  }
+
+  if (arenaCooldownTimer) {
+    clearInterval(arenaCooldownTimer);
+    arenaCooldownTimer = null;
+  }
+
+  button.disabled = arenaGenerating;
+
+  if (!arenaGenerating) {
+    button.textContent = arenaButtonLabel;
+  }
+}
+  
 function getArenaHistory() {
   try {
     const saved = JSON.parse(
@@ -2082,12 +2128,29 @@ function startQuiz() {
 }
 
 async function generateArenaCards() {
+    if (arenaGenerating) return;
+
+  const cooldownUntil = Number(
+    localStorage.getItem(ARENA_COOLDOWN_KEY) || 0
+  );
+
+  if (Date.now() < cooldownUntil) {
+    updateArenaCooldown();
+    return;
+  }
+
+  arenaGenerating = true;
+  localStorage.setItem(
+    ARENA_COOLDOWN_KEY,
+    Date.now() + ARENA_COOLDOWN_MS
+  );
+  updateArenaCooldown();
   const startButton = document.getElementById("arenaStart");
   const welcome = document.getElementById("arenaWelcome");
   const loading = document.getElementById("arenaLoading");
   const cardArea = document.getElementById("arenaCardArea");
 
-  startButton.disabled = true;
+  
   welcome.hidden = true;
   cardArea.hidden = true;
   loading.hidden = false;
@@ -2177,7 +2240,8 @@ async function generateArenaCards() {
     startButton.textContent = "Try Again →";
 
   } finally {
-    startButton.disabled = false;
+    arenaGenerating = false;
+    updateArenaCooldown();
   }
 }
 
