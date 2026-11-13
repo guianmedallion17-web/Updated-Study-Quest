@@ -67,8 +67,16 @@ QUESTION REQUIREMENTS:
 - Use only the sources allowed by the selected source mode.
 
 UPLOADED STUDY MATERIALS:
-${lessonContent || "No study materials have been uploaded."}
+${sourceMode === "general" || sourceMode === "custom"
+  ? "Do not use uploaded study materials."
+  : lessonContent || "No study materials have been uploaded."
+}
 
+CUSTOM TOPIC:
+${sourceMode === "custom" || sourceMode === "all"
+  ? topic || "No custom topic provided."
+  : "Not applicable."
+}
 PREVIOUSLY USED QUESTIONS:
 ${history.map(q => "- " + q).join("\n") || "None"}
 
