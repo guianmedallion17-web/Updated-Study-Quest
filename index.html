@@ -917,6 +917,49 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   box-shadow: 0 10px 30px #244b3b22;
   color: #20362a;
 }
+  
+/* FOCUS ROOM - IMMERSIVE LAYOUT */
+
+.focus-stage {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: min(780px, calc(100vh - 150px));
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.focus-panel {
+  width: clamp(280px, 28vw, 360px);
+  max-width: 100%;
+  max-height: calc(100vh - 190px);
+  margin: 0;
+  padding: 14px;
+  overflow-y: auto;
+    flex-shrink: 0;
+  position: relative;
+  box-sizing: border-box;
+  resize: both;
+  min-width: 260px;
+  max-width: 520px;
+  min-height: 280px;
+  max-height: calc(100vh - 190px);
+}
+
+
+@media (max-width: 700px) {
+  .focus-stage {
+    min-height: calc(100vh - 150px);
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .focus-panel {
+    width: min(100%, 360px);
+    max-height: calc(100vh - 180px);
+  }
+}
+  
 
   /* FOCUS ROOM ENVIRONMENT SELECTOR */
 
@@ -1011,6 +1054,39 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   flex: 1;
   accent-color: #397653;
 }
+  
+/* FOCUS PANEL SIZE CONTROL */
+
+.panel-size-control {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #ffffffbb;
+  color: #315441;
+  font-size: 12px;
+}
+
+.panel-size-control label {
+  font-weight: 700;
+  width: 100%;
+}
+
+.panel-size-control input {
+  flex: 1;
+  min-width: 100px;
+  accent-color: #397653;
+}
+
+.panel-size-control span {
+  font-weight: 700;
+  min-width: 45px;
+  text-align: right;
+}
+  
 </style>
 <!-- PDF Reader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1531,6 +1607,18 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
       <h3>💡 Focus tip</h3>
       <p class="muted">Keep only the materials you need nearby. Try to finish one small goal before switching to another.</p>
       </div>
+    <div class="panel-size-control">
+  <label for="focusPanelSize">↔ Timer Panel Size</label>
+  <input
+    type="range"
+    id="focusPanelSize"
+    min="280"
+    max="520"
+    value="360"
+    step="10"
+  >
+  <span id="focusPanelSizeValue">360px</span>
+    </div>
   </div>
   </div>
 </section>
@@ -3315,6 +3403,84 @@ environmentButtons.forEach(button => {
   });
 });
 
+// FOCUS ROOM PANEL RESIZING
+
+const focusPanel = document.querySelector(".focus-panel");
+const focusPanelSize = document.getElementById("focusPanelSize");
+const focusPanelSizeValue = document.getElementById("focusPanelSizeValue");
+const focusStageArea = document.querySelector(".focus-stage");
+
+// Create a draggable resize handle
+const resizeHandle = document.createElement("div");
+
+resizeHandle.style.cssText = `
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  width: 22px;
+  height: 22px;
+  cursor: nwse-resize;
+  touch-action: none;
+  border-right: 3px solid #397653;
+  border-bottom: 3px solid #397653;
+  border-radius: 2px;
+`;
+
+resizeHandle.title = "Drag to resize panel";
+focusPanel.appendChild(resizeHandle);
+
+function updateFocusPanelSize(size) {
+  const availableWidth = focusStageArea.clientWidth - 24;
+  const maxSize = Math.min(520, availableWidth);
+  const minSize = Math.min(280, maxSize);
+
+  const newSize = Math.max(
+    minSize,
+    Math.min(maxSize, Number(size))
+  );
+
+  focusPanel.style.width = newSize + "px";
+  focusPanelSize.value = newSize;
+  focusPanelSizeValue.textContent = Math.round(newSize) + "px";
+}
+
+// Slider resizing
+focusPanelSize.addEventListener("input", () => {
+  updateFocusPanelSize(focusPanelSize.value);
+});
+
+// Drag-to-resize
+let resizingFocusPanel = false;
+
+resizeHandle.addEventListener("pointerdown", event => {
+  event.preventDefault();
+  resizingFocusPanel = true;
+  resizeHandle.setPointerCapture(event.pointerId);
+});
+
+resizeHandle.addEventListener("pointermove", event => {
+  if (!resizingFocusPanel) return;
+
+  const panelLeft = focusPanel.getBoundingClientRect().left;
+  const newWidth = event.clientX - panelLeft;
+
+  updateFocusPanelSize(newWidth);
+});
+
+resizeHandle.addEventListener("pointerup", () => {
+  resizingFocusPanel = false;
+});
+
+resizeHandle.addEventListener("pointercancel", () => {
+  resizingFocusPanel = false;
+});
+
+// Keep the panel within the available scenery area
+window.addEventListener("resize", () => {
+  updateFocusPanelSize(focusPanel.offsetWidth);
+});
+
+updateFocusPanelSize(360);
 
 // ===============================
 // FOCUS ROOM AMBIENT SOUND ENGINE
