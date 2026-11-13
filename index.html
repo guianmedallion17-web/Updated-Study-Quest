@@ -2127,6 +2127,53 @@ function startQuiz() {
   document.getElementById("arenaProgress").style.width = "0%";
 }
 
+async function fetchArenaWithRetry(url, options, maxRetries = 2) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const controller = new AbortController();
+
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 25000);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (
+        response.ok ||
+        (response.status < 500 && response.status !== 429)
+      ) {
+        return response;
+      }
+
+      if (attempt === maxRetries) {
+        return response;
+      }
+
+    } catch (error) {
+      clearTimeout(timeout);
+
+      if (attempt === maxRetries) {
+        if (error.name === "AbortError") {
+          throw new Error(
+            "Gemini took too long to respond. Please try again."
+          );
+        }
+
+        throw new Error(
+          "Connection problem. Please check your internet and try again."
+        );
+      }
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  }
+}
+  
 async function generateArenaCards() {
     if (arenaGenerating) return;
 
@@ -2172,7 +2219,7 @@ async function generateArenaCards() {
         content: task.lessonText
       }));
 
-    const response = await fetch(
+    const response = await fetchArenaWithRetry(
       "https://updated-study-quest.vercel.app/api/generate-arena-cards",
       {
         method: "POST",
@@ -2297,6 +2344,8 @@ function nextArenaCard() {
 
 document.getElementById("arenaStart")
   .addEventListener("click", generateArenaCards);
+  
+  updateArenaCooldown();
 
 document.getElementById("arenaReveal")
   .addEventListener("click", revealArenaAnswer);
