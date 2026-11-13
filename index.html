@@ -920,44 +920,46 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   
 /* FOCUS ROOM - IMMERSIVE LAYOUT */
 
+
 .focus-stage {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  position: relative;
+  display: block;
   min-height: min(780px, calc(100vh - 150px));
   padding: 20px;
   border-radius: 20px;
 }
 
 .focus-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 5;
   width: clamp(280px, 28vw, 360px);
-  max-width: 100%;
+  max-width: 520px;
   max-height: calc(100vh - 190px);
+  min-width: 260px;
+  min-height: 280px;
   margin: 0;
   padding: 14px;
   overflow-y: auto;
-    flex-shrink: 0;
-  position: relative;
   box-sizing: border-box;
   resize: both;
-  min-width: 260px;
-  max-width: 520px;
-  min-height: 280px;
-  max-height: calc(100vh - 190px);
 }
 
 
 @media (max-width: 700px) {
-  .focus-stage {
-    min-height: calc(100vh - 150px);
-    justify-content: center;
-    padding: 12px;
-  }
 
-  .focus-panel {
-    width: min(100%, 360px);
-    max-height: calc(100vh - 180px);
-  }
+.focus-stage {
+  min-height: calc(100vh - 150px);
+  padding: 12px;
+}
+
+.focus-panel {
+  top: 12px;
+  right: 12px;
+  width: min(100% - 24px, 360px);
+  max-height: calc(100vh - 180px);
+}
 }
   
 
@@ -1085,6 +1087,64 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   font-weight: 700;
   min-width: 45px;
   text-align: right;
+}
+  
+/* FOCUS ROOM - DARK MODE CONTROLS */
+
+body.dark .focus-panel {
+  background: #17251eeF;
+  border-color: #668b70;
+  color: #edf5ec;
+}
+
+body.dark .focus-panel .muted {
+  color: #c0d3c3;
+}
+
+body.dark .focus-panel .timer-display {
+  color: #f0fff2;
+}
+
+body.dark .focus-panel .timer-controls .btn {
+  background: #397653;
+  color: #ffffff;
+  border: 1px solid #69a77d;
+}
+
+body.dark .focus-panel .timer-controls .btn-outline {
+  background: #263b2d;
+  color: #e9f5eb;
+  border: 1px solid #83aa8c;
+}
+
+body.dark .focus-panel .timer-modes button {
+  background: #263b2d;
+  color: #e0eee2;
+  border-color: #668b70;
+}
+
+body.dark .focus-panel .timer-modes button.active {
+  background: #397653;
+  color: #ffffff;
+  border-color: #91c99e;
+}
+
+body.dark .focus-audio,
+body.dark .panel-size-control {
+  background: #263b2d;
+  border-color: #668b70;
+  color: #edf5ec;
+}
+
+body.dark .focus-audio label,
+body.dark .panel-size-control label,
+body.dark .panel-size-control span {
+  color: #edf5ec;
+}
+
+body.dark .audio-toggle {
+  background: #397653;
+  color: #ffffff;
 }
   
 </style>
