@@ -26,6 +26,7 @@ export default async function handler(req, res) {
   sourceMode = "all",
   materials = [],
   topic = "",
+  difficulty = "medium",
   previousQuestions = []
 } = req.body || {};
 
@@ -65,6 +66,18 @@ ${sourceMode === "files"
 QUESTION REQUIREMENTS:
 - Generate exactly 10 unique study flashcards.
 - Use only the sources allowed by the selected source mode.
+DIFFICULTY INSTRUCTIONS:
+${difficulty === "easy"
+  ? `- All 10 questions must be multiple-choice.
+- Each question must have exactly 4 options.
+- Include only 1 correct answer.`
+  : difficulty === "hard"
+  ? `- All 10 questions must require students to type their own answers.
+- Do not provide answer choices or hints.`
+  : `- Generate exactly 5 multiple-choice questions and 5 questions requiring typed answers.
+- Each multiple-choice question must have exactly 4 options.
+- Include only 1 correct answer per multiple-choice question.`
+}
 
 UPLOADED STUDY MATERIALS:
 ${sourceMode === "general" || sourceMode === "custom"
@@ -91,13 +104,31 @@ IMPORTANT RULES:
 8. Do not create multiple-choice questions.
 9. Do not include duplicate questions within this batch.
 10. Return valid JSON only.
+11. Use "multiple_choice" for questions with choices.
+12. Use "typed" for questions requiring a written answer.
+13. For typed questions, options must be an empty array.
+14. The answer must match one of the provided options for multiple-choice questions.
 
 Required format:
 {
   "cards": [
     {
+      "type": "multiple_choice",
       "question": "Question here?",
-      "answer": "Short answer here.",
+      "options": [
+        "Option A",
+        "Option B",
+        "Option C",
+        "Option D"
+      ],
+      "answer": "Correct option here",
+      "explanation": "Brief explanation here."
+    },
+    {
+      "type": "typed",
+      "question": "Question here?",
+      "options": [],
+      "answer": "Correct answer here",
       "explanation": "Brief explanation here."
     }
   ]
