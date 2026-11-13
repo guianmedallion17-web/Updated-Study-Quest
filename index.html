@@ -943,7 +943,6 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   padding: 14px;
   overflow-y: auto;
   box-sizing: border-box;
-  resize: both;
 }
 
 
@@ -3478,24 +3477,35 @@ const focusPanelSize = document.getElementById("focusPanelSize");
 const focusPanelSizeValue = document.getElementById("focusPanelSizeValue");
 const focusStageArea = document.querySelector(".focus-stage");
 
-// Create a draggable resize handle
+
+// Create a larger floating resize handle
 const resizeHandle = document.createElement("div");
 
 resizeHandle.style.cssText = `
   position: absolute;
-  right: 7px;
-  bottom: 7px;
-  width: 22px;
-  height: 22px;
+  width: 42px;
+  height: 42px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #397653;
+  color: white;
+  border: 2px solid #ffffff;
+  border-radius: 12px 0 12px 0;
+  box-shadow: 0 3px 12px #00000044;
   cursor: nwse-resize;
   touch-action: none;
-  border-right: 3px solid #397653;
-  border-bottom: 3px solid #397653;
-  border-radius: 2px;
+  user-select: none;
+  font-size: 22px;
+  font-weight: bold;
 `;
 
-resizeHandle.title = "Drag to resize panel";
-focusPanel.appendChild(resizeHandle);
+resizeHandle.innerHTML = "⤢";
+resizeHandle.title = "Drag to resize timer panel";
+
+// Attach the handle to the scenery, not the scrollable panel
+focusStageArea.appendChild(resizeHandle);
 
 function updateFocusPanelSize(size) {
   const availableWidth = focusStageArea.clientWidth - 24;
@@ -3510,27 +3520,46 @@ function updateFocusPanelSize(size) {
   focusPanel.style.width = newSize + "px";
   focusPanelSize.value = newSize;
   focusPanelSizeValue.textContent = Math.round(newSize) + "px";
+  positionResizeHandle();
 }
+  
+function positionResizeHandle() {
+  const panelRect = focusPanel.getBoundingClientRect();
+  const stageRect = focusStageArea.getBoundingClientRect();
+
+  resizeHandle.style.left =
+    (panelRect.right - stageRect.left - 21) + "px";
+
+  resizeHandle.style.top =
+    (panelRect.bottom - stageRect.top - 21) + "px";
+}
+  
 
 // Slider resizing
 focusPanelSize.addEventListener("input", () => {
   updateFocusPanelSize(focusPanelSize.value);
 });
 
-// Drag-to-resize
+ // Drag-to-resize smoothly
 let resizingFocusPanel = false;
+let resizeStartX = 0;
+let resizeStartWidth = 0;
 
 resizeHandle.addEventListener("pointerdown", event => {
   event.preventDefault();
+
   resizingFocusPanel = true;
+  resizeStartX = event.clientX;
+  resizeStartWidth = focusPanel.offsetWidth;
+
   resizeHandle.setPointerCapture(event.pointerId);
 });
 
 resizeHandle.addEventListener("pointermove", event => {
   if (!resizingFocusPanel) return;
 
-  const panelLeft = focusPanel.getBoundingClientRect().left;
-  const newWidth = event.clientX - panelLeft;
+  const movement = event.clientX - resizeStartX;
+  const newWidth = resizeStartWidth + movement;
 
   updateFocusPanelSize(newWidth);
 });
@@ -3546,6 +3575,7 @@ resizeHandle.addEventListener("pointercancel", () => {
 // Keep the panel within the available scenery area
 window.addEventListener("resize", () => {
   updateFocusPanelSize(focusPanel.offsetWidth);
+  positionResizeHandle();
 });
 
 updateFocusPanelSize(360);
@@ -3617,6 +3647,7 @@ panelDragBar.addEventListener("pointermove", event => {
 
   focusPanel.style.left = newLeft + "px";
   focusPanel.style.top = newTop + "px";
+  positionResizeHandle();
 });
 
 panelDragBar.addEventListener("pointerup", () => {
