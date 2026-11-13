@@ -938,6 +938,12 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
 <form id="taskForm" class="add-form">
   <input id="taskInput" placeholder="e.g. Review CC100 Chapter 4" maxlength="100" required>
   <input id="taskDate" type="date" aria-label="Task deadline">
+  <select id="taskPriority" aria-label="Task priority">
+  <option value="auto">🤖 Auto-suggest priority</option>
+  <option value="high">🔴 High</option>
+  <option value="medium">🟡 Medium</option>
+  <option value="low">🟢 Low</option>
+  </select>
 
   <div style="grid-column:1/-1">
     <label for="lessonFile">📄 Upload your lesson (TXT, PDF, or DOCX)</label>
@@ -1502,15 +1508,33 @@ document.getElementById("themeBtn2").addEventListener("click", () => {
 const taskForm = document.getElementById("taskForm");
 const taskInput = document.getElementById("taskInput");
 const taskDate = document.getElementById("taskDate");
-
+const taskPriority = document.getElementById("taskPriority");
+  
 taskForm.addEventListener("submit", event => {
   event.preventDefault();
   const title = taskInput.value.trim();
   if (!title) return;
+  let priority = taskPriority.value;
+
+if (priority === "auto") {
+  if (!taskDate.value) {
+    priority = "low";
+  } else {
+    const daysUntilDue = Math.ceil(
+      (new Date(taskDate.value + "T12:00:00") -
+       new Date(localDate() + "T12:00:00")) / 86400000
+    );
+
+    priority =
+      daysUntilDue <= 1 ? "high" :
+      daysUntilDue <= 3 ? "medium" : "low";
+  }
+}
   game.tasks.push({
     id: game.nextId++,
     title,
     date: taskDate.value,
+    priority,
     done: false,
     rewarded: false,
     created: localDate()
@@ -1589,6 +1613,16 @@ function taskMarkup(task) {
           ${overdue ? "⚠ Overdue · " : ""}
           ${escapeHTML(due)}
         </div>
+        <div class="task-meta" style="margin-top:5px">
+  Priority:
+  <strong>
+    ${
+      task.priority === "high" ? "🔴 High" :
+      task.priority === "medium" ? "🟡 Medium" :
+      "🟢 Low"
+    }
+  </strong>
+</div>
 
         ${
           task.lessonText
@@ -1804,7 +1838,19 @@ function renderTasks() {
   const all = document.getElementById("allTasks");
   const filter = document.getElementById("taskFilter").value;
 
-  const incomplete = game.tasks.filter(task => !task.done);
+  const incomplete = game.tasks
+  .filter(task => !task.done)
+  .slice()
+  .sort((a, b) => {
+    const priorityOrder = {
+      high: 0,
+      medium: 1,
+      low: 2
+    };
+
+    return (priorityOrder[a.priority] ?? 2) -
+           (priorityOrder[b.priority] ?? 2);
+  });
   dashboard.innerHTML = incomplete.length
     ? incomplete.slice(0,4).map(taskMarkup).join("")
     : '<div class="empty">🌱 No pending missions! Add a task to begin your next adventure.</div>';
@@ -1812,7 +1858,20 @@ function renderTasks() {
   const filtered = game.tasks.filter(task =>
     filter === "all" || (filter === "active" && !task.done) ||
     (filter === "done" && task.done)
-  ).slice().sort((a,b) => Number(a.done)-Number(b.done));
+).slice().sort((a, b) => {
+  const statusOrder = Number(a.done) - Number(b.done);
+
+  if (statusOrder !== 0) return statusOrder;
+
+  const priorityOrder = {
+    high: 0,
+    medium: 1,
+    low: 2
+  };
+
+  return (priorityOrder[a.priority] ?? 2) -
+         (priorityOrder[b.priority] ?? 2);
+});
 
   all.innerHTML = filtered.length
     ? filtered.map(taskMarkup).join("")
@@ -2928,6 +2987,22 @@ taskForm.addEventListener("submit", async event => {
 
   const title = taskInput.value.trim();
   if (!title) return;
+  let priority = taskPriority.value;
+
+if (priority === "auto") {
+  if (!taskDate.value) {
+    priority = "low";
+  } else {
+    const daysUntilDue = Math.ceil(
+      (new Date(taskDate.value + "T12:00:00") -
+       new Date(localDate() + "T12:00:00")) / 86400000
+    );
+
+    priority =
+      daysUntilDue <= 1 ? "high" :
+      daysUntilDue <= 3 ? "medium" : "low";
+  }
+}
 
   try {
     showToast("Reading your lesson file... 📖");
@@ -2942,6 +3017,7 @@ taskForm.addEventListener("submit", async event => {
       id: game.nextId++,
       title,
       date: taskDate.value,
+      priority,
       done: false,
       rewarded: false,
       created: localDate(),
