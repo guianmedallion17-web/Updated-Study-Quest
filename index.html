@@ -3334,37 +3334,173 @@ function createAmbientSound() {
 
   ambientNoise = ambientContext.createBufferSource();
   ambientNoise.buffer = noiseBuffer;
-  ambientNoise.loop = true;
 
-  ambientFilter = ambientContext.createBiquadFilter();
-  ambientFilter.type = "lowpass";
+// ===============================
+// FOCUS ROOM AMBIENT SOUND ENGINE
+// ===============================
 
-  ambientGain = ambientContext.createGain();
-  ambientGain.gain.value = Number(ambientVolume.value) / 100 * 0.12;
+let ambientContext = null;
+let ambientMaster = null;
+let ambientLayers = [];
+let ambientPlaying = false;
+let ambientScene = "forest";
+let ambientBirdTimer = null;
 
-  ambientNoise.connect(ambientFilter);
-  ambientFilter.connect(ambientGain);
-  ambientGain.connect(ambientContext.destination);
+const ambientToggle = document.getElementById("ambientToggle");
+const ambientVolume = document.getElementById("ambientVolume");
 
-  ambientNoise.start();
+function createNoiseBuffer() {
+  const length = ambientContext.sampleRate * 4;
+  const buffer = ambientContext.createBuffer(
+    1, length, ambientContext.sampleRate
+  );
 
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < length; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  return buffer;
+}
+
+function addNoiseLayer(type, frequency, volume, modulation = 0) {
+  const source = ambientContext.createBufferSource();
+  source.buffer = createNoiseBuffer();
+  source.loop = true;
+
+  const filter = ambientContext.createBiquadFilter();
+  filter.type = type;
+  filter.frequency.value = frequency;
+
+  const gain = ambientContext.createGain();
+  gain.gain.value = volume;
+
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(ambientMaster);
+
+  source.start();
+  ambientLayers.push(source, filter, gain);
+
+  if (modulation > 0) {
+    const lfo = ambientContext.createOscillator();
+    const lfoGain = ambientContext.createGain();
+
+    lfo.frequency.value = modulation;
+    lfoGain.gain.value = volume * 0.65;
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain);
+    lfo.start();
+
+    ambientLayers.push(lfo, lfoGain);
+  }
+}
+
+function stopAmbientLayers() {
+  if (ambientBirdTimer) {
+    clearInterval(ambientBirdTimer);
+    ambientBirdTimer = null;
+  }
+
+  ambientLayers.forEach(node => {
+    try {
+      if (node.stop) node.stop();
+      node.disconnect();
+    } catch (e) {}
+  });
+
+  ambientLayers = [];
+}
+
+function playBirdChirp() {
+  if (!ambientContext || !ambientMaster || !ambientPlaying) return;
+
+  const now = ambientContext.currentTime;
+  const oscillator = ambientContext.createOscillator();
+  const volume = ambientContext.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(
+    1800 + Math.random() * 900, now
+  );
+  oscillator.frequency.exponentialRampToValueAtTime(
+    1100 + Math.random() * 500, now + 0.35
+  );
+
+  volume.gain.setValueAtTime(0.0001, now);
+  volume.gain.linearRampToValueAtTime(0.035, now + 0.06);
+  volume.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+
+  oscillator.connect(volume);
+  volume.connect(ambientMaster);
+
+  oscillator.start(now);
+  oscillator.stop(now + 0.55);
+}
+
+function startBirds() {
+  playBirdChirp();
+
+  ambientBirdTimer = setInterval(() => {
+    playBirdChirp();
+  }, 4500 + Math.random() * 3000);
+}
+
+function buildAmbientScene() {
+  stopAmbientLayers();
+
+  if (!ambientContext || !ambientMaster) return;
+
+  if (ambientScene === "forest") {
+    // Gentle rainfall and soft forest wind
+    addNoiseLayer("bandpass", 1800, 0.20);
+    addNoiseLayer("lowpass", 450, 0.09, 0.12);
+    addNoiseLayer("highpass", 5000, 0.025);
+    startBirds();
+
+  } else if (ambientScene === "ocean") {
+    // Slow rolling waves and coastal breeze
+    addNoiseLayer("lowpass", 650, 0.28, 0.09);
+    addNoiseLayer("bandpass", 1300, 0.045, 0.07);
+    addNoiseLayer("lowpass", 300, 0.07, 0.045);
+
+  } else if (ambientScene === "meadow") {
+    // Soft grassland breeze and distant birds
+    addNoiseLayer("lowpass", 900, 0.12, 0.07);
+    addNoiseLayer("bandpass", 2200, 0.035, 0.11);
+    startBirds();
+  }
+}
+
+function createAmbientSound() {
+  const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextClass) {
+    alert("Your browser does not support ambient audio.");
+    return false;
+  }
+
+  ambientContext = new AudioContextClass();
+  ambientMaster = ambientContext.createGain();
+
+  ambientMaster.gain.value =
+    Number(ambientVolume.value) / 100 * 0.35;
+
+  ambientMaster.connect(ambientContext.destination);
+
+  buildAmbientScene();
   return true;
 }
 
 function setAmbientScene(scene) {
-  if (!ambientFilter) return;
+  ambientScene = scene;
 
-  const frequencies = {
-    forest: 1800,
-    ocean: 650,
-    meadow: 2800
-  };
-
-  ambientFilter.frequency.setTargetAtTime(
-    frequencies[scene] || 1800,
-    ambientContext.currentTime,
-    0.5
-  );
+  if (ambientPlaying) {
+    buildAmbientScene();
+  }
 }
 
 ambientToggle.addEventListener("click", async () => {
@@ -3372,21 +3508,21 @@ ambientToggle.addEventListener("click", async () => {
     if (!ambientContext && !createAmbientSound()) return;
 
     await ambientContext.resume();
-
     ambientPlaying = true;
+
     ambientToggle.textContent = "Ⅱ Pause Sound";
   } else {
     await ambientContext.suspend();
-
     ambientPlaying = false;
+
     ambientToggle.textContent = "▶ Play Sound";
   }
 });
 
 ambientVolume.addEventListener("input", () => {
-  if (ambientGain && ambientContext) {
-    ambientGain.gain.setTargetAtTime(
-      Number(ambientVolume.value) / 100 * 0.12,
+  if (ambientMaster && ambientContext) {
+    ambientMaster.gain.setTargetAtTime(
+      Number(ambientVolume.value) / 100 * 0.35,
       ambientContext.currentTime,
       0.1
     );
@@ -3399,7 +3535,6 @@ environmentButtons.forEach(button => {
   });
 });
 
-setAmbientScene("forest");
 document.getElementById("timerPause").addEventListener("click",() =>
   setTimerMessage("Timer paused. Resume whenever you're ready."));
 document.getElementById("timerPause2").addEventListener("click",() =>
