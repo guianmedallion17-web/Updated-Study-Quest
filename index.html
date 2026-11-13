@@ -1029,6 +1029,17 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     >
   </div>
 </div>
+    <div id="arenaDifficultyControls" style="margin:20px 0">
+  <label for="arenaDifficulty" style="font-weight:600">
+    Choose your difficulty
+  </label>
+
+  <select id="arenaDifficulty" class="input" style="width:100%;margin-top:8px">
+    <option value="easy">Easy - Multiple Choice</option>
+    <option value="medium" selected>Medium - Mixed Questions</option>
+    <option value="hard">Hard - Type Your Answer</option>
+  </select>
+    </div>
     <div id="arenaWelcome" style="text-align:center;padding:25px 10px">
       <div style="font-size:48px">🧠</div>
       <h3>Ready to challenge your knowledge?</h3>
@@ -2304,12 +2315,13 @@ const response = await fetchArenaWithRetry(
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      sourceMode: sourceSettings.sourceMode,
-      materials: sourceSettings.materials,
-      topic: sourceSettings.topic,
-      previousQuestions: getArenaHistory()
-    })
+body: JSON.stringify({
+  sourceMode: sourceSettings.sourceMode,
+  materials: sourceSettings.materials,
+  topic: sourceSettings.topic,
+  difficulty: document.getElementById("arenaDifficulty").value,
+  previousQuestions: getArenaHistory()
+})
   }
 );
 
