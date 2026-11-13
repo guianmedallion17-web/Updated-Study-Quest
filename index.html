@@ -2405,10 +2405,11 @@ if (
 
 if (
   sourceSettings.sourceMode === "all" &&
-  sourceSettings.materials.length === 0 &&
   !sourceSettings.topic
 ) {
-  throw new Error("Please select a lesson file or enter a topic.");
+  throw new Error(
+    "Please enter a custom topic to use Combination of All."
+  );
 }
 
 const response = await fetchArenaWithRetry(
