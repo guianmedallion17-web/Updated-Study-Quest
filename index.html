@@ -2805,7 +2805,7 @@ function renderArenaFileOptions() {
       color:var(--text);
       font-size:13px;
       font-weight:600;
-    ">${escapeHTML(task.title || "Uploaded Lesson")}</span>
+">${escapeHTML(task.fileName || task.title || "Uploaded Lesson")}</span>
   </label>
 `).join("");
 }
