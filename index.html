@@ -1090,7 +1090,8 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   
 /* FOCUS ROOM - DARK MODE CONTROLS */
 
-body.dark .focus-panel {
+body.dark .focus-panel,
+body.dark .global-study-companion {
   background: #17251eeF;
   border-color: #668b70;
   color: #edf5ec;
@@ -1170,6 +1171,11 @@ body.dark .focus-panel-dragbar:active {
   padding: 12px;
   box-shadow: 0 12px 35px rgba(0,0,0,.2);
   box-sizing: border-box;
+  resize: both;
+overflow: auto;
+min-width: 270px;
+min-height: 180px;
+max-height: calc(100vh - 30px);
 }
 
 .global-companion-header {
@@ -1892,11 +1898,12 @@ body.dark .focus-panel-dragbar:active {
 
 <footer>STUDYQUEST © 2026 · LEVEL UP YOUR LEARNING 🌱</footer>
 </main>
+   <div id="globalStudyCompanion" class="global-study-companion">
+  <div class="global-companion-header">
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div id="globalStudyCompanion" class="global-study-companion">
-  <div class="global-companion-header">
+ 
     <span>🌿 Study Companion</span>
     <button type="button" id="companionMinimize" title="Minimize">−</button>
   </div>
@@ -3929,6 +3936,77 @@ environmentButtons.forEach(button => {
   button.addEventListener("click", () => {
     setAmbientScene(button.dataset.scene);
   });
+});
+  // MOVE EXISTING CONTROLS INTO THE GLOBAL STUDY COMPANION
+const companionContent = document.getElementById("globalCompanionContent");
+
+[
+  document.querySelector("#focus .focus-environments"),
+  document.querySelector("#focus .focus-audio"),
+  document.getElementById("timerDisplay2"),
+  document.querySelector("#focus .timer-controls"),
+  document.querySelector("#focus .timer-modes"),
+  document.getElementById("timerMessage2")
+].forEach(element => {
+  if (element) companionContent.appendChild(element);
+});
+  // GLOBAL COMPANION DRAG AND MINIMIZE
+const companion = document.getElementById("globalStudyCompanion");
+const companionHeader = companion.querySelector(".global-companion-header");
+const companionMinimize = document.getElementById("companionMinimize");
+
+companionMinimize.addEventListener("click", () => {
+  companion.classList.toggle("minimized");
+
+  companionMinimize.textContent =
+    companion.classList.contains("minimized") ? "+" : "−";
+});
+
+let companionDragging = false;
+let companionOffsetX = 0;
+let companionOffsetY = 0;
+
+companionHeader.addEventListener("pointerdown", event => {
+  if (event.target.closest("button")) return;
+
+  const rect = companion.getBoundingClientRect();
+
+  companion.style.left = rect.left + "px";
+  companion.style.top = rect.top + "px";
+  companion.style.right = "auto";
+  companion.style.bottom = "auto";
+
+  companionDragging = true;
+  companionOffsetX = event.clientX - rect.left;
+  companionOffsetY = event.clientY - rect.top;
+
+  companionHeader.setPointerCapture(event.pointerId);
+});
+
+companionHeader.addEventListener("pointermove", event => {
+  if (!companionDragging) return;
+
+  const maxX = window.innerWidth - companion.offsetWidth;
+  const maxY = window.innerHeight - 45;
+
+  const x = Math.max(0, Math.min(
+    event.clientX - companionOffsetX, maxX
+  ));
+
+  const y = Math.max(0, Math.min(
+    event.clientY - companionOffsetY, maxY
+  ));
+
+  companion.style.left = x + "px";
+  companion.style.top = y + "px";
+});
+
+companionHeader.addEventListener("pointerup", () => {
+  companionDragging = false;
+});
+
+companionHeader.addEventListener("pointercancel", () => {
+  companionDragging = false;
 });
 
 document.getElementById("timerPause").addEventListener("click",() =>
