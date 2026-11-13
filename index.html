@@ -738,6 +738,43 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     #9ac49a 100%
   );
 }
+  /* FOCUS ROOM SCENE THEMES */
+
+.focus-stage.scene-forest {
+  background: linear-gradient(180deg, #b9dfd0, #8bbd91);
+}
+
+.focus-stage.scene-ocean {
+  background: linear-gradient(180deg, #a8dce8, #4e9bba);
+}
+
+.focus-stage.scene-ocean .focus-scenery {
+  background: linear-gradient(180deg, #a8dce8 0%, #d1edf0 65%, #72b8c4 100%);
+}
+
+.focus-stage.scene-ocean .focus-scenery::after {
+  background: linear-gradient(160deg, #5da6b5, #28758e);
+}
+
+.focus-stage.scene-ocean .focus-water {
+  background: linear-gradient(180deg, #78c9d6, #267f9d);
+}
+
+.focus-stage.scene-meadow {
+  background: linear-gradient(180deg, #d7edb5, #9fc77e);
+}
+
+.focus-stage.scene-meadow .focus-scenery {
+  background: linear-gradient(180deg, #cce8c1 0%, #edf0bd 65%, #a8ce83 100%);
+}
+
+.focus-stage.scene-meadow .focus-scenery::after {
+  background: linear-gradient(160deg, #a8c77b, #638e55);
+}
+
+.focus-stage.scene-meadow .focus-water {
+  background: linear-gradient(180deg, #b5d88a, #82ae65);
+}
 
 .focus-scenery::before {
   content: "";
@@ -861,7 +898,55 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   box-shadow: 0 15px 45px #244b3b22;
   color: #20362a;
 }
-  
+  /* FOCUS ROOM ENVIRONMENT SELECTOR */
+
+.focus-environments {
+  margin: 0 auto 22px;
+  text-align: center;
+}
+
+.focus-environments p {
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: #294b3a;
+}
+
+.environment-options {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.environment-btn {
+  padding: 10px 15px;
+  border: 1px solid #9bbda5;
+  border-radius: 30px;
+  background: #ffffffcc;
+  color: #315441;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.environment-btn:hover {
+  background: #e1f0e4;
+  transform: translateY(-2px);
+}
+
+.environment-btn.active {
+  background: #397653;
+  border-color: #397653;
+  color: white;
+  box-shadow: 0 4px 12px #285b3b33;
+}
+
+@media(max-width:480px) {
+  .environment-btn {
+    flex: 1 1 100%;
+  }
+}
 </style>
 <!-- PDF Reader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1339,6 +1424,33 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     <div class="eyebrow" style="text-align:center">YOUR PERSONAL STUDY SPACE</div>
     <h2 style="text-align:center">🎯 Focus Room</h2>
     <p class="muted" style="text-align:center">Put distractions aside and give one task your attention.</p>
+    <div class="focus-environments">
+  <p>🌿 Choose your environment</p>
+  <div class="environment-options">
+    <button class="environment-btn active" data-scene="forest">🌲 Forest Rain</button>
+    <button class="environment-btn" data-scene="ocean">🌊 Ocean Breeze</button>
+    <button class="environment-btn" data-scene="meadow">🌼 Morning Meadow</button>
+  </div>
+    </div>
+    <div class="focus-audio">
+  <div class="audio-heading">
+    <span>🎧 Ambient Sounds</span>
+    <button type="button" id="ambientToggle" class="audio-toggle">
+      ▶ Play Sound
+    </button>
+  </div>
+
+  <div class="audio-volume">
+    <label for="ambientVolume">Volume</label>
+    <input
+      type="range"
+      id="ambientVolume"
+      min="0"
+      max="100"
+      value="35"
+    >
+  </div>
+    </div>
     <div class="timer-display" id="timerDisplay2">25:00</div>
     <div class="timer-controls">
       <button class="btn" id="timerStart2">▶ Start Focus</button>
@@ -3111,6 +3223,31 @@ document.querySelectorAll("[data-minutes]").forEach(button => {
       b.classList.toggle("active",b.dataset.minutes === button.dataset.minutes);
     });
     resetTimer();
+  });
+});
+  // FOCUS ROOM ENVIRONMENT SELECTOR
+
+const focusStage = document.querySelector(".focus-stage");
+const environmentButtons = document.querySelectorAll(".environment-btn");
+
+// Set Forest Rain as the default environment
+focusStage.classList.add("scene-forest");
+
+environmentButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    const scene = button.dataset.scene;
+
+    focusStage.classList.remove(
+      "scene-forest",
+      "scene-ocean",
+      "scene-meadow"
+    );
+
+    focusStage.classList.add("scene-" + scene);
+
+    environmentButtons.forEach(btn => {
+      btn.classList.toggle("active", btn === button);
+    });
   });
 });
 
