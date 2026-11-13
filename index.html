@@ -1146,7 +1146,15 @@ body.dark .audio-toggle {
   background: #397653;
   color: #ffffff;
 }
-  
+  body.dark .focus-panel-dragbar {
+  background: #263b2d !important;
+  color: #edf5ec !important;
+  border: 1px solid #668b70;
+}
+
+body.dark .focus-panel-dragbar:active {
+  background: #34533d !important;
+  }
 </style>
 <!-- PDF Reader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -3541,6 +3549,83 @@ window.addEventListener("resize", () => {
 });
 
 updateFocusPanelSize(360);
+
+  
+// FOCUS ROOM FLOATING PANEL - DRAG TO MOVE
+
+const panelDragBar = document.createElement("div");
+panelDragBar.className = "focus-panel-dragbar";
+panelDragBar.innerHTML = "<span>⠿ MOVE TIMER PANEL</span><span>↗</span>";
+
+panelDragBar.style.cssText = `
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -5px -5px 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #e5f1e7;
+  color: #315441;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+`;
+
+focusPanel.prepend(panelDragBar);
+
+let draggingFocusPanel = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+panelDragBar.addEventListener("pointerdown", event => {
+  event.preventDefault();
+
+  const panelRect = focusPanel.getBoundingClientRect();
+  const stageRect = focusStageArea.getBoundingClientRect();
+
+  focusPanel.style.left = (panelRect.left - stageRect.left) + "px";
+  focusPanel.style.top = (panelRect.top - stageRect.top) + "px";
+  focusPanel.style.right = "auto";
+
+  dragOffsetX = event.clientX - panelRect.left;
+  dragOffsetY = event.clientY - panelRect.top;
+
+  draggingFocusPanel = true;
+  panelDragBar.setPointerCapture(event.pointerId);
+});
+
+panelDragBar.addEventListener("pointermove", event => {
+  if (!draggingFocusPanel) return;
+
+  const stageRect = focusStageArea.getBoundingClientRect();
+
+  const maxLeft = Math.max(0, focusStageArea.clientWidth - focusPanel.offsetWidth);
+  const maxTop = Math.max(0, focusStageArea.clientHeight - focusPanel.offsetHeight);
+
+  const newLeft = Math.max(0, Math.min(
+    maxLeft,
+    event.clientX - stageRect.left - dragOffsetX
+  ));
+
+  const newTop = Math.max(0, Math.min(
+    maxTop,
+    event.clientY - stageRect.top - dragOffsetY
+  ));
+
+  focusPanel.style.left = newLeft + "px";
+  focusPanel.style.top = newTop + "px";
+});
+
+panelDragBar.addEventListener("pointerup", () => {
+  draggingFocusPanel = false;
+});
+
+panelDragBar.addEventListener("pointercancel", () => {
+  draggingFocusPanel = false;
+});
 
 // ===============================
 // FOCUS ROOM AMBIENT SOUND ENGINE
