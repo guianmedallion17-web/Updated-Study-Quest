@@ -2273,29 +2273,45 @@ async function generateArenaCards() {
     "Generating a new set...";
 
   try {
-    const materials = game.tasks
-      .filter(task =>
-        typeof task.lessonText === "string" &&
-        task.lessonText.trim().length > 0
-      )
-      .map(task => ({
-        title: task.title || "Uploaded Lesson",
-        content: task.lessonText
-      }));
+    const sourceSettings = getArenaSourceSettings();
 
-    const response = await fetchArenaWithRetry(
-      "https://updated-study-quest.vercel.app/api/generate-arena-cards",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          materials,
-          previousQuestions: getArenaHistory()
-        })
-      }
-    );
+if (
+  sourceSettings.sourceMode === "files" &&
+  sourceSettings.materials.length === 0
+) {
+  throw new Error("Please select at least one uploaded lesson file.");
+}
+
+if (
+  sourceSettings.sourceMode === "custom" &&
+  !sourceSettings.topic
+) {
+  throw new Error("Please enter a subject or topic first.");
+}
+
+if (
+  sourceSettings.sourceMode === "all" &&
+  sourceSettings.materials.length === 0 &&
+  !sourceSettings.topic
+) {
+  throw new Error("Please select a lesson file or enter a topic.");
+}
+
+const response = await fetchArenaWithRetry(
+  "https://updated-study-quest.vercel.app/api/generate-arena-cards",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      sourceMode: sourceSettings.sourceMode,
+      materials: sourceSettings.materials,
+      topic: sourceSettings.topic,
+      previousQuestions: getArenaHistory()
+    })
+  }
+);
 
     const data = await response.json();
 
