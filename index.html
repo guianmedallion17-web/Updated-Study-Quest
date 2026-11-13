@@ -996,6 +996,12 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     </div>
 
     <div class="muted" id="arenaCounter">Preparing your flashcards...</div>
+    <div
+  id="arenaCooldownStatus"
+  class="muted"
+  style="text-align:center;margin-top:8px;font-size:13px"
+  hidden
+></div>
 
     <div id="arenaWelcome" style="text-align:center;padding:25px 10px">
       <div style="font-size:48px">🧠</div>
@@ -2046,7 +2052,9 @@ let arenaButtonLabel = "Generate Flashcards →";
 
 function updateArenaCooldown() {
   const button = document.getElementById("arenaStart");
-  if (!button) return;
+  const status = document.getElementById("arenaCooldownStatus");
+
+  if (!button || !status) return;
 
   const cooldownUntil = Number(
     localStorage.getItem(ARENA_COOLDOWN_KEY) || 0
@@ -2059,6 +2067,9 @@ function updateArenaCooldown() {
   if (remaining > 0) {
     button.disabled = true;
     button.textContent = `Please wait ${remaining}s`;
+
+    status.hidden = false;
+    status.textContent = `⏳ You can generate another set in ${remaining} seconds.`;
 
     if (!arenaCooldownTimer) {
       arenaCooldownTimer = setInterval(
@@ -2075,6 +2086,7 @@ function updateArenaCooldown() {
     arenaCooldownTimer = null;
   }
 
+  status.hidden = true;
   button.disabled = arenaGenerating;
 
   if (!arenaGenerating) {
