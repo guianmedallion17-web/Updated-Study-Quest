@@ -1155,7 +1155,60 @@ body.dark .audio-toggle {
 body.dark .focus-panel-dragbar:active {
   background: #34533d !important;
   }
-  
+  /* GLOBAL COMPANION SECTION LAYOUT */
+
+#globalCompanionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.companion-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+  min-width: 0;
+}
+
+.companion-section .focus-environments,
+.companion-section .focus-audio {
+  width: 100%;
+  margin: 0;
+}
+
+.companion-timer .timer-display {
+  margin: 4px 0;
+  text-align: center;
+  font-size: 32px;
+}
+
+.companion-timer .timer-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.companion-timer .timer-controls button:first-child {
+  grid-column: 1 / -1;
+}
+
+.companion-timer .timer-modes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.companion-section button {
+  max-width: 100%;
+}
+
+.companion-section input[type="range"] {
+  width: 100%;
+}
   /* GLOBAL COMPANION DARK MODE */
 
 body.dark .global-study-companion .timer-display {
@@ -3974,19 +4027,42 @@ environmentButtons.forEach(button => {
     setAmbientScene(button.dataset.scene);
   });
 });
-  // MOVE EXISTING CONTROLS INTO THE GLOBAL STUDY COMPANION
+// ORGANIZE CONTROLS INSIDE THE GLOBAL STUDY COMPANION
 const companionContent = document.getElementById("globalCompanionContent");
 
+const scenerySection = document.createElement("div");
+scenerySection.className = "companion-section companion-scenery";
+
+const soundSection = document.createElement("div");
+soundSection.className = "companion-section companion-sounds";
+
+const timerSection = document.createElement("div");
+timerSection.className = "companion-section companion-timer";
+
+const sceneryControls = document.querySelector("#focus .focus-environments");
+const soundControls = document.querySelector("#focus .focus-audio");
+const timerDisplay = document.getElementById("timerDisplay2");
+const timerControls = document.querySelector("#focus .timer-controls");
+const timerModes = document.querySelector("#focus .timer-modes");
+const timerMessage = document.getElementById("timerMessage2");
+
+if (sceneryControls) scenerySection.appendChild(sceneryControls);
+if (soundControls) soundSection.appendChild(soundControls);
+
 [
-  document.querySelector("#focus .focus-environments"),
-  document.querySelector("#focus .focus-audio"),
-  document.getElementById("timerDisplay2"),
-  document.querySelector("#focus .timer-controls"),
-  document.querySelector("#focus .timer-modes"),
-  document.getElementById("timerMessage2")
+  timerDisplay,
+  timerControls,
+  timerModes,
+  timerMessage
 ].forEach(element => {
-  if (element) companionContent.appendChild(element);
+  if (element) timerSection.appendChild(element);
 });
+
+companionContent.append(
+  scenerySection,
+  soundSection,
+  timerSection
+);
   // GLOBAL COMPANION DRAG AND MINIMIZE
 const companion = document.getElementById("globalStudyCompanion");
 const companionHeader = companion.querySelector(".global-companion-header");
