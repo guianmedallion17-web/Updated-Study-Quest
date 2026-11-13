@@ -49,7 +49,7 @@ ${m.content.slice(0, 12000)}
           .filter(q => typeof q === "string")
           .slice(-200)
       : [];
-
+const prompt = `
     SOURCE INSTRUCTIONS:
 ${sourceMode === "files"
   ? "- Generate all 10 questions using ONLY the uploaded study materials."
