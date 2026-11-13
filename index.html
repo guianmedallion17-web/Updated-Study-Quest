@@ -1154,10 +1154,12 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
       </div>
 
       <div style="display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap">
-        <button class="btn secondary" id="arenaReveal">Reveal Answer</button>
-        <button class="btn" id="arenaNext" hidden>Next Card →</button>
+  <button class="btn secondary" id="arenaReveal">Reveal Answer</button>
+  <button class="btn" id="arenaNext" hidden>Next Card →</button>
+  <button class="btn secondary" id="arenaCancel" style="border-color:#dc6666;color:#dc6666">
+    ✕ Cancel Flashcards
+  </button>
       </div>
-    </div>
 
     <div id="arenaLoading" hidden style="text-align:center;padding:25px">
       <div style="font-size:35px">🌱</div>
@@ -2742,6 +2744,34 @@ function nextArenaCard() {
   document.getElementById("arenaStart").textContent =
     "Generate More Cards →";
 }
+  function cancelArenaCards() {
+  if (!confirm("Cancel this flashcard set and return to Quiz Arena setup?")) {
+    return;
+  }
+
+  arenaCards = [];
+  arenaIndex = 0;
+
+  document.getElementById("arenaCardArea").hidden = true;
+  document.getElementById("arenaWelcome").hidden = false;
+  document.getElementById("arenaSourceControls").hidden = false;
+  document.getElementById("arenaDifficultyControls").hidden = false;
+  document.getElementById("arenaSessionSummary").hidden = true;
+
+  document.getElementById("arenaProgress").style.width = "0%";
+  document.getElementById("arenaCounter").textContent =
+    "Flashcard set cancelled. Ready when you are!";
+
+  document.getElementById("arenaStart").textContent =
+    "Generate Flashcards →";
+
+  document.getElementById("arenaTypedAnswer").value = "";
+  document.getElementById("arenaFeedback").hidden = true;
+  document.getElementById("arenaAnswerArea").hidden = true;
+  document.getElementById("arenaNext").hidden = true;
+  document.getElementById("arenaSubmit").hidden = true;
+  document.getElementById("arenaReveal").hidden = false;
+  }
 function updateArenaSourceControls() {
   const mode = document.getElementById("arenaSourceMode").value;
   const fileSelection = document.getElementById("arenaFileSelection");
@@ -2816,6 +2846,8 @@ document.getElementById("arenaSourceMode")
 updateArenaSourceControls();
 document.getElementById("arenaStart")
   .addEventListener("click", generateArenaCards);
+  document.getElementById("arenaCancel")
+  .addEventListener("click", cancelArenaCards);
   
   updateArenaCooldown();
 
