@@ -2637,8 +2637,8 @@ const xpReward =
 if (isCorrect) {
   if (!hasArenaXPReward(card.question)) {
     saveArenaXPReward(card.question);
-    awardXP(1, "Correct answer!");
-    xpMessage = " +1 EXP earned!";
+    awardXP(xpReward, "Correct answer!");
+xpMessage = ` +${xpReward} EXP earned!`;
   } else {
     xpMessage = " EXP was already earned for this question.";
   }
