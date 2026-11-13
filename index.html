@@ -1094,10 +1094,14 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   </label>
 
   <select id="arenaDifficulty" class="input" style="width:100%;margin-top:8px">
-    <option value="easy">Easy - Multiple Choice</option>
-    <option value="medium" selected>Medium - Mixed Questions</option>
-    <option value="hard">Hard - Type Your Answer</option>
+    <option value="easy">Easy - Multiple Choice (+1 EXP)</option>
+<option value="medium" selected>Medium - Mixed Questions (+2 EXP)</option>
+<option value="hard">Hard - Type Your Answer (+3 EXP)</option>
   </select>
+      <p class="muted" style="font-size:12px;margin-top:8px;line-height:1.5">
+  Earn EXP for every correct answer: Easy +1 EXP, Medium +2 EXP, and Hard +3 EXP.
+  Each question can only reward EXP once.
+      </p>
     </div>
     <div
   id="arenaSessionSummary"
@@ -2764,16 +2768,46 @@ function renderArenaFileOptions() {
   }
 
   container.innerHTML = materials.map(task => `
-    <label style="display:flex;align-items:center;gap:10px;margin:10px 0">
-      <input
-        type="checkbox"
-        class="arena-file-checkbox"
-        value="${task.id}"
-        checked
-      >
-      <span>${escapeHTML(task.title || "Uploaded Lesson")}</span>
-    </label>
-  `).join("");
+  <label style="
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:12px;
+    width:100%;
+    box-sizing:border-box;
+    padding:13px;
+    margin:8px 0;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    cursor:pointer;
+    text-align:left;
+  ">
+    <input
+      type="checkbox"
+      class="arena-file-checkbox"
+      value="${task.id}"
+      checked
+      style="
+        flex:0 0 20px;
+        width:20px !important;
+        height:20px;
+        margin:0;
+        accent-color:var(--green2);
+      "
+    >
+    <span style="
+      flex:1;
+      min-width:0;
+      display:block;
+      text-align:left;
+      overflow-wrap:anywhere;
+      color:var(--text);
+      font-size:13px;
+      font-weight:600;
+    ">${escapeHTML(task.title || "Uploaded Lesson")}</span>
+  </label>
+`).join("");
 }
 
 document.getElementById("arenaSourceMode")
