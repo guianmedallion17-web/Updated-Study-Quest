@@ -3623,6 +3623,7 @@ function displayTime() {
     String(remaining%60).padStart(2,"0");
   document.getElementById("timerDisplay").textContent = text;
   document.getElementById("timerDisplay2").textContent = text;
+  document.getElementById("companionMiniTimer").textContent = text;
   document.title = text + " | StudyQuest";
 }
 
@@ -4216,6 +4217,7 @@ companionHeader.addEventListener("pointercancel", () => {
 const companionPlaceholder = document.createComment("Study Companion original position");
 companion.parentNode.insertBefore(companionPlaceholder, companion);
 
+
 function updateCompanionLayout() {
   const focusSection = document.getElementById("focus");
   const isFocusRoom = focusSection.classList.contains("active");
@@ -4224,17 +4226,33 @@ function updateCompanionLayout() {
     focusSection.appendChild(companion);
     companion.classList.add("focus-docked");
     companion.classList.remove("minimized");
+
+    companion.style.position = "relative";
+    companion.style.top = "auto";
+    companion.style.right = "auto";
+    companion.style.bottom = "auto";
+    companion.style.left = "auto";
+
     companionMinimize.textContent = "−";
   } else {
     companionPlaceholder.parentNode.insertBefore(
       companion,
       companionPlaceholder.nextSibling
     );
+
     companion.classList.remove("focus-docked");
     companion.classList.add("minimized");
+
+    companion.style.position = "";
+    companion.style.top = "";
+    companion.style.right = "";
+    companion.style.bottom = "";
+    companion.style.left = "";
+
     companionMinimize.textContent = "+";
   }
 }
+  
 
 updateCompanionLayout();
   
