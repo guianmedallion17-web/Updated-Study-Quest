@@ -903,19 +903,28 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   to { background-position: 0 76px; }
 }
 
+  /* FOCUS ROOM - SIMPLE INTRO BANNER */
+#focus .focus-intro {
+  margin: 0 0 16px;
+  padding: 4px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
-.focus-panel {
-  position: relative;
-  z-index: 2;
-  max-width: 460px;
-  margin: 20px auto;
-  padding: 16px 18px;
-  border: 1px solid #ffffffaa;
-  border-radius: 18px;
-  background: #ffffffd9;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 30px #244b3b22;
-  color: #20362a;
+#focus .focus-intro .eyebrow {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+
+#focus .focus-intro h2 {
+  margin: 0;
+  font-size: 25px;
+}
+
+#focus .focus-intro p {
+  margin: 0;
+  font-size: 13px;
 }
   
 /* FOCUS ROOM - IMMERSIVE LAYOUT */
@@ -1023,38 +1032,6 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   accent-color: #397653;
 }
   
-/* FOCUS PANEL SIZE CONTROL */
-
-.panel-size-control {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 10px;
-  border-radius: 12px;
-  background: #ffffffbb;
-  color: #315441;
-  font-size: 12px;
-}
-
-.panel-size-control label {
-  font-weight: 700;
-  width: 100%;
-}
-
-.panel-size-control input {
-  flex: 1;
-  min-width: 100px;
-  accent-color: #397653;
-}
-
-.panel-size-control span {
-  font-weight: 700;
-  min-width: 45px;
-  text-align: right;
-}
-  
 /* FOCUS ROOM - DARK MODE CONTROLS */
 
 body.dark .focus-panel,
@@ -1064,48 +1041,13 @@ body.dark .global-study-companion {
   color: #edf5ec;
 }
 
-body.dark .focus-panel .muted {
-  color: #c0d3c3;
-}
-
-body.dark .focus-panel .timer-display {
-  color: #f0fff2;
-}
-
-body.dark .focus-panel .timer-controls .btn {
-  background: #397653;
-  color: #ffffff;
-  border: 1px solid #69a77d;
-}
-
-body.dark .focus-panel .timer-controls .btn-outline {
-  background: #263b2d;
-  color: #e9f5eb;
-  border: 1px solid #83aa8c;
-}
-
-body.dark .focus-panel .timer-modes button {
-  background: #263b2d;
-  color: #e0eee2;
-  border-color: #668b70;
-}
-
-body.dark .focus-panel .timer-modes button.active {
-  background: #397653;
-  color: #ffffff;
-  border-color: #91c99e;
-}
-
-body.dark .focus-audio,
-body.dark .panel-size-control {
+body.dark .focus-audio{
   background: #263b2d;
   border-color: #668b70;
   color: #edf5ec;
 }
 
-body.dark .focus-audio label,
-body.dark .panel-size-control label,
-body.dark .panel-size-control span {
+body.dark .focus-audio label{
   color: #edf5ec;
 }
 
@@ -1113,15 +1055,7 @@ body.dark .audio-toggle {
   background: #397653;
   color: #ffffff;
 }
-  body.dark .focus-panel-dragbar {
-  background: #263b2d !important;
-  color: #edf5ec !important;
-  border: 1px solid #668b70;
-}
-
-body.dark .focus-panel-dragbar:active {
-  background: #34533d !important;
-  }
+  
   /* GLOBAL COMPANION SECTION LAYOUT */
 
 #globalCompanionContent {
