@@ -1154,6 +1154,64 @@ body.dark .audio-toggle {
 body.dark .focus-panel-dragbar:active {
   background: #34533d !important;
   }
+  /* GLOBAL STUDY COMPANION */
+
+.global-study-companion {
+  position: fixed;
+  top: 110px;
+  right: 25px;
+  width: 310px;
+  max-width: calc(100vw - 30px);
+  z-index: 9998;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: 0 12px 35px rgba(0,0,0,.2);
+  box-sizing: border-box;
+}
+
+.global-companion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  margin-bottom: 10px;
+  border-radius: 11px;
+  background: var(--panel2);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+}
+
+.global-companion-header button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.global-study-companion.minimized {
+  width: 190px;
+}
+
+.global-study-companion.minimized #globalCompanionContent {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .global-study-companion {
+    top: auto;
+    right: 12px;
+    bottom: 15px;
+    width: 290px;
+  }
+}
 </style>
 <!-- PDF Reader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1837,6 +1895,16 @@ body.dark .focus-panel-dragbar:active {
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div id="globalStudyCompanion" class="global-study-companion">
+  <div class="global-companion-header">
+    <span>🌿 Study Companion</span>
+    <button type="button" id="companionMinimize" title="Minimize">−</button>
+  </div>
+
+  <div id="globalCompanionContent">
+    <!-- Timer and ambient controls will go here -->
+  </div>
+  </div>
 
 <script>
 "use strict";
