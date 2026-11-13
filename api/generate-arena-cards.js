@@ -23,9 +23,11 @@ export default async function handler(req, res) {
     }
 
     const {
-      materials = [],
-      previousQuestions = []
-    } = req.body || {};
+  sourceMode = "all",
+  materials = [],
+  topic = "",
+  previousQuestions = []
+} = req.body || {};
 
     const validMaterials = Array.isArray(materials)
       ? materials
@@ -48,16 +50,21 @@ ${m.content.slice(0, 12000)}
           .slice(-200)
       : [];
 
-    const prompt = `
-You are StudyQuest's AI flashcard generator.
-
-Generate exactly 10 unique study flashcards.
-
-QUESTION MIX:
-${validMaterials.length > 0
-  ? "- Create 5 questions based on the uploaded study materials.\n- Create 5 general knowledge questions from different subjects."
-  : "- Create 10 general knowledge questions from different subjects."
+    SOURCE INSTRUCTIONS:
+${sourceMode === "files"
+  ? "- Generate all 10 questions using ONLY the uploaded study materials."
+  : sourceMode === "general"
+  ? "- Generate all 10 questions using general knowledge. Do not use uploaded materials or custom topics."
+  : sourceMode === "custom"
+  ? `- Generate all 10 questions about this topic: ${topic}.`
+  : `- Create a balanced mix of questions from uploaded materials, general knowledge, and the custom topic when provided.
+- Distribute questions as evenly as possible among the available sources.
+- Custom topic: ${topic || "None provided."}`
 }
+
+QUESTION REQUIREMENTS:
+- Generate exactly 10 unique study flashcards.
+- Use only the sources allowed by the selected source mode.
 
 UPLOADED STUDY MATERIALS:
 ${lessonContent || "No study materials have been uploaded."}
