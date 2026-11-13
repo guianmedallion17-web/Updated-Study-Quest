@@ -705,6 +705,163 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
 @media(prefers-reduced-motion:reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; }
 }
+  
+/* ===============================
+   FOCUS ROOM - NATURE SCENERY
+================================ */
+
+.focus-stage {
+  position: relative;
+  isolation: isolate;
+  min-height: 650px;
+  padding: clamp(18px, 4vw, 42px);
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    #b9dfd0 0%,
+    #d8ebd9 48%,
+    #8bbd91 100%
+  );
+}
+
+.focus-scenery {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    #b9dfd0 0%,
+    #e5efd9 65%,
+    #9ac49a 100%
+  );
+}
+
+.focus-scenery::before {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  top: 55px;
+  right: 12%;
+  border-radius: 50%;
+  background: #fff3c4;
+  box-shadow: 0 0 65px 25px #fff3c455;
+}
+
+.focus-scenery::after {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 18%;
+  height: 42%;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(160deg, #6eaa7d, #3e805d);
+  transform: rotate(-3deg);
+}
+
+.focus-cloud {
+  position: absolute;
+  top: 14%;
+  left: -180px;
+  width: 120px;
+  height: 35px;
+  border-radius: 40px;
+  background: #ffffffbb;
+  animation: focusCloudDrift 45s linear infinite;
+}
+
+.focus-cloud::before,
+.focus-cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.focus-cloud::before {
+  width: 48px;
+  height: 48px;
+  left: 20px;
+  bottom: 8px;
+}
+
+.focus-cloud::after {
+  width: 65px;
+  height: 60px;
+  right: 15px;
+  bottom: 5px;
+}
+
+.focus-cloud.cloud-two {
+  top: 28%;
+  animation-duration: 65s;
+  animation-delay: -25s;
+  transform: scale(.7);
+}
+
+.focus-water {
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  bottom: -3%;
+  height: 25%;
+  z-index: 1;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(
+    180deg,
+    #8bc9c0,
+    #4e9b91
+  );
+  animation: focusWaterFlow 7s ease-in-out infinite alternate;
+}
+
+.focus-water::before {
+  content: "";
+  position: absolute;
+  inset: 20% 0;
+  opacity: .4;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 17px,
+    #e1fff0 18px 20px,
+    transparent 21px 38px
+  );
+  animation: focusRipple 9s linear infinite;
+}
+
+@keyframes focusCloudDrift {
+  from { left: -180px; }
+  to { left: 110%; }
+}
+
+@keyframes focusWaterFlow {
+  from { transform: translateY(0); }
+  to { transform: translateY(-9px); }
+}
+
+@keyframes focusRipple {
+  from { background-position: 0 0; }
+  to { background-position: 0 76px; }
+}
+
+.focus-panel {
+  position: relative;
+  z-index: 2;
+  max-width: 650px;
+  margin: auto;
+  padding: 25px;
+  border: 1px solid #ffffffaa;
+  border-radius: 22px;
+  background: #ffffffd9;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 15px 45px #244b3b22;
+  color: #20362a;
+}
+  
 </style>
 <!-- PDF Reader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1171,7 +1328,14 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
 
 <!-- FOCUS -->
 <section class="view" id="focus">
-  <div class="card" style="max-width:650px;margin:auto">
+<div class="focus-stage">
+  <div class="focus-scenery" aria-hidden="true">
+    <span class="focus-cloud"></span>
+    <span class="focus-cloud cloud-two"></span>
+    <div class="focus-water"></div>
+  </div>
+
+  <div class="focus-panel">
     <div class="eyebrow" style="text-align:center">YOUR PERSONAL STUDY SPACE</div>
     <h2 style="text-align:center">🎯 Focus Room</h2>
     <p class="muted" style="text-align:center">Put distractions aside and give one task your attention.</p>
@@ -1190,7 +1354,8 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     <div class="card" style="margin-top:22px;background:var(--bg);box-shadow:none">
       <h3>💡 Focus tip</h3>
       <p class="muted">Keep only the materials you need nearby. Try to finish one small goal before switching to another.</p>
-    </div>
+      </div>
+  </div>
   </div>
 </section>
 
