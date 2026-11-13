@@ -3296,44 +3296,7 @@ environmentButtons.forEach(button => {
     });
   });
 });
-// ===============================
-// FOCUS ROOM AMBIENT SOUND ENGINE
-// ===============================
 
-let ambientContext = null;
-let ambientNoise = null;
-let ambientFilter = null;
-let ambientGain = null;
-let ambientPlaying = false;
-
-const ambientToggle = document.getElementById("ambientToggle");
-const ambientVolume = document.getElementById("ambientVolume");
-
-function createAmbientSound() {
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-
-  if (!AudioContextClass) {
-    alert("Your browser does not support ambient audio.");
-    return false;
-  }
-
-  ambientContext = new AudioContextClass();
-
-  const bufferSize = ambientContext.sampleRate * 3;
-  const noiseBuffer = ambientContext.createBuffer(
-    1,
-    bufferSize,
-    ambientContext.sampleRate
-  );
-
-  const data = noiseBuffer.getChannelData(0);
-
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-
-  ambientNoise = ambientContext.createBufferSource();
-  ambientNoise.buffer = noiseBuffer;
 
 // ===============================
 // FOCUS ROOM AMBIENT SOUND ENGINE
@@ -3422,9 +3385,11 @@ function playBirdChirp() {
   const volume = ambientContext.createGain();
 
   oscillator.type = "sine";
+
   oscillator.frequency.setValueAtTime(
     1800 + Math.random() * 900, now
   );
+
   oscillator.frequency.exponentialRampToValueAtTime(
     1100 + Math.random() * 500, now + 0.35
   );
@@ -3491,7 +3456,6 @@ function createAmbientSound() {
 
   ambientMaster.connect(ambientContext.destination);
 
-  buildAmbientScene();
   return true;
 }
 
@@ -3510,10 +3474,14 @@ ambientToggle.addEventListener("click", async () => {
     await ambientContext.resume();
     ambientPlaying = true;
 
+    buildAmbientScene();
+
     ambientToggle.textContent = "Ⅱ Pause Sound";
   } else {
-    await ambientContext.suspend();
     ambientPlaying = false;
+    stopAmbientLayers();
+
+    await ambientContext.suspend();
 
     ambientToggle.textContent = "▶ Play Sound";
   }
