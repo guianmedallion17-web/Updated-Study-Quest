@@ -1042,7 +1042,13 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
 .audio-volume input::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 10px;
-  background: #cbdccf;
+  background: linear-gradient(
+    to right,
+    #397653 0%,
+    #397653 var(--volume-progress, 35%),
+    #cbdccf var(--volume-progress, 35%),
+    #cbdccf 100%
+  );
 }
 
 .audio-volume input::-webkit-slider-thumb {
@@ -3780,14 +3786,25 @@ ambientToggle.addEventListener("click", async () => {
   }
 });
 
-ambientVolume.addEventListener("input", () => {
+function updateVolumeSlider() {
+  const progress = Number(ambientVolume.value);
+
+  ambientVolume.style.setProperty(
+    "--volume-progress",
+    `${progress}%`
+  );
+
   if (ambientMaster && ambientContext) {
     ambientMaster.gain.setTargetAtTime(
-      Number(ambientVolume.value) / 100 * 0.35,
+      progress / 100 * 0.35,
       ambientContext.currentTime,
       0.1
     );
   }
+}
+
+ambientVolume.addEventListener("input", updateVolumeSlider);
+updateVolumeSlider();
 });
 
 environmentButtons.forEach(button => {
