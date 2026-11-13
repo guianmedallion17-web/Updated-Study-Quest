@@ -2092,6 +2092,7 @@ document.getElementById("gardenTheme").addEventListener("change",event => {
 // ===============================
 
 const ARENA_HISTORY_KEY = "studyQuestArenaSeenQuestions_v1";
+  const ARENA_XP_HISTORY_KEY = "studyQuestArenaXPQuestions_v1";
 
 let arenaCards = [];
 let arenaIndex = 0;
@@ -2201,7 +2202,39 @@ function saveArenaQuestion(question) {
     JSON.stringify(history.slice(-300))
   );
 }
+function getArenaXPHistory() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(ARENA_XP_HISTORY_KEY) || "[]"
+    );
 
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function hasArenaXPReward(question) {
+  const normalize = value =>
+    value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  const key = normalize(question);
+
+  return getArenaXPHistory().some(
+    savedQuestion => normalize(savedQuestion) === key
+  );
+}
+
+function saveArenaXPReward(question) {
+  const history = getArenaXPHistory();
+
+  history.push(question);
+
+  localStorage.setItem(
+    ARENA_XP_HISTORY_KEY,
+    JSON.stringify(history.slice(-500))
+  );
+}
 function startQuiz() {
   arenaCards = [];
   arenaIndex = 0;
@@ -2493,11 +2526,22 @@ function checkArenaAnswer() {
   const isCorrect =
     userAnswer.trim().toLowerCase() ===
     card.answer.trim().toLowerCase();
+  let xpMessage = "";
+
+if (isCorrect) {
+  if (!hasArenaXPReward(card.question)) {
+    saveArenaXPReward(card.question);
+    awardXP(1, "Correct answer!");
+    xpMessage = " +1 EXP earned!";
+  } else {
+    xpMessage = " EXP was already earned for this question.";
+  }
+}
 
   feedback.textContent = isCorrect
-    ? "Correct! Great job!"
-    : "Not quite. Here's the correct answer.";
-
+  ? "Correct! Great job!" + xpMessage
+  : "Not quite. Here's the correct answer.";
+  
   feedback.style.color = isCorrect ? "green" : "crimson";
   feedback.hidden = false;
 
