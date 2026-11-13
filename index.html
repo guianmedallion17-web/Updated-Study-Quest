@@ -2414,9 +2414,51 @@ function renderArenaCard() {
   document.getElementById("arenaExplanation").textContent =
     card.explanation;
 
+  const options = document.getElementById("arenaOptions");
+  const typedArea = document.getElementById("arenaTypedArea");
+  const typedAnswer = document.getElementById("arenaTypedAnswer");
+  const submit = document.getElementById("arenaSubmit");
+  const feedback = document.getElementById("arenaFeedback");
+
   document.getElementById("arenaAnswerArea").hidden = true;
-  document.getElementById("arenaReveal").hidden = false;
+  document.getElementById("arenaReveal").hidden = true;
   document.getElementById("arenaNext").hidden = true;
+
+  feedback.hidden = true;
+  feedback.textContent = "";
+  submit.hidden = false;
+  submit.disabled = false;
+
+  typedAnswer.value = "";
+  options.innerHTML = "";
+  options.dataset.selected = "";
+
+  if (card.type === "multiple_choice") {
+    typedArea.hidden = true;
+    options.hidden = false;
+
+    (card.options || []).forEach(option => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn secondary";
+      button.textContent = option;
+
+      button.addEventListener("click", () => {
+        options.querySelectorAll("button").forEach(btn => {
+          btn.classList.remove("active");
+        });
+
+        button.classList.add("active");
+        options.dataset.selected = option;
+      });
+
+      options.appendChild(button);
+    });
+
+  } else {
+    options.hidden = true;
+    typedArea.hidden = false;
+  }
 
   document.getElementById("arenaCounter").textContent =
     "Flashcard " + (arenaIndex + 1) +
@@ -2427,7 +2469,42 @@ function renderArenaCard() {
 
   saveArenaQuestion(card.question);
 }
+function checkArenaAnswer() {
+  const card = arenaCards[arenaIndex];
+  const options = document.getElementById("arenaOptions");
+  const typedAnswer = document.getElementById("arenaTypedAnswer");
+  const feedback = document.getElementById("arenaFeedback");
+  const submit = document.getElementById("arenaSubmit");
 
+  let userAnswer = "";
+
+  if (card.type === "multiple_choice") {
+    userAnswer = options.dataset.selected || "";
+  } else {
+    userAnswer = typedAnswer.value.trim();
+  }
+
+  if (!userAnswer) {
+    feedback.textContent = "Please enter or select an answer first.";
+    feedback.hidden = false;
+    return;
+  }
+
+  const isCorrect =
+    userAnswer.trim().toLowerCase() ===
+    card.answer.trim().toLowerCase();
+
+  feedback.textContent = isCorrect
+    ? "Correct! Great job!"
+    : "Not quite. Here's the correct answer.";
+
+  feedback.style.color = isCorrect ? "green" : "crimson";
+  feedback.hidden = false;
+
+  document.getElementById("arenaAnswerArea").hidden = false;
+  submit.hidden = true;
+  document.getElementById("arenaNext").hidden = false;
+}
 function revealArenaAnswer() {
   document.getElementById("arenaAnswerArea").hidden = false;
   document.getElementById("arenaReveal").hidden = true;
@@ -2499,7 +2576,8 @@ document.getElementById("arenaStart")
 
 document.getElementById("arenaReveal")
   .addEventListener("click", revealArenaAnswer);
-
+document.getElementById("arenaSubmit")
+  .addEventListener("click", checkArenaAnswer);
 document.getElementById("arenaNext")
   .addEventListener("click", nextArenaCard);
   
