@@ -903,6 +903,207 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   to { background-position: 0 76px; }
 }
 
+/* SCENERY OBJECTS */
+.scene-details {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.scene-forest-details,
+.scene-ocean-details,
+.scene-meadow-details {
+  display: none;
+}
+
+.scene-forest .scene-forest-details,
+.scene-ocean .scene-ocean-details,
+.scene-meadow .scene-meadow-details {
+  display: block;
+}
+
+/* FOREST TREES */
+.forest-tree {
+  position: absolute;
+  bottom: 13%;
+  width: 90px;
+  height: 190px;
+}
+
+.forest-tree::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 35px;
+  background: linear-gradient(135deg, #397653, #174b38);
+  clip-path: polygon(50% 0, 100% 75%, 72% 75%, 94% 100%, 6% 100%, 28% 75%, 0 75%);
+}
+
+.forest-tree::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 41px;
+  width: 12px;
+  height: 48px;
+  background: #76533a;
+}
+
+.tree-one {
+  left: 7%;
+  transform: scale(1.1);
+}
+
+.tree-two {
+  left: 25%;
+  bottom: 11%;
+  transform: scale(.75);
+}
+
+.tree-three {
+  right: 9%;
+  transform: scale(1.25);
+}
+
+.forest-bush {
+  position: absolute;
+  bottom: 14%;
+  width: 100px;
+  height: 38px;
+  border-radius: 50%;
+  background: #397653;
+}
+
+.bush-one { left: 17%; }
+.bush-two { right: 22%; background: #548b58; }
+
+/* OCEAN DETAILS */
+.ocean-island {
+  position: absolute;
+  bottom: 25%;
+  width: 170px;
+  height: 65px;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(160deg, #568c76, #285d55);
+}
+
+.island-one { left: 12%; }
+.island-two {
+  right: 12%;
+  bottom: 30%;
+  transform: scale(.65);
+}
+
+.ocean-boat {
+  position: absolute;
+  left: 54%;
+  bottom: 29%;
+  width: 65px;
+  height: 35px;
+  background: #f8f1dc;
+  clip-path: polygon(0 0, 100% 0, 78% 100%, 22% 100%);
+}
+
+.ocean-boat::before {
+  content: "";
+  position: absolute;
+  left: 28px;
+  bottom: 35px;
+  width: 3px;
+  height: 65px;
+  background: #735c43;
+}
+
+.ocean-boat::after {
+  content: "";
+  position: absolute;
+  left: 31px;
+  bottom: 38px;
+  width: 29px;
+  height: 45px;
+  background: #fff8e7;
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+.ocean-bird {
+  position: absolute;
+  width: 23px;
+  height: 10px;
+  border-top: 3px solid #426d78;
+  border-radius: 50%;
+  transform: rotate(-15deg);
+}
+
+.bird-one { top: 25%; left: 28%; }
+.bird-two { top: 19%; right: 25%; transform: scale(.7) rotate(-15deg); }
+
+/* MORNING MEADOW */
+.meadow-tree {
+  position: absolute;
+  bottom: 14%;
+  right: 12%;
+  width: 75px;
+  height: 150px;
+}
+
+.meadow-tree::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 72px;
+  height: 90px;
+  border-radius: 50%;
+  background: #588b51;
+  box-shadow: -22px 18px 0 -5px #6b9d5b, 20px 17px 0 -5px #477d4a;
+}
+
+.meadow-tree::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 32px;
+  width: 12px;
+  height: 75px;
+  background: #806044;
+}
+
+.meadow-flower {
+  position: absolute;
+  bottom: 18%;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #f6c95e;
+  box-shadow: 0 -9px 0 -2px #fff5d7,
+              0 9px 0 -2px #fff5d7,
+              9px 0 0 -2px #fff5d7,
+              -9px 0 0 -2px #fff5d7;
+}
+
+.flower-one { left: 19%; }
+.flower-two { left: 39%; bottom: 15%; transform: scale(.8); }
+.flower-three { right: 31%; bottom: 17%; transform: scale(1.1); }
+
+.meadow-butterfly {
+  position: absolute;
+  top: 35%;
+  left: 30%;
+  width: 18px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e9a6c5;
+  box-shadow: 9px 0 0 #e9a6c5;
+  transform: rotate(-25deg);
+  animation: butterflyFloat 4s ease-in-out infinite alternate;
+}
+
+@keyframes butterflyFloat {
+  from { transform: translateY(0) rotate(-25deg); }
+  to { transform: translateY(-13px) rotate(15deg); }
+}
+  
   /* FOCUS ROOM - SIMPLE INTRO BANNER */
 #focus .focus-intro {
   margin: 0 0 16px;
@@ -1756,9 +1957,34 @@ max-height: calc(100vh - 30px);
 
 <div class="focus-stage">
   <div class="focus-scenery" aria-hidden="true">
-    <span class="focus-cloud"></span>
-    <span class="focus-cloud cloud-two"></span>
-    <div class="focus-water"></div>
+  <span class="focus-cloud"></span>
+  <span class="focus-cloud cloud-two"></span>
+
+  <div class="scene-details scene-forest-details">
+    <span class="forest-tree tree-one"></span>
+    <span class="forest-tree tree-two"></span>
+    <span class="forest-tree tree-three"></span>
+    <span class="forest-bush bush-one"></span>
+    <span class="forest-bush bush-two"></span>
+  </div>
+
+  <div class="scene-details scene-ocean-details">
+    <span class="ocean-island island-one"></span>
+    <span class="ocean-island island-two"></span>
+    <span class="ocean-boat"></span>
+    <span class="ocean-bird bird-one"></span>
+    <span class="ocean-bird bird-two"></span>
+  </div>
+
+  <div class="scene-details scene-meadow-details">
+    <span class="meadow-tree"></span>
+    <span class="meadow-flower flower-one"></span>
+    <span class="meadow-flower flower-two"></span>
+    <span class="meadow-flower flower-three"></span>
+    <span class="meadow-butterfly"></span>
+  </div>
+
+  <div class="focus-water"></div>
   </div>
 
   <div class="focus-control-source" hidden>
@@ -3760,6 +3986,18 @@ function createAmbientSound() {
 
 function setAmbientScene(scene) {
   ambientScene = scene;
+
+  const focusStage = document.querySelector(".focus-stage");
+
+  if (focusStage) {
+    focusStage.classList.remove(
+      "scene-forest",
+      "scene-ocean",
+      "scene-meadow"
+    );
+
+    focusStage.classList.add(`scene-${scene}`);
+  }
 
   if (ambientPlaying) {
     buildAmbientScene();
