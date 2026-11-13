@@ -946,6 +946,55 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
 }
 
 
+/* FOCUS ROOM - CLEAN SCENERY LAYOUT */
+#focus .focus-panel {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  right: auto;
+  z-index: 3;
+  width: auto;
+  max-width: 360px;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+  color: #20362a;
+}
+
+#focus .focus-panel .card {
+  background: transparent !important;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  margin-top: 14px;
+}
+
+#focus .focus-panel h2,
+#focus .focus-panel .eyebrow,
+#focus .focus-panel > p {
+  text-align: left !important;
+}
+
+#focus .focus-panel h3 {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 700px) {
+  #focus .focus-panel {
+    top: 18px;
+    left: 18px;
+    max-width: 280px;
+  }
+}
+  
 @media (max-width: 700px) {
 
 .focus-stage {
@@ -1308,6 +1357,45 @@ max-height: calc(100vh - 30px);
     width: 290px;
   }
 }
+  
+/* FOCUS ROOM - EXPANDED COMPANION DOCK */
+.global-study-companion.focus-docked {
+  position: relative;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  margin: 18px 0 24px;
+  padding: 14px;
+  resize: none;
+  overflow: visible;
+  box-shadow: none;
+}
+
+.global-study-companion.focus-docked #globalCompanionContent {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+}
+
+.global-study-companion.focus-docked .companion-section {
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 700px) {
+  .global-study-companion.focus-docked #globalCompanionContent {
+    grid-template-columns: 1fr;
+  }
+}
+  
 </style>
 <!-- PDF Reader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1988,20 +2076,21 @@ max-height: calc(100vh - 30px);
 
 <footer>STUDYQUEST © 2026 · LEVEL UP YOUR LEARNING 🌱</footer>
 </main>
-   <div id="globalStudyCompanion" class="global-study-companion">
+   
+<div id="globalStudyCompanion" class="global-study-companion">
   <div class="global-companion-header">
-</div>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
- 
     <span>🌿 Study Companion</span>
-    <button type="button" id="companionMinimize" title="Minimize">−</button>
+    <span id="companionMiniTimer">25:00</span>
+    <button type="button" id="companionMinimize" title="Expand or collapse">+</button>
   </div>
 
   <div id="globalCompanionContent">
-    <!-- Timer and ambient controls will go here -->
+    <!-- Timer and ambient controls -->
   </div>
-  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 
 <script>
 "use strict";
@@ -2141,6 +2230,7 @@ function openView(view) {
   document.querySelectorAll(".view").forEach(section => {
     section.classList.toggle("active", section.id === view);
   });
+  updateCompanionLayout();
   document.getElementById("pageTitle").textContent =
     viewTitles[view] + (view === "home" ? ", " + game.name + "! 👋" : "");
   if (view === "settings") document.getElementById("playerName").value = game.name;
@@ -4121,6 +4211,33 @@ companionHeader.addEventListener("pointerup", () => {
 companionHeader.addEventListener("pointercancel", () => {
   companionDragging = false;
 });
+  
+// AUTOMATIC COMPANION LAYOUT
+const companionPlaceholder = document.createComment("Study Companion original position");
+companion.parentNode.insertBefore(companionPlaceholder, companion);
+
+function updateCompanionLayout() {
+  const focusSection = document.getElementById("focus");
+  const isFocusRoom = focusSection.classList.contains("active");
+
+  if (isFocusRoom) {
+    focusSection.appendChild(companion);
+    companion.classList.add("focus-docked");
+    companion.classList.remove("minimized");
+    companionMinimize.textContent = "−";
+  } else {
+    companionPlaceholder.parentNode.insertBefore(
+      companion,
+      companionPlaceholder.nextSibling
+    );
+    companion.classList.remove("focus-docked");
+    companion.classList.add("minimized");
+    companionMinimize.textContent = "+";
+  }
+}
+
+updateCompanionLayout();
+  
 
 document.getElementById("timerPause").addEventListener("click",() =>
   setTimerMessage("Timer paused. Resume whenever you're ready."));
