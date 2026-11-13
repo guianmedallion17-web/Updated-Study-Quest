@@ -947,6 +947,52 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     flex: 1 1 100%;
   }
 }
+  /* FOCUS ROOM AMBIENT SOUND CONTROLS */
+
+.focus-audio {
+  max-width: 420px;
+  margin: 0 auto 22px;
+  padding: 15px 18px;
+  border: 1px solid #ffffffbb;
+  border-radius: 16px;
+  background: #ffffffbb;
+  color: #294b3a;
+}
+
+.audio-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 700;
+}
+
+.audio-toggle {
+  padding: 9px 15px;
+  border: none;
+  border-radius: 20px;
+  background: #397653;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.audio-toggle:hover {
+  background: #285b3b;
+}
+
+.audio-volume {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.audio-volume input {
+  flex: 1;
+  accent-color: #397653;
+}
 </style>
 <!-- PDF Reader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -3250,7 +3296,110 @@ environmentButtons.forEach(button => {
     });
   });
 });
+// ===============================
+// FOCUS ROOM AMBIENT SOUND ENGINE
+// ===============================
 
+let ambientContext = null;
+let ambientNoise = null;
+let ambientFilter = null;
+let ambientGain = null;
+let ambientPlaying = false;
+
+const ambientToggle = document.getElementById("ambientToggle");
+const ambientVolume = document.getElementById("ambientVolume");
+
+function createAmbientSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextClass) {
+    alert("Your browser does not support ambient audio.");
+    return false;
+  }
+
+  ambientContext = new AudioContextClass();
+
+  const bufferSize = ambientContext.sampleRate * 3;
+  const noiseBuffer = ambientContext.createBuffer(
+    1,
+    bufferSize,
+    ambientContext.sampleRate
+  );
+
+  const data = noiseBuffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  ambientNoise = ambientContext.createBufferSource();
+  ambientNoise.buffer = noiseBuffer;
+  ambientNoise.loop = true;
+
+  ambientFilter = ambientContext.createBiquadFilter();
+  ambientFilter.type = "lowpass";
+
+  ambientGain = ambientContext.createGain();
+  ambientGain.gain.value = Number(ambientVolume.value) / 100 * 0.12;
+
+  ambientNoise.connect(ambientFilter);
+  ambientFilter.connect(ambientGain);
+  ambientGain.connect(ambientContext.destination);
+
+  ambientNoise.start();
+
+  return true;
+}
+
+function setAmbientScene(scene) {
+  if (!ambientFilter) return;
+
+  const frequencies = {
+    forest: 1800,
+    ocean: 650,
+    meadow: 2800
+  };
+
+  ambientFilter.frequency.setTargetAtTime(
+    frequencies[scene] || 1800,
+    ambientContext.currentTime,
+    0.5
+  );
+}
+
+ambientToggle.addEventListener("click", async () => {
+  if (!ambientPlaying) {
+    if (!ambientContext && !createAmbientSound()) return;
+
+    await ambientContext.resume();
+
+    ambientPlaying = true;
+    ambientToggle.textContent = "Ⅱ Pause Sound";
+  } else {
+    await ambientContext.suspend();
+
+    ambientPlaying = false;
+    ambientToggle.textContent = "▶ Play Sound";
+  }
+});
+
+ambientVolume.addEventListener("input", () => {
+  if (ambientGain && ambientContext) {
+    ambientGain.gain.setTargetAtTime(
+      Number(ambientVolume.value) / 100 * 0.12,
+      ambientContext.currentTime,
+      0.1
+    );
+  }
+});
+
+environmentButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    setAmbientScene(button.dataset.scene);
+  });
+});
+
+setAmbientScene("forest");
 document.getElementById("timerPause").addEventListener("click",() =>
   setTimerMessage("Timer paused. Resume whenever you're ready."));
 document.getElementById("timerPause2").addEventListener("click",() =>
