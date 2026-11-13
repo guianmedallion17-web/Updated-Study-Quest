@@ -2444,13 +2444,25 @@ body: JSON.stringify({
 
     const used = new Set(history.map(normalize));
 
-    arenaCards = data.cards.filter(card =>
-      card &&
-      typeof card.question === "string" &&
-      typeof card.answer === "string" &&
-      typeof card.explanation === "string" &&
-      !used.has(normalize(card.question))
-    );
+    arenaCards = data.cards.filter(card => {
+  if (
+    !card ||
+    typeof card.question !== "string" ||
+    typeof card.answer !== "string" ||
+    typeof card.explanation !== "string"
+  ) {
+    return false;
+  }
+
+  const key = normalize(card.question);
+
+  if (!key || used.has(key)) {
+    return false;
+  }
+
+  used.add(key);
+  return true;
+});
 
     if (arenaCards.length === 0) {
       throw new Error(
