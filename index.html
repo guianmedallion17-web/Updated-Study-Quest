@@ -3803,9 +3803,10 @@ function updateVolumeSlider() {
   }
 }
 
-ambientVolume.addEventListener("input", updateVolumeSlider);
-updateVolumeSlider();
-});
+if (ambientVolume) {
+  ambientVolume.addEventListener("input", updateVolumeSlider);
+  updateVolumeSlider();
+}
 
 environmentButtons.forEach(button => {
   button.addEventListener("click", () => {
