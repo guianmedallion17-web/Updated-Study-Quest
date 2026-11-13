@@ -1052,6 +1052,23 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
         style="background:var(--panel2);border:1px solid var(--border);border-radius:18px;padding:30px 20px;text-align:center;min-height:220px;display:flex;flex-direction:column;justify-content:center;gap:16px">
         <div class="eyebrow">YOUR QUESTION</div>
         <h3 id="arenaQuestion" style="line-height:1.5"></h3>
+        <div id="arenaOptions" style="display:grid;gap:10px;margin-top:10px"></div>
+
+<div id="arenaTypedArea" hidden style="margin-top:10px">
+  <input
+    type="text"
+    id="arenaTypedAnswer"
+    class="input"
+    placeholder="Type your answer here..."
+    style="width:100%"
+  >
+</div>
+
+<p id="arenaFeedback" class="muted" hidden></p>
+
+<button class="btn" id="arenaSubmit" hidden>
+  Check Answer
+</button>
 
         <div id="arenaAnswerArea" hidden>
           <div class="divider"></div>
