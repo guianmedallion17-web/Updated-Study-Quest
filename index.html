@@ -1093,6 +1093,18 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
     <option value="hard">Hard - Type Your Answer</option>
   </select>
     </div>
+    <div
+  id="arenaSessionSummary"
+  hidden
+  style="margin:20px 0;padding:14px 16px;background:var(--panel2);border:1px solid var(--border);border-radius:14px"
+>
+  <div style="font-weight:800;margin-bottom:8px">
+    📚 Current Flashcard Set
+  </div>
+  <div id="arenaSessionSource" class="muted"></div>
+  <div id="arenaSessionTopic" class="muted" style="margin-top:5px"></div>
+  <div id="arenaSessionDifficulty" class="muted" style="margin-top:5px"></div>
+    </div>
     <div id="arenaWelcome" style="text-align:center;padding:25px 10px">
       <div style="font-size:48px">🧠</div>
       <h3>Ready to challenge your knowledge?</h3>
@@ -2482,7 +2494,30 @@ body: JSON.stringify({
     cardArea.hidden = false;
 
     renderArenaCard();
+const sourceLabels = {
+  files: "Based on Files",
+  general: "General Knowledge",
+  custom: "Customize Topic",
+  all: "Combination of All"
+};
 
+document.getElementById("arenaSessionSource").textContent =
+  "Source: " + sourceLabels[sourceSettings.sourceMode];
+
+document.getElementById("arenaSessionTopic").textContent =
+  sourceSettings.topic
+    ? "Topic: " + sourceSettings.topic
+    : sourceSettings.materials.length
+      ? "Files: " + sourceSettings.materials.map(file => file.title).join(", ")
+      : "";
+
+document.getElementById("arenaSessionDifficulty").textContent =
+  "Difficulty: " +
+  document.getElementById("arenaDifficulty").selectedOptions[0].textContent;
+
+document.getElementById("arenaSessionSummary").hidden = false;
+document.getElementById("arenaSourceControls").hidden = true;
+document.getElementById("arenaDifficultyControls").hidden = true;
   } catch (error) {
     console.error("Quiz Arena error:", error);
 
@@ -2593,6 +2628,11 @@ function checkArenaAnswer() {
     userAnswer.trim().toLowerCase() ===
     card.answer.trim().toLowerCase();
   let xpMessage = "";
+  const difficulty = document.getElementById("arenaDifficulty").value;
+
+const xpReward =
+  difficulty === "easy" ? 1 :
+  difficulty === "hard" ? 3 : 2;
 
 if (isCorrect) {
   if (!hasArenaXPReward(card.question)) {
@@ -2630,7 +2670,9 @@ function nextArenaCard() {
 
   document.getElementById("arenaCardArea").hidden = true;
   document.getElementById("arenaWelcome").hidden = false;
-
+  document.getElementById("arenaSourceControls").hidden = false;
+  document.getElementById("arenaDifficultyControls").hidden = false;
+  document.getElementById("arenaSessionSummary").hidden = true;
   document.getElementById("arenaCounter").textContent =
     "You've completed this set! Ready for more?";
 
