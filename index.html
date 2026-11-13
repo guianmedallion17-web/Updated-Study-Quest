@@ -1002,7 +1002,33 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   style="text-align:center;margin-top:8px;font-size:13px"
   hidden
 ></div>
+<div id="arenaSourceControls" style="margin:20px 0">
+  <label for="arenaSourceMode" style="font-weight:600">
+    Choose your flashcard source
+  </label>
 
+  <select id="arenaSourceMode" class="input" style="width:100%;margin-top:8px">
+    <option value="files">Based on Files</option>
+    <option value="general">General Knowledge</option>
+    <option value="custom">Customize Topic</option>
+    <option value="all" selected>Combination of All</option>
+  </select>
+
+  <div id="arenaFileSelection" hidden style="margin-top:15px">
+    <p class="muted">Select the lesson files you want to include:</p>
+    <div id="arenaFileOptions"></div>
+  </div>
+
+  <div id="arenaCustomTopic" hidden style="margin-top:15px">
+    <label for="arenaTopicInput">Enter your subject or topic:</label>
+    <input
+      id="arenaTopicInput"
+      type="text"
+      placeholder="e.g. Computer Networks"
+      style="width:100%;margin-top:8px"
+    >
+  </div>
+</div>
     <div id="arenaWelcome" style="text-align:center;padding:25px 10px">
       <div style="font-size:48px">🧠</div>
       <h3>Ready to challenge your knowledge?</h3>
@@ -2049,7 +2075,33 @@ const ARENA_COOLDOWN_MS = 15000;
 let arenaGenerating = false;
 let arenaCooldownTimer = null;
 let arenaButtonLabel = "Generate Flashcards →";
+  
+function getArenaSourceSettings() {
+  const mode = document.getElementById("arenaSourceMode").value;
 
+  const selectedIds = Array.from(
+    document.querySelectorAll(".arena-file-checkbox:checked")
+  ).map(checkbox => Number(checkbox.value));
+
+  const materials = game.tasks
+    .filter(task =>
+      selectedIds.includes(task.id) &&
+      typeof task.lessonText === "string" &&
+      task.lessonText.trim().length > 0
+    )
+    .map(task => ({
+      title: task.title || "Uploaded Lesson",
+      content: task.lessonText
+    }));
+
+  const topic = document.getElementById("arenaTopicInput").value.trim();
+
+  return {
+    sourceMode: mode,
+    materials,
+    topic
+  };
+}
 function updateArenaCooldown() {
   const button = document.getElementById("arenaStart");
   const status = document.getElementById("arenaCooldownStatus");
@@ -2353,7 +2405,48 @@ function nextArenaCard() {
   document.getElementById("arenaStart").textContent =
     "Generate More Cards →";
 }
+function updateArenaSourceControls() {
+  const mode = document.getElementById("arenaSourceMode").value;
+  const fileSelection = document.getElementById("arenaFileSelection");
+  const customTopic = document.getElementById("arenaCustomTopic");
 
+  fileSelection.hidden = !["files", "all"].includes(mode);
+  customTopic.hidden = !["custom", "all"].includes(mode);
+
+  renderArenaFileOptions();
+}
+
+function renderArenaFileOptions() {
+  const container = document.getElementById("arenaFileOptions");
+
+  const materials = game.tasks.filter(task =>
+    typeof task.lessonText === "string" &&
+    task.lessonText.trim().length > 0
+  );
+
+  if (materials.length === 0) {
+    container.innerHTML =
+      '<p class="muted">No uploaded lesson files yet. Upload lessons through My Tasks first.</p>';
+    return;
+  }
+
+  container.innerHTML = materials.map(task => `
+    <label style="display:flex;align-items:center;gap:10px;margin:10px 0">
+      <input
+        type="checkbox"
+        class="arena-file-checkbox"
+        value="${task.id}"
+        checked
+      >
+      <span>${escapeHTML(task.title || "Uploaded Lesson")}</span>
+    </label>
+  `).join("");
+}
+
+document.getElementById("arenaSourceMode")
+  .addEventListener("change", updateArenaSourceControls);
+
+updateArenaSourceControls();
 document.getElementById("arenaStart")
   .addEventListener("click", generateArenaCards);
   
