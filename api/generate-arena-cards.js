@@ -66,6 +66,10 @@ ${sourceMode === "files"
 QUESTION REQUIREMENTS:
 - Generate exactly 10 unique study flashcards.
 - Use only the sources allowed by the selected source mode.
+- Every question must test a different fact, concept, or learning objective.
+- Do not repeat, paraphrase, or closely resemble any previously used question.
+- Avoid testing the same concept more than once, even with different wording.
+- Prioritize fresh and varied questions whenever the topic is customized.
 DIFFICULTY INSTRUCTIONS:
 ${difficulty === "easy"
   ? `- All 10 questions must be multiple-choice.
