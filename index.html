@@ -978,108 +978,162 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
 .bush-one { left: 17%; }
 .bush-two { right: 22%; background: #548b58; }
 
+
 /* OCEAN DETAILS */
 .ocean-island {
   position: absolute;
   bottom: 25%;
-  width: 170px;
-  height: 65px;
-  border-radius: 50% 50% 0 0;
-  background: linear-gradient(160deg, #568c76, #285d55);
+  width: 180px;
+  height: 75px;
+  border-radius: 50% 50% 8% 8%;
+  background: linear-gradient(160deg, #78a88a 0%, #477d6b 48%, #285d55 100%);
+  box-shadow: inset 0 9px 12px rgba(255,255,255,.12);
 }
 
-.island-one { left: 12%; }
+.ocean-island::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 25%;
+  width: 45%;
+  height: 28px;
+  border-radius: 50%;
+  background: #91b98a;
+  transform: rotate(-12deg);
+}
+
+.island-one { left: 10%; }
+
 .island-two {
-  right: 12%;
+  right: 10%;
   bottom: 30%;
-  transform: scale(.65);
+  transform: scale(.7);
+  filter: brightness(.85);
 }
 
 .ocean-boat {
   position: absolute;
   left: 54%;
   bottom: 29%;
-  width: 65px;
-  height: 35px;
-  background: #f8f1dc;
-  clip-path: polygon(0 0, 100% 0, 78% 100%, 22% 100%);
+  width: 76px;
+  height: 75px;
+  background:
+    linear-gradient(#806044, #806044) 50% 0 / 3px 65px no-repeat,
+    linear-gradient(135deg, transparent 49%, #fff8e7 50%) 50% 5px / 36px 43px no-repeat,
+    linear-gradient(45deg, transparent 49%, #e8e0cb 50%) 5px 12px / 27px 35px no-repeat;
+  filter: drop-shadow(2px 3px 2px rgba(0,0,0,.2));
 }
 
 .ocean-boat::before {
   content: "";
   position: absolute;
-  left: 28px;
-  bottom: 35px;
-  width: 3px;
-  height: 65px;
-  background: #735c43;
+  left: 4px;
+  bottom: 0;
+  width: 68px;
+  height: 19px;
+  background: linear-gradient(180deg, #a87850, #65452f);
+  clip-path: polygon(0 0, 100% 0, 82% 100%, 18% 100%);
+  border-radius: 0 0 8px 8px;
 }
 
 .ocean-boat::after {
   content: "";
   position: absolute;
   left: 31px;
-  bottom: 38px;
-  width: 29px;
-  height: 45px;
-  background: #fff8e7;
-  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  bottom: -8px;
+  width: 45px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(25,80,100,.22);
 }
 
 .ocean-bird {
   position: absolute;
-  width: 23px;
-  height: 10px;
-  border-top: 3px solid #426d78;
+  width: 24px;
+  height: 12px;
+  border-top: 3px solid #526c70;
   border-radius: 50%;
   transform: rotate(-15deg);
+  opacity: .85;
 }
 
 .bird-one { top: 25%; left: 28%; }
-.bird-two { top: 19%; right: 25%; transform: scale(.7) rotate(-15deg); }
+.bird-two {
+  top: 19%;
+  right: 25%;
+  transform: scale(.7) rotate(-15deg);
+}
 
 /* MORNING MEADOW */
 .meadow-tree {
   position: absolute;
   bottom: 14%;
   right: 12%;
-  width: 75px;
-  height: 150px;
+  width: 105px;
+  height: 165px;
 }
 
 .meadow-tree::before {
   content: "";
   position: absolute;
   top: 0;
-  left: 2px;
-  width: 72px;
-  height: 90px;
-  border-radius: 50%;
-  background: #588b51;
-  box-shadow: -22px 18px 0 -5px #6b9d5b, 20px 17px 0 -5px #477d4a;
+  left: 8px;
+  width: 85px;
+  height: 105px;
+  border-radius: 48% 52% 45% 55%;
+  background: radial-gradient(ellipse at 32% 25%, #9dbb70 0%, #659451 42%, #376c43 100%);
+  box-shadow:
+    -25px 20px 0 -7px #719e58,
+    24px 17px 0 -5px #548548,
+    -10px 39px 0 -10px #477b43,
+    20px 42px 0 -12px #3d713f;
 }
 
 .meadow-tree::after {
   content: "";
   position: absolute;
   bottom: 0;
-  left: 32px;
-  width: 12px;
+  left: 43px;
+  width: 17px;
   height: 75px;
-  background: #806044;
+  background: linear-gradient(90deg, #68452f, #a77a4e 50%, #68452f);
+  clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
 }
 
 .meadow-flower {
   position: absolute;
   bottom: 18%;
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #f6c95e;
-  box-shadow: 0 -9px 0 -2px #fff5d7,
-              0 9px 0 -2px #fff5d7,
-              9px 0 0 -2px #fff5d7,
-              -9px 0 0 -2px #fff5d7;
+  box-shadow:
+    0 -9px 0 -2px #fff5d7,
+    0 9px 0 -2px #fff5d7,
+    9px 0 0 -2px #fff5d7,
+    -9px 0 0 -2px #fff5d7;
+}
+
+.meadow-flower::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 5px;
+  width: 2px;
+  height: 27px;
+  background: #54834c;
+}
+
+.meadow-flower::after {
+  content: "";
+  position: absolute;
+  top: 23px;
+  left: 5px;
+  width: 10px;
+  height: 6px;
+  border-radius: 100% 0 100% 0;
+  background: #6d9b54;
+  transform: rotate(-25deg);
 }
 
 .flower-one { left: 19%; }
@@ -1090,11 +1144,11 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   position: absolute;
   top: 35%;
   left: 30%;
-  width: 18px;
-  height: 12px;
-  border-radius: 50%;
+  width: 12px;
+  height: 15px;
+  border-radius: 80% 20% 80% 20%;
   background: #e9a6c5;
-  box-shadow: 9px 0 0 #e9a6c5;
+  box-shadow: 9px -2px 0 #d98caf;
   transform: rotate(-25deg);
   animation: butterflyFloat 4s ease-in-out infinite alternate;
 }
@@ -1103,6 +1157,7 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   from { transform: translateY(0) rotate(-25deg); }
   to { transform: translateY(-13px) rotate(15deg); }
 }
+  
   
   /* FOCUS ROOM - SIMPLE INTRO BANNER */
 #focus .focus-intro {
