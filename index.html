@@ -1985,13 +1985,32 @@ max-height: calc(100vh - 30px);
         </div>
       </div>
 
-      <div style="display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap">
-  <button class="btn secondary" id="arenaReveal">Reveal Answer</button>
-  <button class="btn" id="arenaNext" hidden>Next Card →</button>
-  <button class="btn secondary" id="arenaCancel" style="border-color:#dc6666;color:#dc6666">
-    ✕ Cancel Flashcards
+      
+<div style="display:flex;justify-content:center;margin-top:18px">
+  <button class="btn secondary" id="arenaReveal">
+    Reveal Answer
   </button>
-      </div>
+</div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:18px">
+  <button
+    class="btn secondary"
+    id="arenaCancel"
+    style="flex:1;min-height:48px;border-color:#dc6666;color:#dc6666"
+  >
+    ✕ Cancel
+  </button>
+
+  <button
+    class="btn"
+    id="arenaNext"
+    style="flex:1;min-height:48px"
+    hidden
+  >
+    Next Card →
+  </button>
+</div>
+
 
     <div id="arenaLoading" hidden style="text-align:center;padding:25px">
       <div style="font-size:35px">🌱</div>
