@@ -3472,7 +3472,7 @@ function updateArenaCooldown() {
   if (!button || !status) return;
 
   const cooldownUntil = Number(
-    localStorage.getItem(ARENA_COOLDOWN_KEY) || 0
+    localStorage.getItem(accountStorageKey(ARENA_COOLDOWN_KEY)) || 0
   );
 
   const remaining = Math.ceil(
@@ -3637,7 +3637,7 @@ async function generateArenaCards() {
     if (arenaGenerating) return;
 
   const cooldownUntil = Number(
-    localStorage.getItem(ARENA_COOLDOWN_KEY) || 0
+    localStorage.getItem(accountStorageKey(ARENA_COOLDOWN_KEY)) || 0
   );
 
   if (Date.now() < cooldownUntil) {
@@ -3647,9 +3647,9 @@ async function generateArenaCards() {
 
   arenaGenerating = true;
   localStorage.setItem(
-    ARENA_COOLDOWN_KEY,
-    Date.now() + ARENA_COOLDOWN_MS
-  );
+  accountStorageKey(ARENA_COOLDOWN_KEY),
+  Date.now() + ARENA_COOLDOWN_MS
+);
   updateArenaCooldown();
   const startButton = document.getElementById("arenaStart");
   const welcome = document.getElementById("arenaWelcome");
