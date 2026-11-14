@@ -1797,6 +1797,10 @@ body.auth-locked .global-study-companion {
       <div class="stat-label">FOCUS MINUTES</div>
       <div class="stat-value" id="adminFocusMinutes">0</div>
     </div>
+    <div class="card stat">
+  <div class="stat-label">FOCUS SESSIONS</div>
+  <div class="stat-value" id="adminFocusSessions">0</div>
+    </div>
   </div>
 
   <section class="card" style="margin-top:24px;padding:20px">
@@ -1812,10 +1816,11 @@ body.auth-locked .global-study-companion {
             <th style="padding:12px">XP</th>
             <th style="padding:12px">Tasks Done</th>
             <th style="padding:12px">Focus Minutes</th>
+            <th style="padding:12px">Focus Sessions</th>
           </tr>
         </thead>
         <tbody id="adminStudentTable">
-          <tr><td colspan="6" style="padding:12px">No student records yet.</td></tr>
+          <tr><td colspan="7" style="padding:12px">No student records yet.</td></tr>
         </tbody>
       </table>
     </div>
@@ -5656,17 +5661,18 @@ function restoreAccountSession() {
 function renderAdminDashboard() {
   const students = accounts.filter(account => account.role === "student");
 
-  let totalXP = 0;
-  let totalCompletedTasks = 0;
-  let totalFocusMinutes = 0;
-  let completedTreeJourneys = 0;
+let totalXP = 0;
+let totalCompletedTasks = 0;
+let totalFocusMinutes = 0;
+let totalFocusSessions = 0;
+let completedTreeJourneys = 0;
 
   const table = document.getElementById("adminStudentTable");
 
   if (students.length === 0) {
     table.innerHTML = `
       <tr>
-        <td colspan="6" style="padding:12px">
+        <td colspan="7" style="padding:12px">
           No student accounts registered yet.
         </td>
       </tr>
@@ -5680,6 +5686,7 @@ function renderAdminDashboard() {
       totalXP += studentGame.xp;
       totalCompletedTasks += completedTasks;
       totalFocusMinutes += studentGame.focusMinutes;
+      totalFocusSessions += studentGame.focusSessions;
 
       if (level >= 15) completedTreeJourneys++;
 
@@ -5691,6 +5698,7 @@ function renderAdminDashboard() {
           <td style="padding:12px">${studentGame.xp}</td>
           <td style="padding:12px">${completedTasks}</td>
           <td style="padding:12px">${studentGame.focusMinutes}</td>
+          <td style="padding:12px">${studentGame.focusSessions}</td>
         </tr>
       `;
     }).join("");
@@ -5700,6 +5708,7 @@ function renderAdminDashboard() {
   document.getElementById("adminTotalXP").textContent = totalXP;
   document.getElementById("adminCompletedTasks").textContent = totalCompletedTasks;
   document.getElementById("adminFocusMinutes").textContent = totalFocusMinutes;
+  document.getElementById("adminFocusSessions").textContent = totalFocusSessions;
 
   document.getElementById("adminGreenImpact").innerHTML = `
     <div class="stats">
