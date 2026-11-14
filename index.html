@@ -2449,6 +2449,22 @@ body.auth-locked .global-study-companion {
         <input id="playerName" maxlength="25" placeholder="Enter your name" required>
         <button class="btn" type="submit">Save</button>
       </div>
+      
+    <div class="profile-row" style="margin-top:20px">
+      <div class="profile-info">
+        <strong>👤 Account</strong>
+        <p class="muted" id="accountEmail">Loading account...</p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn btn-outline" type="button" id="switchAccountBtn">
+        Switch Account
+      </button>
+      <button class="btn btn-danger" type="button" id="logoutBtn">
+        Log Out
+      </button>
+    </div>
     </form>
     <div class="profile-row" style="margin-top:15px">
       <div class="profile-info"><strong>Appearance</strong><p>Switch between light and dark mode.</p></div>
@@ -5373,6 +5389,10 @@ function enterStudentAccount(account) {
   currentAccount = account;
   game = loadGameForAccount(account);
   game.name = account.name;
+  const accountEmail = document.getElementById("accountEmail");
+if (accountEmail) {
+  accountEmail.textContent = account.email;
+}
 
   localStorage.setItem(
     SESSION_KEY,
@@ -5395,7 +5415,28 @@ function initializeStudentApp() {
   renderAll();
   displayTime();
 }
+function returnToAccountLogin() {
+  save();
 
+  localStorage.removeItem(SESSION_KEY);
+  currentAccount = null;
+
+  document.body.classList.add("auth-locked");
+  document.getElementById("authScreen").style.display = "grid";
+
+  showAuthForm("login");
+
+  document.getElementById("loginPassword").value = "";
+}
+
+document.getElementById("switchAccountBtn").addEventListener("click", () => {
+  returnToAccountLogin();
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  returnToAccountLogin();
+});
+  
 // Switch between login and registration
 document.getElementById("showRegister").addEventListener("click", () => {
   showAuthForm("register");
