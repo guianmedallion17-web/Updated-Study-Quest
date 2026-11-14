@@ -1379,7 +1379,25 @@ body.dark .audio-toggle {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  max-height: 1200px;
+  opacity: 1;
+  overflow: hidden;
+  transform: translateY(0);
+  transition:
+    max-height .4s ease,
+    opacity .3s ease,
+    transform .4s ease,
+    gap .3s ease;
 }
+
+.global-study-companion.minimized #globalCompanionContent {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  gap: 0;
+  pointer-events: none;
+}
+
 
 .companion-section {
   display: flex;
@@ -1544,10 +1562,15 @@ max-height: calc(100vh - 30px);
 
 .global-study-companion.minimized {
   width: 190px;
+  min-height: 0;
 }
 
-.global-study-companion.minimized #globalCompanionContent {
-  display: none;
+.global-study-companion.minimized .global-companion-header {
+  margin-bottom: 0;
+}
+
+.global-study-companion.focus-docked.minimized {
+  width: 100%;
 }
 
 @media (max-width: 700px) {
@@ -4348,14 +4371,52 @@ const companionPlaceholder = document.createComment("Study Companion original po
 companion.parentNode.insertBefore(companionPlaceholder, companion);
 
 
+
+function animateCompanionTransition(previousRect) {
+  if (!previousRect || !companion.animate) return;
+
+  const nextRect = companion.getBoundingClientRect();
+
+  if (!nextRect.width || !nextRect.height) return;
+
+  const moveX = previousRect.left - nextRect.left;
+  const moveY = previousRect.top - nextRect.top;
+  const scaleX = previousRect.width / nextRect.width;
+  const scaleY = previousRect.height / nextRect.height;
+
+  companion.animate(
+    [
+      {
+        transform: `translate(${moveX}px, ${moveY}px) scale(${scaleX}, ${scaleY})`,
+        transformOrigin: "top left",
+        opacity: 0.75
+      },
+      {
+        transform: "translate(0, 0) scale(1, 1)",
+        transformOrigin: "top left",
+        opacity: 1
+      }
+    ],
+    {
+      duration: 550,
+      easing: "cubic-bezier(.22,.8,.25,1)"
+    }
+  );
+}
+
+let companionLayoutInitialized = false;
+
 function updateCompanionLayout() {
   const focusSection = document.getElementById("focus");
   const isFocusRoom = focusSection.classList.contains("active");
 
+  const previousRect = companionLayoutInitialized
+    ? companion.getBoundingClientRect()
+    : null;
+
   if (isFocusRoom) {
     focusSection.appendChild(companion);
     companion.classList.add("focus-docked");
-    companion.classList.remove("minimized");
 
     companion.style.position = "relative";
     companion.style.top = "auto";
@@ -4363,7 +4424,8 @@ function updateCompanionLayout() {
     companion.style.bottom = "auto";
     companion.style.left = "auto";
 
-    companionMinimize.textContent = "−";
+    companionMinimize.textContent =
+      companion.classList.contains("minimized") ? "+" : "−";
   } else {
     companionPlaceholder.parentNode.insertBefore(
       companion,
@@ -4381,8 +4443,13 @@ function updateCompanionLayout() {
 
     companionMinimize.textContent = "+";
   }
+
+  companionLayoutInitialized = true;
+
+  if (previousRect) {
+    animateCompanionTransition(previousRect);
+  }
 }
-  
 
 updateCompanionLayout();
   
