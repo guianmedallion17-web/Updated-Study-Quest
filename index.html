@@ -1769,6 +1769,67 @@ body.auth-locked .global-study-companion {
   </div>
 </div>
   
+<div id="adminScreen" style="display:none;min-height:100vh;padding:28px;max-width:1200px;margin:auto">
+  <header style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px">
+    <div>
+      <div class="eyebrow">STUDYQUEST ADMINISTRATION</div>
+      <h1>Admin Dashboard</h1>
+      <p class="muted">Monitor student accounts and their learning progress.</p>
+    </div>
+    <button class="btn btn-danger" type="button" id="adminLogoutBtn">Log Out</button>
+  </header>
+
+  <h2>Overview</h2>
+  <div class="stats">
+    <div class="card stat">
+      <div class="stat-label">REGISTERED STUDENTS</div>
+      <div class="stat-value" id="adminStudentCount">0</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-label">TOTAL XP EARNED</div>
+      <div class="stat-value" id="adminTotalXP">0</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-label">COMPLETED TASKS</div>
+      <div class="stat-value" id="adminCompletedTasks">0</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-label">FOCUS MINUTES</div>
+      <div class="stat-value" id="adminFocusMinutes">0</div>
+    </div>
+  </div>
+
+  <section class="card" style="margin-top:24px;padding:20px">
+    <h2>Registered Students</h2>
+    <p class="muted">View each student's account and learning progress.</p>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;text-align:left">
+        <thead>
+          <tr>
+            <th style="padding:12px">Student</th>
+            <th style="padding:12px">Email</th>
+            <th style="padding:12px">Level</th>
+            <th style="padding:12px">XP</th>
+            <th style="padding:12px">Tasks Done</th>
+            <th style="padding:12px">Focus Minutes</th>
+          </tr>
+        </thead>
+        <tbody id="adminStudentTable">
+          <tr><td colspan="6" style="padding:12px">No student records yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:24px;padding:20px">
+    <h2>Our Green Impact</h2>
+    <p class="muted">A summary of the trees planted and contributions made by StudyQuest students.</p>
+    <div id="adminGreenImpact">
+      <p class="muted">Green Impact records will be displayed here.</p>
+    </div>
+  </section>
+</div>
+  
 <div class="app">
 
 <aside class="sidebar">
@@ -5415,6 +5476,38 @@ function initializeStudentApp() {
   renderAll();
   displayTime();
 }
+  
+function enterAdminAccount() {
+  currentAccount = ADMIN_ACCOUNT;
+
+  localStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify({ role: "admin" })
+  );
+
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("adminScreen").style.display = "block";
+
+  renderAdminDashboard();
+
+  document.body.classList.add("auth-locked");
+}
+
+function logoutAdmin() {
+  localStorage.removeItem(SESSION_KEY);
+  currentAccount = null;
+
+  document.getElementById("adminScreen").style.display = "none";
+  document.getElementById("authScreen").style.display = "grid";
+
+  showAuthForm("login");
+  document.getElementById("loginPassword").value = "";
+}
+
+document.getElementById("adminLogoutBtn").addEventListener("click", () => {
+  logoutAdmin();
+});
+  
 function returnToAccountLogin() {
   save();
 
@@ -5501,17 +5594,14 @@ document.getElementById("loginForm").addEventListener("submit", event => {
   const email = document.getElementById("loginEmail").value.trim().toLowerCase();
   const password = document.getElementById("loginPassword").value;
 
-  // Admin dashboard will be connected in the next step.
   if (
     email === ADMIN_ACCOUNT.email &&
     password === ADMIN_ACCOUNT.password
   ) {
-    showAuthMessage(
-      "loginMessage",
-      "Admin access is being set up. Please try again after the next update."
-    );
+    enterAdminAccount();
     return;
   }
+
 
   const account = accounts.find(item =>
     item.email === email && item.password === password
@@ -5526,11 +5616,17 @@ document.getElementById("loginForm").addEventListener("submit", event => {
 });
 
 // RESTORE LOGIN AFTER REFRESH
+
 function restoreAccountSession() {
   try {
     const session = JSON.parse(
       localStorage.getItem(SESSION_KEY) || "null"
     );
+
+    if (session && session.role === "admin") {
+      enterAdminAccount();
+      return;
+    }
 
     if (session && session.role === "student") {
       const account = accounts.find(
@@ -5547,13 +5643,82 @@ function restoreAccountSession() {
   }
 
   currentAccount = null;
-  document.body.classList.add("auth-locked");
+  document.getElementById("adminScreen").style.display = "none";
   document.getElementById("authScreen").style.display = "grid";
+  document.body.classList.add("auth-locked");
 }
+
   
 // ===============================
 // DASHBOARD AND STARTUP
 // ===============================
+  
+function renderAdminDashboard() {
+  const students = accounts.filter(account => account.role === "student");
+
+  let totalXP = 0;
+  let totalCompletedTasks = 0;
+  let totalFocusMinutes = 0;
+  let completedTreeJourneys = 0;
+
+  const table = document.getElementById("adminStudentTable");
+
+  if (students.length === 0) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="6" style="padding:12px">
+          No student accounts registered yet.
+        </td>
+      </tr>
+    `;
+  } else {
+    table.innerHTML = students.map(account => {
+      const studentGame = prepareGameData(account.game);
+      const completedTasks = studentGame.tasks.filter(task => task.done).length;
+      const level = Math.floor(studentGame.xp / 100) + 1;
+
+      totalXP += studentGame.xp;
+      totalCompletedTasks += completedTasks;
+      totalFocusMinutes += studentGame.focusMinutes;
+
+      if (level >= 15) completedTreeJourneys++;
+
+      return `
+        <tr>
+          <td style="padding:12px">${escapeHTML(account.name)}</td>
+          <td style="padding:12px">${escapeHTML(account.email)}</td>
+          <td style="padding:12px">${level}</td>
+          <td style="padding:12px">${studentGame.xp}</td>
+          <td style="padding:12px">${completedTasks}</td>
+          <td style="padding:12px">${studentGame.focusMinutes}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  document.getElementById("adminStudentCount").textContent = students.length;
+  document.getElementById("adminTotalXP").textContent = totalXP;
+  document.getElementById("adminCompletedTasks").textContent = totalCompletedTasks;
+  document.getElementById("adminFocusMinutes").textContent = totalFocusMinutes;
+
+  document.getElementById("adminGreenImpact").innerHTML = `
+    <div class="stats">
+      <div class="card stat">
+        <div class="stat-label">COMPLETED TREE JOURNEYS</div>
+        <div class="stat-value">${completedTreeJourneys}</div>
+      </div>
+      <div class="card stat">
+        <div class="stat-label">VERIFIED TREES PLANTED</div>
+        <div class="stat-value">0</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px">
+      Completed virtual tree journeys are counted separately from
+      actual trees planted. No verified planting records have been added yet.
+    </p>
+  `;
+}
+  
 function renderStats() {
   const level = getLevel();
   const inLevel = xpIntoLevel();
