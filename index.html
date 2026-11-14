@@ -351,6 +351,53 @@ input, select {
   min-width: 0;
   font-size: 13px;
 }
+  /* GREEN IMPACT ADMIN FORM */
+#greenImpactForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+#greenImpactForm label {
+  display: block;
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+#greenImpactForm input,
+#greenImpactForm textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  margin: 0 0 8px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  outline: none;
+}
+
+#greenImpactForm textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+#greenImpactForm input:focus,
+#greenImpactForm textarea:focus {
+  border-color: var(--green2);
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.15);
+}
+
+#greenImpactForm input::placeholder,
+#greenImpactForm textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
 .quests { display: grid; gap: 10px; }
 .quest {
   border: 1px solid var(--border);
@@ -6075,7 +6122,7 @@ container.onclick = handleGreenImpactActions;
           <img
             src="${photo}"
             alt="Tree planting activity"
-            style="width:100%;height:120px;object-fit:cover;border-radius:10px"
+            style="width:100%;height:120px;object-fit:cover;border-radius:10px;cursor:zoom-in"
           >
         `).join("")}
       </div>
@@ -6095,6 +6142,18 @@ container.onclick = handleGreenImpactActions;
   `).join("");
   }
   function handleGreenImpactActions(event) {
+      const photo = event.target.closest(
+    '#adminGreenImpactActivities img'
+  );
+
+  if (photo) {
+    const modal = document.getElementById("greenImpactPhotoModal");
+    const fullPhoto = document.getElementById("greenImpactFullPhoto");
+
+    fullPhoto.src = photo.src;
+    modal.style.display = "flex";
+    return;
+  }
   const button = event.target.closest("[data-green-action]");
   if (!button) return;
 
