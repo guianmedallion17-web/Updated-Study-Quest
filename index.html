@@ -1594,6 +1594,99 @@ max-height: calc(100vh - 30px);
   }
 }
   
+/* ===============================
+   STUDYQUEST ACCOUNT SCREEN
+================================ */
+.auth-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top right, #d9edc9, transparent 45%),
+    var(--bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 430px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 30px;
+  box-shadow: var(--shadow);
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.auth-logo {
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+
+.auth-brand h1 {
+  margin: 0;
+  color: var(--green);
+  font-size: 27px;
+}
+
+.auth-brand p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 13px;
+}
+
+.auth-form label {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.auth-form input {
+  margin-top: 6px;
+}
+
+.auth-submit {
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--green);
+  color: white;
+  font-weight: 800;
+  margin-top: 8px;
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 18px;
+}
+
+.auth-switch button {
+  border: 0;
+  background: none;
+  color: var(--green);
+  font-weight: 800;
+}
+
+.auth-message {
+  font-size: 12px;
+  color: #c04444;
+  min-height: 16px;
+}
+  /* Hide the student app until an account is logged in */
+body.auth-locked .app,
+body.auth-locked .global-study-companion {
+  display: none !important;
+}
 </style>
 <!-- PDF Reader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1606,7 +1699,76 @@ max-height: calc(100vh - 30px);
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<body>
+<body class="auth-locked">
+  
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+
+    <div class="auth-brand">
+      <div class="auth-logo">🌿</div>
+      <h1>StudyQuest</h1>
+      <p>Level up your learning, one step at a time.</p>
+    </div>
+
+    <form id="loginForm" class="auth-form">
+      <h2>Welcome Back!</h2>
+
+      <label>
+        Email Address
+        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+      </label>
+
+      <label>
+        Password
+        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+      </label>
+
+      <p id="loginMessage" class="auth-message"></p>
+
+      <button type="submit" class="auth-submit">Log In</button>
+
+      <div class="auth-switch">
+        Don't have an account?
+        <button type="button" id="showRegister">Create Account</button>
+      </div>
+    </form>
+
+    <form id="registerForm" class="auth-form" hidden>
+      <h2>Create Your Account</h2>
+
+      <label>
+        Full Name
+        <input type="text" id="registerName" placeholder="Enter your name" required>
+      </label>
+
+      <label>
+        Email Address
+        <input type="email" id="registerEmail" placeholder="Enter your email" required>
+      </label>
+
+      <label>
+        Password
+        <input type="password" id="registerPassword" placeholder="Create a password" minlength="6" required>
+      </label>
+
+      <label>
+        Confirm Password
+        <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+      </label>
+
+      <p id="registerMessage" class="auth-message"></p>
+
+      <button type="submit" class="auth-submit">Create Account</button>
+
+      <div class="auth-switch">
+        Already have an account?
+        <button type="button" id="showLogin">Log In</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+  
 <div class="app">
 
 <aside class="sidebar">
@@ -2321,11 +2483,22 @@ max-height: calc(100vh - 30px);
 <script>
 "use strict";
 
+
 // ===============================
-// STUDYQUEST GAME DATA
+// STUDYQUEST ACCOUNT AND GAME DATA
 // ===============================
 const KEY = "studyquest_save_v1";
 const THEME_KEY = "studyquest_theme_v1";
+const ACCOUNTS_KEY = "studyquest_accounts_v1";
+const SESSION_KEY = "studyquest_session_v1";
+
+// DEMONSTRATION ADMIN ACCOUNT
+const ADMIN_ACCOUNT = {
+  email: "admin@studyquest.com",
+  password: "Admin123!",
+  name: "StudyQuest Administrator",
+  role: "admin"
+};
 
 function localDate(date = new Date()) {
   const y = date.getFullYear();
@@ -2354,21 +2527,49 @@ function newGame() {
   };
 }
 
+function loadAccounts() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ACCOUNTS_KEY));
+    return Array.isArray(saved) ? saved : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+let accounts = loadAccounts();
+let currentAccount = null;
+
+function saveAccounts() {
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
+function prepareGameData(saved) {
+  const base = newGame();
+
+  if (!saved || typeof saved !== "object") {
+    return base;
+  }
+
+  return {
+    ...base,
+    ...saved,
+    tasks: Array.isArray(saved.tasks) ? saved.tasks : [],
+    questClaims: Array.isArray(saved.questClaims) ? saved.questClaims : [],
+    quizAnswered: Array.isArray(saved.quizAnswered) ? saved.quizAnswered : []
+  };
+}
+
 function loadGame() {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
-    if (saved && typeof saved === "object") {
-      const base = newGame();
-      return {
-        ...base,
-        ...saved,
-        tasks: Array.isArray(saved.tasks) ? saved.tasks : [],
-        questClaims: Array.isArray(saved.questClaims) ? saved.questClaims : [],
-        quizAnswered: Array.isArray(saved.quizAnswered) ? saved.quizAnswered : []
-      };
-    }
-  } catch (e) {}
-  return newGame();
+    return prepareGameData(saved);
+  } catch (e) {
+    return newGame();
+  }
+}
+
+function loadGameForAccount(account) {
+  return prepareGameData(account?.game);
 }
 
 let game = loadGame();
@@ -2377,7 +2578,16 @@ let selectedView = "home";
 
 function save() {
   try {
-    localStorage.setItem(KEY, JSON.stringify(game));
+    if (currentAccount && currentAccount.role === "student") {
+      const account = accounts.find(item => item.id === currentAccount.id);
+
+      if (account) {
+        account.game = game;
+        saveAccounts();
+      }
+    } else if (!currentAccount) {
+      localStorage.setItem(KEY, JSON.stringify(game));
+    }
   } catch (e) {
     showToast("Storage unavailable. Your progress may not persist.");
   }
@@ -5125,6 +5335,164 @@ document.addEventListener("click", function(event) {
     generateStudyQuiz(button.dataset.generateQuiz);
   }
 });
+
+  // ===============================
+// STUDYQUEST AUTHENTICATION
+// ===============================
+
+function showAuthMessage(elementId, message) {
+  document.getElementById(elementId).textContent = message;
+}
+
+function showAuthForm(form) {
+  document.getElementById("loginForm").hidden = form !== "login";
+  document.getElementById("registerForm").hidden = form !== "register";
+
+  showAuthMessage("loginMessage", "");
+  showAuthMessage("registerMessage", "");
+}
+
+function enterStudentAccount(account) {
+  currentAccount = account;
+  game = loadGameForAccount(account);
+  game.name = account.name;
+
+  localStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify({
+      role: "student",
+      accountId: account.id
+    })
+  );
+
+  save();
+
+  document.getElementById("authScreen").style.display = "none";
+  document.body.classList.remove("auth-locked");
+
+  initializeStudentApp();
+}
+
+function initializeStudentApp() {
+  startQuiz();
+  renderAll();
+  displayTime();
+}
+
+// Switch between login and registration
+document.getElementById("showRegister").addEventListener("click", () => {
+  showAuthForm("register");
+});
+
+document.getElementById("showLogin").addEventListener("click", () => {
+  showAuthForm("login");
+});
+
+// STUDENT REGISTRATION
+document.getElementById("registerForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const name = document.getElementById("registerName").value.trim();
+  const email = document.getElementById("registerEmail").value.trim().toLowerCase();
+  const password = document.getElementById("registerPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+
+  if (password !== confirmPassword) {
+    showAuthMessage("registerMessage", "Passwords do not match.");
+    return;
+  }
+
+  if (accounts.some(account => account.email === email)) {
+    showAuthMessage("registerMessage", "This email is already registered.");
+    return;
+  }
+
+  if (email === ADMIN_ACCOUNT.email) {
+    showAuthMessage("registerMessage", "This email is reserved.");
+    return;
+  }
+
+  let studentGame = newGame();
+
+  // Transfer existing progress to the first registered account.
+  if (accounts.length === 0 && localStorage.getItem(KEY)) {
+    studentGame = loadGame();
+  }
+
+  studentGame.name = name;
+
+  const account = {
+    id: Date.now().toString() + Math.random().toString(36).slice(2),
+    name,
+    email,
+    password,
+    role: "student",
+    game: studentGame
+  };
+
+  accounts.push(account);
+  saveAccounts();
+
+  enterStudentAccount(account);
+});
+
+// STUDENT LOGIN
+document.getElementById("loginForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password = document.getElementById("loginPassword").value;
+
+  // Admin dashboard will be connected in the next step.
+  if (
+    email === ADMIN_ACCOUNT.email &&
+    password === ADMIN_ACCOUNT.password
+  ) {
+    showAuthMessage(
+      "loginMessage",
+      "Admin access is being set up. Please try again after the next update."
+    );
+    return;
+  }
+
+  const account = accounts.find(item =>
+    item.email === email && item.password === password
+  );
+
+  if (!account) {
+    showAuthMessage("loginMessage", "Incorrect email or password.");
+    return;
+  }
+
+  enterStudentAccount(account);
+});
+
+// RESTORE LOGIN AFTER REFRESH
+function restoreAccountSession() {
+  try {
+    const session = JSON.parse(
+      localStorage.getItem(SESSION_KEY) || "null"
+    );
+
+    if (session && session.role === "student") {
+      const account = accounts.find(
+        item => item.id === session.accountId
+      );
+
+      if (account) {
+        enterStudentAccount(account);
+        return;
+      }
+    }
+  } catch (error) {
+    console.error("Session restoration failed:", error);
+  }
+
+  currentAccount = null;
+  document.body.classList.add("auth-locked");
+  document.getElementById("authScreen").style.display = "grid";
+}
+  
 // ===============================
 // DASHBOARD AND STARTUP
 // ===============================
@@ -5179,9 +5547,7 @@ function renderAll() {
   document.getElementById("gardenTheme").value = game.gardenTheme;
 }
 
-startQuiz();
-renderAll();
-displayTime();
+restoreAccountSession();
 </script>
 </body>
 </html>
