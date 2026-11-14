@@ -1832,6 +1832,46 @@ body.auth-locked .global-study-companion {
     <div id="adminGreenImpact">
       <p class="muted">Green Impact records will be displayed here.</p>
     </div>
+    <div class="card" style="margin-top:20px;padding:20px">
+  <h3>🌳 Add Planting Activity</h3>
+  <p class="muted">Upload photos and record your actual tree-planting activities.</p>
+
+  <form id="greenImpactForm">
+    <label for="impactTitle">Activity Title</label>
+    <input type="text" id="impactTitle" placeholder="e.g. Community Tree Planting" required>
+
+    <label for="impactDate">Planting Date</label>
+    <input type="date" id="impactDate" required>
+
+    <label for="impactLocation">Location</label>
+    <input type="text" id="impactLocation" placeholder="Enter planting location" required>
+
+    <label for="impactDescription">Description</label>
+    <textarea id="impactDescription" placeholder="Describe the planting activity..." rows="3" required></textarea>
+
+    <label for="impactTreeCount">Number of Trees Planted</label>
+    <input type="number" id="impactTreeCount" min="1" step="1" placeholder="e.g. 25" required>
+
+    <label for="impactPhoto">Planting Photos</label>
+    <input type="file" id="impactPhoto" accept="image/*" multiple required>
+
+    <div id="impactPhotoPreview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-top:12px"></div>
+
+    <button type="submit" class="btn" style="margin-top:16px;width:100%">
+      Save Planting Activity
+    </button>
+  </form>
+    </div>
+    <div class="card" style="margin-top:20px;padding:20px">
+  <h3>📋 Planting Activity Records</h3>
+  <p class="muted">
+    Manage your saved planting activities. You can edit, publish, or delete each record.
+  </p>
+
+  <div id="adminGreenImpactActivities">
+    <p class="muted">No planting activities recorded yet.</p>
+  </div>
+    </div>
   </section>
 </div>
   
@@ -2573,7 +2613,171 @@ const KEY = "studyquest_save_v1";
 const THEME_KEY = "studyquest_theme_v1";
 const ACCOUNTS_KEY = "studyquest_accounts_v1";
 const SESSION_KEY = "studyquest_session_v1";
+const GREEN_IMPACT_KEY = "studyquest_green_impact_v1";
+  
+function loadGreenImpactActivities() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(GREEN_IMPACT_KEY) || "[]"
+    );
 
+    return Array.isArray(saved) ? saved : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveGreenImpactActivities() {
+  try {
+    localStorage.setItem(
+      GREEN_IMPACT_KEY,
+      JSON.stringify(greenImpactActivities)
+    );
+    return true;
+  } catch (error) {
+    showToast("Storage is full. Unable to save planting records.");
+    return false;
+  }
+}
+
+let greenImpactActivities = loadGreenImpactActivities();
+  const impactPhotoInput = document.getElementById("impactPhoto");
+
+if (impactPhotoInput) {
+  impactPhotoInput.addEventListener("change", () => {
+    const preview = document.getElementById("impactPhotoPreview");
+    preview.innerHTML = "";
+
+    Array.from(impactPhotoInput.files).forEach(file => {
+      if (!file.type.startsWith("image/")) return;
+
+      const image = document.createElement("img");
+      const imageURL = URL.createObjectURL(file);
+
+      image.src = imageURL;
+      image.alt = "Planting activity preview";
+      image.style.width = "100%";
+      image.style.height = "120px";
+      image.style.objectFit = "cover";
+      image.style.borderRadius = "10px";
+
+      image.onload = () => URL.revokeObjectURL(imageURL);
+
+      preview.appendChild(image);
+    });
+  });
+}
+  function compressImpactPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const imageURL = URL.createObjectURL(file);
+
+    image.onload = () => {
+      const maxSize = 1200;
+      const scale = Math.min(
+        1,
+        maxSize / Math.max(image.width, image.height)
+      );
+
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+
+      const context = canvas.getContext("2d");
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      URL.revokeObjectURL(imageURL);
+
+      try {
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(imageURL);
+      reject(new Error("Unable to process an image."));
+    };
+
+    image.src = imageURL;
+  });
+  }
+  const greenImpactForm = document.getElementById("greenImpactForm");
+
+if (greenImpactForm) {
+  greenImpactForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const photoFiles = Array.from(
+      document.getElementById("impactPhoto").files
+    );
+
+    if (photoFiles.length === 0) {
+      showToast("Please select at least one planting photo.");
+      return;
+    }
+
+    if (photoFiles.length > 5) {
+      showToast("Please select no more than 5 photos.");
+      return;
+    }
+
+    if (photoFiles.some(file => !file.type.startsWith("image/"))) {
+      showToast("Please select valid image files.");
+      return;
+    }
+
+    const submitButton = greenImpactForm.querySelector(
+      'button[type="submit"]'
+    );
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Saving Activity...";
+
+    try {
+      const photos = await Promise.all(
+        photoFiles.map(file => compressImpactPhoto(file))
+      );
+
+      const activity = {
+        id: Date.now().toString(),
+        title: document.getElementById("impactTitle").value.trim(),
+        date: document.getElementById("impactDate").value,
+        location: document.getElementById("impactLocation").value.trim(),
+        description: document.getElementById("impactDescription").value.trim(),
+        treeCount: Number(document.getElementById("impactTreeCount").value),
+        photos,
+        published: false
+      };
+
+      if (!Number.isInteger(activity.treeCount) || activity.treeCount < 1) {
+        showToast("Please enter a valid number of trees.");
+        return;
+      }
+
+      greenImpactActivities.push(activity);
+
+      if (!saveGreenImpactActivities()) {
+        greenImpactActivities.pop();
+        return;
+      }
+
+      greenImpactForm.reset();
+      document.getElementById("impactPhotoPreview").innerHTML = "";
+
+      showToast("Planting activity saved successfully!");
+      renderAdminDashboard();
+
+    } catch (error) {
+      showToast("Unable to process or save the planting photos.");
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = "Save Planting Activity";
+    }
+  });
+      }
+  
 // DEMONSTRATION ADMIN ACCOUNT
 const ADMIN_ACCOUNT = {
   email: "admin@studyquest.com",
