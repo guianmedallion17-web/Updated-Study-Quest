@@ -2508,27 +2508,43 @@ body.auth-locked .global-study-companion {
   </p>
 </div>
   
-  <div class="card" style="margin-top:16px">
-    <h2>🌳 Planting Progress</h2>
-    <p class="muted">
-      Tree-planting arrangements are currently being planned.
-      Completed virtual tree journeys will be tracked separately
-      from actual trees planted.
-    </p>
-    <div class="profile-row">
-      <div class="profile-info">
-        <strong>Planting status</strong>
-        <p class="muted">Planning in progress</p>
-      </div>
-      <span class="badge">In preparation</span>
+<div class="card" style="margin-top:16px">
+  <h2>🌳 Planting Progress</h2>
+  <p class="muted">
+    Follow our progress as StudyQuest turns learning achievements
+    into real-world environmental action.
+  </p>
+
+  <div class="profile-row">
+    <div class="profile-info">
+      <strong>Planting status</strong>
+      <p class="muted" id="impactPlantingStatus">
+        No published planting activities yet.
+      </p>
     </div>
-    <div class="profile-row">
-      <div class="profile-info">
-        <strong>Planting location / partner</strong>
-        <p class="muted">To be announced</p>
-      </div>
+    <span class="badge" id="impactPlantingBadge">
+      Awaiting updates
+    </span>
+  </div>
+
+  <div class="profile-row">
+    <div class="profile-info">
+      <strong>Latest planting location</strong>
+      <p class="muted" id="impactPlantingLocation">
+        To be announced.
+      </p>
     </div>
   </div>
+
+  <div class="profile-row">
+    <div class="profile-info">
+      <strong>Latest planting date</strong>
+      <p class="muted" id="impactPlantingDate">
+        No activity recorded yet.
+      </p>
+    </div>
+  </div>
+</div>
 
   <div class="card" style="margin-top:16px">
   <h2>📸 Our Planting Activities</h2>
@@ -2545,6 +2561,26 @@ body.auth-locked .global-study-companion {
   </div>
   </div>
 </section>
+  <!-- GREEN IMPACT PHOTO VIEWER -->
+<div
+  id="greenImpactPhotoModal"
+  style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99999;align-items:center;justify-content:center;padding:20px"
+>
+  <button
+    type="button"
+    id="closeGreenImpactPhoto"
+    style="position:absolute;top:20px;right:20px;background:#fff;color:#222;border:0;border-radius:50%;width:42px;height:42px;font-size:24px;cursor:pointer"
+  >
+    ×
+  </button>
+
+  <img
+    id="greenImpactFullPhoto"
+    src=""
+    alt="Full-size tree planting photo"
+    style="max-width:100%;max-height:85vh;object-fit:contain;border-radius:10px"
+  >
+</div>
   
 <!-- SETTINGS -->
 <section class="view" id="settings">
@@ -6185,6 +6221,38 @@ function renderGreenImpact() {
     (total, activity) => total + Number(activity.treeCount || 0),
     0
   );
+  const latestActivity = publishedActivities
+  .slice()
+  .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+
+if (latestActivity) {
+  document.getElementById("impactPlantingStatus").textContent =
+    `${publishedActivities.length} planting activit${publishedActivities.length === 1 ? "y" : "ies"} recorded.`;
+
+  document.getElementById("impactPlantingBadge").textContent =
+    "Records available";
+
+  document.getElementById("impactPlantingLocation").textContent =
+    latestActivity.location;
+
+  document.getElementById("impactPlantingDate").textContent =
+    new Date(latestActivity.date + "T00:00:00").toLocaleDateString(
+      undefined,
+      { year: "numeric", month: "long", day: "numeric" }
+    );
+} else {
+  document.getElementById("impactPlantingStatus").textContent =
+    "No published planting activities yet.";
+
+  document.getElementById("impactPlantingBadge").textContent =
+    "Awaiting updates";
+
+  document.getElementById("impactPlantingLocation").textContent =
+    "To be announced.";
+
+  document.getElementById("impactPlantingDate").textContent =
+    "No activity recorded yet.";
+}
 
   document.getElementById("impactJourneyCount").textContent = completed;
   document.getElementById("impactTreesPlanted").textContent =
@@ -6248,7 +6316,38 @@ function renderGreenImpact() {
       </div>
     `).join("");
 }
+// GREEN IMPACT PHOTO VIEWER
+const greenImpactPhotoModal = document.getElementById(
+  "greenImpactPhotoModal"
+);
 
+const greenImpactFullPhoto = document.getElementById(
+  "greenImpactFullPhoto"
+);
+
+document.getElementById("studentGreenImpactActivities")
+  .addEventListener("click", (event) => {
+    const photo = event.target.closest("img");
+
+    if (!photo) return;
+
+    greenImpactFullPhoto.src = photo.src;
+    greenImpactPhotoModal.style.display = "flex";
+  });
+
+function closeGreenImpactPhotoViewer() {
+  greenImpactPhotoModal.style.display = "none";
+  greenImpactFullPhoto.src = "";
+}
+
+document.getElementById("closeGreenImpactPhoto")
+  .addEventListener("click", closeGreenImpactPhotoViewer);
+
+greenImpactPhotoModal.addEventListener("click", (event) => {
+  if (event.target === greenImpactPhotoModal) {
+    closeGreenImpactPhotoViewer();
+  }
+});
 function renderAll() {
   renderGreenImpact();
   refreshDailyQuests();
