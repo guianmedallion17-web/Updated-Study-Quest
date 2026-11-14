@@ -52,34 +52,53 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   grid-template-columns: 245px minmax(0,1fr);
   min-height: 100vh;
 }
+
 .sidebar {
   background: #183b2a;
   color: #f3f8ee;
-  padding: 25px 17px;
+  padding: 25px 12px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
-.brand { padding: 6px 8px 20px; }
+
+.brand {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 2px 20px;
+}
+
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 25px;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  font-size: clamp(18px, 2vw, 22px);
   font-weight: 850;
-  letter-spacing: -.8px;
+  letter-spacing: -.7px;
+  line-height: 1.1;
+  white-space: nowrap;
 }
+
 .logo-icon {
   display: grid;
   place-items: center;
+  flex-shrink: 0;
   background: #b9df83;
   color: #183b2a;
-  border-radius: 13px;
-  width: 43px;
-  height: 43px;
-  font-size: 25px;
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  font-size: 23px;
 }
-.brand p { color: #c0d4c0; font-size: 13px; }
+
+.brand p {
+  color: #c0d4c0;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 9px 0 0 48px;
+}
 .nav-label {
   color: #8fac95;
   font-size: 10px;
@@ -687,6 +706,21 @@ footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size
   .dashboard-grid { grid-template-columns:1fr; }
   .right-column { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .right-column .card:last-child { grid-column:1/-1; }
+    .logo {
+    font-size: 18px;
+    gap: 7px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 21px;
+  }
+
+  .brand p {
+    font-size: 11px;
+    margin-left: 43px;
+  }
 }
 @media(max-width:720px) {
   .app { grid-template-columns:1fr; }
