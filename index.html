@@ -2538,6 +2538,14 @@ function loadAccounts() {
 
 let accounts = loadAccounts();
 let currentAccount = null;
+  
+  function accountStorageKey(key) {
+  if (!currentAccount || currentAccount.role !== "student") {
+    return key;
+  }
+
+  return "studyquest_account_" + currentAccount.id + "_" + key;
+  }
 
 function saveAccounts() {
   localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
@@ -2871,9 +2879,9 @@ function selectDailyMood(mood) {
   const today = localDate();
 
   localStorage.setItem(
-    "studyQuestMood_" + today,
-    mood
-  );
+  accountStorageKey("studyQuestMood_" + today),
+  mood
+);
 
   document.querySelectorAll("#moodSelector [data-mood]")
     .forEach(button => {
@@ -2893,7 +2901,9 @@ function selectDailyMood(mood) {
   document.getElementById("selectedMoodMessage").textContent =
     "You're feeling " + mood.toLowerCase() + " today. 🌱";
   const todayMotivation = JSON.parse(
-  localStorage.getItem("studyQuestMotivationCurrent_" + today) || "null"
+  localStorage.getItem(
+  accountStorageKey("studyQuestMotivationCurrent_" + today)
+) || "null"
 );
 
 if (todayMotivation && todayMotivation.mood !== mood) {
@@ -2916,7 +2926,7 @@ document.querySelectorAll("#moodSelector [data-mood]")
 
 // Restore today's selected mood
 const savedMood = localStorage.getItem(
-  "studyQuestMood_" + localDate()
+  accountStorageKey("studyQuestMood_" + localDate())
 );
 
 if (savedMood) {
@@ -2929,9 +2939,13 @@ async function generateDailyMotivation() {
   const button = document.getElementById("newMotivationBtn");
 
   const today = localDate();
-  const historyKey = "studyQuestMotivationHistory_" + today;
-  const currentKey = "studyQuestMotivationCurrent_" + today;
+  const historyKey = accountStorageKey(
+  "studyQuestMotivationHistory_" + today
+);
 
+const currentKey = accountStorageKey(
+  "studyQuestMotivationCurrent_" + today
+);
   let history = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
   button.disabled = true;
@@ -2991,9 +3005,12 @@ async function generateDailyMotivation() {
 
 function renderDailyMotivation() {
   const today = localDate();
-  const currentKey = "studyQuestMotivationCurrent_" + today;
-  const savedMood = localStorage.getItem("studyQuestMood_" + today);
-
+  const currentKey = accountStorageKey(
+  "studyQuestMotivationCurrent_" + today
+);
+  const savedMood = localStorage.getItem(
+  accountStorageKey("studyQuestMood_" + today)
+);
   if (savedMood) {
     selectDailyMood(savedMood);
   }
@@ -3495,7 +3512,7 @@ function updateArenaCooldown() {
 function getArenaHistory() {
   try {
     const saved = JSON.parse(
-      localStorage.getItem(ARENA_HISTORY_KEY) || "[]"
+      localStorage.getItem(accountStorageKey(ARENA_HISTORY_KEY)) || "[]"
     );
     return Array.isArray(saved) ? saved : [];
   } catch {
@@ -3515,14 +3532,14 @@ function saveArenaQuestion(question) {
   }
 
   localStorage.setItem(
-    ARENA_HISTORY_KEY,
-    JSON.stringify(history.slice(-300))
-  );
+  accountStorageKey(ARENA_HISTORY_KEY),
+  JSON.stringify(history.slice(-300))
+);
 }
 function getArenaXPHistory() {
   try {
     const saved = JSON.parse(
-      localStorage.getItem(ARENA_XP_HISTORY_KEY) || "[]"
+      localStorage.getItem(accountStorageKey(ARENA_XP_HISTORY_KEY)) || "[]"
     );
 
     return Array.isArray(saved) ? saved : [];
@@ -3548,9 +3565,9 @@ function saveArenaXPReward(question) {
   history.push(question);
 
   localStorage.setItem(
-    ARENA_XP_HISTORY_KEY,
-    JSON.stringify(history.slice(-500))
-  );
+  accountStorageKey(ARENA_XP_HISTORY_KEY),
+  JSON.stringify(history.slice(-500))
+);
 }
 function startQuiz() {
   arenaCards = [];
