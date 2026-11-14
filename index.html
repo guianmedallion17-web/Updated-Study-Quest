@@ -1510,31 +1510,6 @@ min-width: 270px;
 min-height: 180px;
 max-height: calc(100vh - 30px);
 }
-  #companionResizeHandle {
-  position: absolute;
-  right: 5px;
-  bottom: 5px;
-  width: 24px;
-  height: 24px;
-  cursor: nwse-resize;
-  touch-action: none;
-  border-radius: 6px;
-  background: repeating-linear-gradient(
-    135deg,
-    transparent 0 4px,
-    #7b9c83 4px 6px
-  );
-  opacity: 0.8;
-}
-
-#companionResizeHandle:active {
-  opacity: 1;
-}
-
-.global-study-companion.minimized #companionResizeHandle,
-.global-study-companion.focus-docked #companionResizeHandle {
-  display: none;
-}
 
 .global-companion-header {
   display: flex;
@@ -2339,7 +2314,6 @@ max-height: calc(100vh - 30px);
   <div id="globalCompanionContent">
     <!-- Timer and ambient controls -->
   </div>
-  <div id="companionResizeHandle" aria-label="Resize Study Companion"></div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -4307,62 +4281,6 @@ function stopCompanionDragging() {
 companionHeader.addEventListener("pointerup", stopCompanionDragging);
 companionHeader.addEventListener("pointercancel", stopCompanionDragging);
 companionHeader.addEventListener("lostpointercapture", stopCompanionDragging);
-
-  
-// GLOBAL COMPANION RESIZING
-const companionResizeHandle = document.getElementById("companionResizeHandle");
-
-let companionResizing = false;
-let companionStartX = 0;
-let companionStartY = 0;
-let companionStartWidth = 0;
-let companionStartHeight = 0;
-
-companionResizeHandle.addEventListener("pointerdown", event => {
-  if (companion.classList.contains("focus-docked")) return;
-
-  event.preventDefault();
-
-  const rect = companion.getBoundingClientRect();
-
-  companionResizing = true;
-  companionStartX = event.clientX;
-  companionStartY = event.clientY;
-  companionStartWidth = rect.width;
-  companionStartHeight = rect.height;
-
-  companionResizeHandle.setPointerCapture(event.pointerId);
-});
-
-companionResizeHandle.addEventListener("pointermove", event => {
-  if (!companionResizing) return;
-
-  const rect = companion.getBoundingClientRect();
-
-  const maxWidth = window.innerWidth - rect.left - 12;
-  const maxHeight = window.innerHeight - rect.top - 12;
-
-  const newWidth = Math.max(270, Math.min(
-    companionStartWidth + event.clientX - companionStartX,
-    maxWidth
-  ));
-
-  const newHeight = Math.max(180, Math.min(
-    companionStartHeight + event.clientY - companionStartY,
-    maxHeight
-  ));
-
-  companion.style.width = newWidth + "px";
-  companion.style.height = newHeight + "px";
-});
-
-function stopCompanionResizing() {
-  companionResizing = false;
-}
-
-companionResizeHandle.addEventListener("pointerup", stopCompanionResizing);
-companionResizeHandle.addEventListener("pointercancel", stopCompanionResizing);
-companionResizeHandle.addEventListener("lostpointercapture", stopCompanionResizing);
   
 
   
