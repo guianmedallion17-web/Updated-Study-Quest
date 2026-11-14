@@ -1857,9 +1857,15 @@ body.auth-locked .global-study-companion {
 
     <div id="impactPhotoPreview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-top:12px"></div>
 
-    <button type="submit" class="btn" style="margin-top:16px;width:100%">
-      Save Planting Activity
-    </button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+  <button type="submit" class="btn" id="greenImpactSubmitBtn" style="flex:1">
+    Save Planting Activity
+  </button>
+
+  <button type="button" class="btn btn-danger" id="cancelGreenImpactEditBtn" style="display:none">
+    Cancel Editing
+  </button>
+    </div>
   </form>
     </div>
     <div class="card" style="margin-top:20px;padding:20px">
@@ -2525,16 +2531,18 @@ body.auth-locked .global-study-companion {
   </div>
 
   <div class="card" style="margin-top:16px">
-    <h2>📸 Our Activities</h2>
-    <p class="muted">
-      Photos, dates, locations, and updates from our future
-      tree-planting activities will be posted here.
-    </p>
+  <h2>📸 Our Planting Activities</h2>
+  <p class="muted">
+    Explore our published tree-planting activities, photos, and contributions.
+  </p>
+
+  <div id="studentGreenImpactActivities">
     <div style="text-align:center;padding:25px 10px">
       <div style="font-size:38px">🌿</div>
       <strong>Our first planting activity is coming soon!</strong>
       <p class="muted">Stay tuned for updates.</p>
     </div>
+  </div>
   </div>
 </section>
   
@@ -2642,6 +2650,27 @@ function saveGreenImpactActivities() {
 
 let greenImpactActivities = loadGreenImpactActivities();
   let editingGreenImpactId = null;
+  const cancelGreenImpactEditBtn = document.getElementById(
+  "cancelGreenImpactEditBtn"
+);
+
+if (cancelGreenImpactEditBtn) {
+  cancelGreenImpactEditBtn.addEventListener("click", () => {
+    editingGreenImpactId = null;
+
+    greenImpactForm.reset();
+
+    document.getElementById("impactPhoto").required = true;
+    document.getElementById("impactPhotoPreview").innerHTML = "";
+
+    document.getElementById("greenImpactSubmitBtn").textContent =
+      "Save Planting Activity";
+
+    cancelGreenImpactEditBtn.style.display = "none";
+
+    showToast("Editing cancelled.");
+  });
+}
   const impactPhotoInput = document.getElementById("impactPhoto");
 
 if (impactPhotoInput) {
@@ -2707,76 +2736,117 @@ if (impactPhotoInput) {
   const greenImpactForm = document.getElementById("greenImpactForm");
 
 if (greenImpactForm) {
-  greenImpactForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
 
-    const photoFiles = Array.from(
-      document.getElementById("impactPhoto").files
-    );
+greenImpactForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
 
-    if (photoFiles.length === 0) {
-      showToast("Please select at least one planting photo.");
+  const photoFiles = Array.from(
+    document.getElementById("impactPhoto").files
+  );
+
+  const isEditing = Boolean(editingGreenImpactId);
+
+  if (!isEditing && photoFiles.length === 0) {
+    showToast("Please select at least one planting photo.");
+    return;
+  }
+
+  if (photoFiles.length > 5) {
+    showToast("Please select no more than 5 photos.");
+    return;
+  }
+
+  if (photoFiles.some(file => !file.type.startsWith("image/"))) {
+    showToast("Please select valid image files.");
+    return;
+  }
+
+  const submitButton = greenImpactForm.querySelector(
+    'button[type="submit"]'
+  );
+
+  submitButton.disabled = true;
+  submitButton.textContent = isEditing
+    ? "Updating Activity..."
+    : "Saving Activity...";
+
+  try {
+    const activityIndex = isEditing
+      ? greenImpactActivities.findIndex(
+          item => item.id === editingGreenImpactId
+        )
+      : -1;
+
+    if (isEditing && activityIndex === -1) {
+      showToast("Activity not found.");
       return;
     }
 
-    if (photoFiles.length > 5) {
-      showToast("Please select no more than 5 photos.");
+    const existingActivity = isEditing
+      ? greenImpactActivities[activityIndex]
+      : null;
+
+    const photos = photoFiles.length > 0
+      ? await Promise.all(
+          photoFiles.map(file => compressImpactPhoto(file))
+        )
+      : (existingActivity?.photos || []);
+
+    const activity = {
+      id: isEditing ? existingActivity.id : Date.now().toString(),
+      title: document.getElementById("impactTitle").value.trim(),
+      date: document.getElementById("impactDate").value,
+      location: document.getElementById("impactLocation").value.trim(),
+      description: document.getElementById("impactDescription").value.trim(),
+      treeCount: Number(document.getElementById("impactTreeCount").value),
+      photos,
+      published: isEditing ? existingActivity.published : false
+    };
+
+    if (!Number.isInteger(activity.treeCount) || activity.treeCount < 1) {
+      showToast("Please enter a valid number of trees.");
       return;
     }
 
-    if (photoFiles.some(file => !file.type.startsWith("image/"))) {
-      showToast("Please select valid image files.");
-      return;
-    }
-
-    const submitButton = greenImpactForm.querySelector(
-      'button[type="submit"]'
-    );
-
-    submitButton.disabled = true;
-    submitButton.textContent = "Saving Activity...";
-
-    try {
-      const photos = await Promise.all(
-        photoFiles.map(file => compressImpactPhoto(file))
-      );
-
-      const activity = {
-        id: Date.now().toString(),
-        title: document.getElementById("impactTitle").value.trim(),
-        date: document.getElementById("impactDate").value,
-        location: document.getElementById("impactLocation").value.trim(),
-        description: document.getElementById("impactDescription").value.trim(),
-        treeCount: Number(document.getElementById("impactTreeCount").value),
-        photos,
-        published: false
-      };
-
-      if (!Number.isInteger(activity.treeCount) || activity.treeCount < 1) {
-        showToast("Please enter a valid number of trees.");
-        return;
-      }
-
+    if (isEditing) {
+      greenImpactActivities[activityIndex] = activity;
+    } else {
       greenImpactActivities.push(activity);
-
-      if (!saveGreenImpactActivities()) {
-        greenImpactActivities.pop();
-        return;
-      }
-
-      greenImpactForm.reset();
-      document.getElementById("impactPhotoPreview").innerHTML = "";
-
-      showToast("Planting activity saved successfully!");
-      renderAdminDashboard();
-
-    } catch (error) {
-      showToast("Unable to process or save the planting photos.");
-    } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = "Save Planting Activity";
     }
-  });
+
+    if (!saveGreenImpactActivities()) {
+      if (isEditing) {
+        greenImpactActivities[activityIndex] = existingActivity;
+      } else {
+        greenImpactActivities.pop();
+      }
+      return;
+    }
+
+    editingGreenImpactId = null;
+    greenImpactForm.reset();
+    document.getElementById("cancelGreenImpactEditBtn").style.display = "none";
+
+    document.getElementById("impactPhoto").required = true;
+    document.getElementById("impactPhotoPreview").innerHTML = "";
+
+    showToast(
+      isEditing
+        ? "Planting activity updated successfully!"
+        : "Planting activity saved successfully!"
+    );
+
+    renderAdminDashboard();
+
+  } catch (error) {
+    showToast("Unable to process or save the planting photos.");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = editingGreenImpactId
+      ? "Update Planting Activity"
+      : "Save Planting Activity";
+  }
+});
       }
   
 // DEMONSTRATION ADMIN ACCOUNT
@@ -5871,6 +5941,9 @@ let totalCompletedTasks = 0;
 let totalFocusMinutes = 0;
 let totalFocusSessions = 0;
 let completedTreeJourneys = 0;
+  const verifiedTreesPlanted = greenImpactActivities
+  .filter(activity => activity.published)
+  .reduce((total, activity) => total + Number(activity.treeCount || 0), 0);
 
   const table = document.getElementById("adminStudentTable");
 
@@ -5924,6 +5997,7 @@ let completedTreeJourneys = 0;
       <div class="card stat">
         <div class="stat-label">VERIFIED TREES PLANTED</div>
         <div class="stat-value">0</div>
+        <div class="stat-value">${verifiedTreesPlanted}</div>
       </div>
     </div>
     <p class="muted" style="margin-top:12px">
@@ -6025,6 +6099,8 @@ container.onclick = handleGreenImpactActions;
     );
 
     submitButton.textContent = "Update Planting Activity";
+    document.getElementById("cancelGreenImpactEditBtn").style.display =
+  "inline-block";
 
     document.getElementById("greenImpactForm").scrollIntoView({
       behavior: "smooth",
@@ -6095,20 +6171,82 @@ function renderGreenImpact() {
   const stage = getTreeStage();
   const stageIndex = treeStages.indexOf(stage);
 
-document.getElementById("impactTreeArt").innerHTML =
-  getTreeArtwork(stageIndex);
+  document.getElementById("impactTreeArt").innerHTML =
+    getTreeArtwork(stageIndex);
+
   const completed = level >= 15 ? 1 : 0;
   const progress = Math.min((level / 15) * 100, 100);
 
+  const publishedActivities = greenImpactActivities.filter(
+    activity => activity.published
+  );
+
+  const verifiedTreesPlanted = publishedActivities.reduce(
+    (total, activity) => total + Number(activity.treeCount || 0),
+    0
+  );
+
   document.getElementById("impactJourneyCount").textContent = completed;
+  document.getElementById("impactTreesPlanted").textContent =
+    verifiedTreesPlanted;
+
   document.getElementById("impactStageName").textContent = stage.name;
-  document.getElementById("impactLevel").textContent = `Level ${Math.min(level, 15)} / 15`;
-  document.getElementById("impactProgressBar").style.width = `${progress}%`;
+  document.getElementById("impactLevel").textContent =
+    `Level ${Math.min(level, 15)} / 15`;
+
+  document.getElementById("impactProgressBar").style.width =
+    `${progress}%`;
 
   document.getElementById("impactProgressText").textContent =
     completed
       ? "Congratulations! Your tree has reached its final stage!"
       : `${15 - level} more level${15 - level === 1 ? "" : "s"} until your tree journey is complete!`;
+
+  const activityContainer = document.getElementById(
+    "studentGreenImpactActivities"
+  );
+
+  if (!activityContainer) return;
+
+  if (publishedActivities.length === 0) {
+    activityContainer.innerHTML = `
+      <div style="text-align:center;padding:25px 10px">
+        <div style="font-size:38px">🌿</div>
+        <strong>Our first planting activity is coming soon!</strong>
+        <p class="muted">Stay tuned for updates.</p>
+      </div>
+    `;
+    return;
+  }
+
+  activityContainer.innerHTML = publishedActivities
+    .slice()
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .map(activity => `
+      <div class="card" style="margin-top:16px;padding:16px">
+        <h3>${escapeHTML(activity.title)}</h3>
+
+        <p class="muted">
+          📅 ${escapeHTML(activity.date)}
+          · 📍 ${escapeHTML(activity.location)}
+        </p>
+
+        <p>${escapeHTML(activity.description)}</p>
+
+        <p><strong>🌳 Trees planted:</strong> ${Number(activity.treeCount) || 0}</p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">
+          ${(activity.photos || []).map(photo => `
+            <img
+              src="${photo}"
+              alt="Tree planting activity"
+              loading="lazy"
+              style="width:100%;height:150px;object-fit:cover;border-radius:10px"
+            >
+          `).join("")}
+        </div>
+      </div>
+    `).join("");
 }
 
 function renderAll() {
