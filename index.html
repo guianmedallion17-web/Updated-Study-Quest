@@ -1864,14 +1864,75 @@ body.auth-locked .global-study-companion {
             <th style="padding:12px">Tasks Done</th>
             <th style="padding:12px">Focus Minutes</th>
             <th style="padding:12px">Focus Sessions</th>
+            <th style="padding:12px">Action</th>
           </tr>
         </thead>
         <tbody id="adminStudentTable">
-          <tr><td colspan="7" style="padding:12px">No student records yet.</td></tr>
+          <tr><td colspan="8" style="padding:12px">No student records yet.</td></tr>
         </tbody>
       </table>
     </div>
   </section>
+  <!-- STUDENT DETAILS MODAL -->
+<div
+  id="studentDetailsModal"
+  style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;align-items:center;justify-content:center;padding:16px"
+>
+  <div
+    class="card"
+    style="width:100%;max-width:650px;max-height:85vh;overflow-y:auto;padding:24px"
+  >
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div>
+        <div class="eyebrow">STUDENT PROFILE</div>
+        <h2 id="studentDetailsName">Student Details</h2>
+        <p class="muted" id="studentDetailsEmail"></p>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-danger"
+        id="closeStudentDetails"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="stats" style="margin-top:20px">
+      <div class="card stat">
+        <div class="stat-label">LEVEL</div>
+        <div class="stat-value" id="detailStudentLevel">0</div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-label">TOTAL XP</div>
+        <div class="stat-value" id="detailStudentXP">0</div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-label">COMPLETED TASKS</div>
+        <div class="stat-value" id="detailStudentTasks">0</div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-label">FOCUS MINUTES</div>
+        <div class="stat-value" id="detailStudentFocusMinutes">0</div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-label">FOCUS SESSIONS</div>
+        <div class="stat-value" id="detailStudentFocusSessions">0</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px">
+      <h3>Completed Tasks</h3>
+      <div id="detailStudentTaskList">
+        <p class="muted">No completed tasks yet.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
   <section class="card" style="margin-top:24px;padding:20px">
     <h2>Our Green Impact</h2>
@@ -5872,6 +5933,64 @@ function logoutAdmin() {
 document.getElementById("adminLogoutBtn").addEventListener("click", () => {
   logoutAdmin();
 });
+// STUDENT DETAILS VIEWER
+const adminStudentTable = document.getElementById("adminStudentTable");
+const studentDetailsModal = document.getElementById("studentDetailsModal");
+
+adminStudentTable.addEventListener("click", event => {
+  const button = event.target.closest('[data-student-action="view"]');
+
+  if (!button) return;
+
+  const account = accounts.find(
+    item => item.id === button.dataset.id && item.role === "student"
+  );
+
+  if (!account) {
+    showToast("Student account not found.");
+    return;
+  }
+
+  const studentGame = prepareGameData(account.game);
+  const completedTasks = studentGame.tasks.filter(task => task.done);
+  const level = Math.floor(studentGame.xp / 100) + 1;
+
+  document.getElementById("studentDetailsName").textContent = account.name;
+  document.getElementById("studentDetailsEmail").textContent = account.email;
+
+  document.getElementById("detailStudentLevel").textContent = level;
+  document.getElementById("detailStudentXP").textContent = studentGame.xp;
+  document.getElementById("detailStudentTasks").textContent = completedTasks.length;
+  document.getElementById("detailStudentFocusMinutes").textContent =
+    studentGame.focusMinutes;
+  document.getElementById("detailStudentFocusSessions").textContent =
+    studentGame.focusSessions;
+
+  const taskList = document.getElementById("detailStudentTaskList");
+
+  taskList.innerHTML = completedTasks.length
+    ? completedTasks.map(task => `
+        <div style="padding:10px;border-bottom:1px solid var(--border)">
+          <span>✅ ${escapeHTML(task.title || task.name || "Completed task")}</span>
+        </div>
+      `).join("")
+    : '<p class="muted">No completed tasks yet.</p>';
+
+  studentDetailsModal.style.display = "flex";
+});
+
+function closeStudentDetailsModal() {
+  studentDetailsModal.style.display = "none";
+}
+
+document.getElementById("closeStudentDetails")
+  .addEventListener("click", closeStudentDetailsModal);
+
+studentDetailsModal.addEventListener("click", event => {
+  if (event.target === studentDetailsModal) {
+    closeStudentDetailsModal();
+  }
+});
   
 function returnToAccountLogin() {
   save();
@@ -6035,7 +6154,7 @@ let completedTreeJourneys = 0;
   if (students.length === 0) {
     table.innerHTML = `
       <tr>
-        <td colspan="7" style="padding:12px">
+        <td colspan="8" style="padding:12px">
           No student accounts registered yet.
         </td>
       </tr>
@@ -6062,6 +6181,16 @@ let completedTreeJourneys = 0;
           <td style="padding:12px">${completedTasks}</td>
           <td style="padding:12px">${studentGame.focusMinutes}</td>
           <td style="padding:12px">${studentGame.focusSessions}</td>
+          <td style="padding:12px">
+          <button
+          class="btn"
+    type="button"
+    data-student-action="view"
+    data-id="${account.id}"
+  >
+    View Details
+  </button>
+</td>
         </tr>
       `;
     }).join("");
