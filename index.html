@@ -4579,7 +4579,8 @@ function checkArenaAnswer() {
   date: localDate(),
   correct: isCorrect
 });
-save();
+  save();
+  renderQuests();
 
   arenaCurrentSession.questions.push({
   question: card.question,
