@@ -3706,13 +3706,13 @@ function renderTasks() {
 const questDefinitions = [
   {id:"task",icon:"📚",title:"Mission Accomplished",desc:"Complete one school task.",reward:25,goal:1},
   {id:"focus",icon:"🎯",title:"Focus Explorer",desc:"Finish one 25-minute focus session.",reward:30,goal:1},
-  {id:"quiz",icon:"🧠",title:"Knowledge Seeker",desc:"Answer three quiz questions correctly.",reward:25,goal:3}
+  {id:"quiz",icon:"🧠",title:"Knowledge Seeker",desc:"Answer 10 quiz questions correctly in Quiz Arena.",reward:25,goal:10}
 ];
 
 function questProgress(q) {
   if (q.id === "task") return Math.min(1, game.tasks.filter(t => t.done && t.completedDate === localDate()).length);
   if (q.id === "focus") return game.lastFocusDate === localDate() ? 1 : 0;
-  if (q.id === "quiz") return Math.min(3, game.quizAnswered.filter(x => x.date === localDate() && x.correct).length);
+  if (q.id === "quiz") return Math.min(10, game.quizAnswered.filter(x => x.date === localDate() && x.correct && x.source === "arena").length);
   return 0;
 }
 
@@ -4577,11 +4577,12 @@ function checkArenaAnswer() {
     card.answer.trim().toLowerCase();
   game.quizAnswered.push({
   date: localDate(),
-  correct: isCorrect
+  correct: isCorrect,
+  source: "arena"
 });
-  save();
-  renderQuests();
-
+save();
+renderQuests();
+  
   arenaCurrentSession.questions.push({
   question: card.question,
   userAnswer: userAnswer,
