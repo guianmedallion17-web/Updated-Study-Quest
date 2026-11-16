@@ -4049,18 +4049,25 @@ function getArenaAnswerHistory() {
 
 function saveArenaAnswerHistory(entry) {
   const history = getArenaAnswerHistory();
+  const existingIndex = history.findIndex(
+    item => item.id === entry.id
+  );
 
-  history.push(entry);
+  if (existingIndex >= 0) {
+    history[existingIndex] = entry;
+  } else {
+    history.push(entry);
+  }
 
   localStorage.setItem(
     accountStorageKey(ARENA_ANSWER_HISTORY_KEY),
-    JSON.stringify(history.slice(-500))
+    JSON.stringify(history.slice(-100))
   );
 }
 
 let arenaCards = [];
 let arenaIndex = 0;
-
+let arenaCurrentSession = null;
   
 const ARENA_COOLDOWN_KEY = "studyQuestArenaCooldownUntil_v1";
 const ARENA_COOLDOWN_MS = 15000;
@@ -4399,17 +4406,30 @@ body: JSON.stringify({
         [arenaCards[j], arenaCards[i]];
     }
 
-    arenaIndex = 0;
-    loading.hidden = true;
-    cardArea.hidden = false;
-
-    renderArenaCard();
-const sourceLabels = {
+    const sourceLabels = {
   files: "Based on Uploaded Files",
   general: "General Knowledge",
   custom: "Customize Topic",
   all: "Combination of All"
 };
+
+arenaCurrentSession = {
+  id: Date.now(),
+  date: new Date().toISOString(),
+  difficulty: document.getElementById("arenaDifficulty").value,
+  topic: sourceSettings.topic ||
+    (sourceSettings.materials.length
+      ? sourceSettings.materials.map(file => file.title).join(", ")
+      : "General Knowledge"),
+  source: sourceLabels[sourceSettings.sourceMode],
+  questions: []
+};
+
+    arenaIndex = 0;
+    loading.hidden = true;
+    cardArea.hidden = false;
+
+    renderArenaCard();
 
 document.getElementById("arenaSessionSource").textContent =
   "Source: " + sourceLabels[sourceSettings.sourceMode];
@@ -4538,14 +4558,21 @@ function checkArenaAnswer() {
     userAnswer.trim().toLowerCase() ===
     card.answer.trim().toLowerCase();
 
-  saveArenaAnswerHistory({
-    date: new Date().toISOString(),
-    question: card.question,
-    userAnswer: userAnswer,
-    correctAnswer: card.answer,
-    isCorrect: isCorrect,
-    difficulty: document.getElementById("arenaDifficulty").value
-  });
+  arenaCurrentSession.questions.push({
+  question: card.question,
+  userAnswer: userAnswer,
+  correctAnswer: card.answer,
+  isCorrect: isCorrect
+});
+
+saveArenaAnswerHistory({
+  ...arenaCurrentSession,
+  score: arenaCurrentSession.questions.filter(
+    item => item.isCorrect
+  ).length,
+  answered: arenaCurrentSession.questions.length,
+  total: arenaCards.length
+});
 
   let xpMessage = "";
   const difficulty = document.getElementById("arenaDifficulty").value;
@@ -4599,6 +4626,101 @@ function nextArenaCard() {
   document.getElementById("arenaStart").textContent =
     "Generate More Cards →";
 }
+  function showArenaSessionDetails(session) {
+  const modal = document.getElementById("arenaHistoryModal");
+  if (!modal) return;
+
+  const questions = Array.isArray(session.questions)
+    ? session.questions
+    : [];
+
+  const questionContent = questions.length
+    ? questions.map((item, index) => `
+        <div style="
+          background:var(--card);
+          border:1px solid var(--border);
+          border-radius:14px;
+          padding:15px;
+          margin-bottom:12px;
+        ">
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-bottom:10px;
+          ">
+            <strong>Question ${index + 1}</strong>
+            <strong style="color:${item.isCorrect ? "#16a34a" : "#dc2626"}">
+              ${item.isCorrect ? "✓ Correct" : "✗ Incorrect"}
+            </strong>
+          </div>
+
+          <p style="font-weight:600;margin-bottom:12px">
+            ${escapeHTML(item.question || "")}
+          </p>
+
+          <p style="margin-bottom:7px">
+            <strong>Your answer:</strong>
+            ${escapeHTML(item.userAnswer || "No answer")}
+          </p>
+
+          <p style="margin-bottom:7px">
+            <strong>Correct answer:</strong>
+            ${escapeHTML(item.correctAnswer || "")}
+          </p>
+        </div>
+      `).join("")
+    : `<p style="text-align:center;padding:20px;color:var(--muted)">
+         No answered questions in this attempt yet.
+       </p>`;
+
+  modal.innerHTML = `
+    <div style="
+      background:var(--bg);
+      color:var(--text);
+      width:100%;
+      max-width:650px;
+      max-height:85vh;
+      overflow-y:auto;
+      border-radius:18px;
+      padding:20px;
+    ">
+      <button class="btn btn-outline" id="backToArenaHistory"
+        style="margin-bottom:15px">
+        ← Back to History
+      </button>
+
+      <h2 style="margin-bottom:15px">📖 Quiz Details</h2>
+
+      <div style="
+        background:var(--card);
+        border:1px solid var(--border);
+        border-radius:14px;
+        padding:15px;
+        margin-bottom:18px;
+      ">
+        <h3 style="margin-bottom:10px">
+          Score: ${session.score ?? 0}/${session.total ?? questions.length}
+        </h3>
+
+        <p>📅 ${new Date(session.date).toLocaleDateString()}</p>
+        <p>🕒 ${new Date(session.date).toLocaleTimeString()}</p>
+        <p>**Difficulty:** ${escapeHTML(session.difficulty || "Unknown")}</p>
+        <p>**Topic:** ${escapeHTML(session.topic || "Not specified")}</p>
+        <p>**Source:** ${escapeHTML(session.source || "Unknown")}</p>
+      </div>
+
+      <h3 style="margin-bottom:12px">Questions and Answers</h3>
+
+      ${questionContent}
+    </div>
+  `;
+
+  document.getElementById("backToArenaHistory")
+    .addEventListener("click", showArenaAnswerHistory);
+  }
+  
   function showArenaAnswerHistory() {
   const history = getArenaAnswerHistory().slice().reverse();
 
@@ -4618,53 +4740,53 @@ function nextArenaCard() {
     padding:16px;
   `;
 
-  const historyContent = history.length
-    ? history.map((item, index) => `
-        <div style="
-          background:var(--card);
-          border:1px solid var(--border);
-          border-radius:14px;
-          padding:15px;
-          margin-bottom:12px;
-        ">
-          <div style="
-            display:flex;
-            justify-content:space-between;
-            gap:10px;
-            flex-wrap:wrap;
-            margin-bottom:10px;
-          ">
-            <strong>Question ${history.length - index}</strong>
-            <span style="
-              color:${item.isCorrect ? "#16a34a" : "#dc2626"};
-              font-weight:700;
+  const sessions = history.length
+    ? history.map((item, index) => {
+        const date = new Date(item.date);
+
+        return `
+          <button type="button"
+            class="btn btn-outline"
+            data-arena-session="${index}"
+            style="
+              display:block;
+              width:100%;
+              text-align:left;
+              padding:16px;
+              margin-bottom:12px;
+              border-radius:14px;
+              white-space:normal;
             ">
-              ${item.isCorrect ? "✓ Correct" : "✗ Incorrect"}
-            </span>
-          </div>
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+              <strong>Quiz Attempt ${history.length - index}</strong>
+              <strong>${item.score ?? 0}/${item.total ?? (item.questions || []).length}</strong>
+            </div>
 
-          <p style="font-weight:600;margin-bottom:10px">
-            ${escapeHTML(item.question || "")}
-          </p>
+            <p style="margin:10px 0 5px">
+              📅 ${date.toLocaleDateString()}
+              · 🕒 ${date.toLocaleTimeString()}
+            </p>
 
-          <p style="margin-bottom:6px">
-            <strong>Your answer:</strong>
-            ${escapeHTML(item.userAnswer || "No answer")}
-          </p>
+            <p style="margin:5px 0">
+              <strong>Difficulty:</strong> ${escapeHTML(item.difficulty || "Unknown")}
+            </p>
 
-          <p style="margin-bottom:6px">
-            <strong>Correct answer:</strong>
-            ${escapeHTML(item.correctAnswer || "")}
-          </p>
+            <p style="margin:5px 0">
+              <strong>Topic:</strong> ${escapeHTML(item.topic || "Not specified")}
+            </p>
 
-          <p style="font-size:12px;color:var(--muted)">
-            ${escapeHTML(item.difficulty || "Unknown difficulty")}
-            · ${item.date ? new Date(item.date).toLocaleString() : ""}
-          </p>
-        </div>
-      `).join("")
+            <p style="margin:5px 0">
+              <strong>Source:</strong> ${escapeHTML(item.source || "Unknown")}
+            </p>
+
+            <p style="margin-top:12px;font-weight:700">
+              Tap to view questions and answers →
+            </p>
+          </button>
+        `;
+      }).join("")
     : `<p style="text-align:center;padding:25px;color:var(--muted)">
-         No Quiz Arena history yet. Complete a flashcard to see it here!
+         No Quiz Arena history yet.
        </p>`;
 
   modal.innerHTML = `
@@ -4678,20 +4800,11 @@ function nextArenaCard() {
       border-radius:18px;
       padding:20px;
     ">
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:10px;
-        margin-bottom:18px;
-      ">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
         <h2 style="margin:0">📜 Quiz Arena History</h2>
-        <button class="btn btn-outline" id="closeArenaHistory">
-          ✕
-        </button>
+        <button class="btn btn-outline" id="closeArenaHistory">✕</button>
       </div>
-
-      ${historyContent}
+      ${sessions}
     </div>
   `;
 
@@ -4699,7 +4812,15 @@ function nextArenaCard() {
 
   document.getElementById("closeArenaHistory")
     .addEventListener("click", () => modal.remove());
+
+  modal.querySelectorAll("[data-arena-session]").forEach(button => {
+    button.addEventListener("click", () => {
+      const session = history[Number(button.dataset.arenaSession)];
+      showArenaSessionDetails(session);
+    });
+  });
   }
+
   
   function cancelArenaCards() {
   if (!confirm("Cancel this flashcard set and return to Quiz Arena setup?")) {
