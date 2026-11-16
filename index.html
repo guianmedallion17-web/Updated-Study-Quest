@@ -2389,7 +2389,14 @@ body.auth-locked .global-study-companion {
 <section class="view" id="quiz">
   <div class="card">
     <div class="eyebrow">KNOWLEDGE IS POWER</div>
-    <h2 style="margin-bottom:5px">✎ Quiz Arena</h2>
+    
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+  <h2 style="margin-bottom:5px">✎ Quiz Arena</h2>
+  <button class="btn btn-outline" type="button" id="arenaHistoryBtn">
+    📜 History
+  </button>
+</div>
+
     <p class="muted">
       Explore random questions from general knowledge and your uploaded study materials.
     </p>
@@ -3429,6 +3436,15 @@ function taskMarkup(task) {
               </button>`
             : ""
         }
+                ${
+          task.lessonText
+            ? `<button class="btn btn-outline"
+                data-task-history="${task.id}"
+                style="margin-top:8px">
+                📜 History
+              </button>`
+            : ""
+                }
       </div>
 
       <span class="task-xp">
@@ -4015,6 +4031,32 @@ document.getElementById("gardenTheme").addEventListener("change",event => {
 
 const ARENA_HISTORY_KEY = "studyQuestArenaSeenQuestions_v1";
   const ARENA_XP_HISTORY_KEY = "studyQuestArenaXPQuestions_v1";
+  const ARENA_ANSWER_HISTORY_KEY = "studyQuestArenaAnswerHistory_v1";
+
+function getArenaAnswerHistory() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(
+        accountStorageKey(ARENA_ANSWER_HISTORY_KEY)
+      ) || "[]"
+    );
+
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveArenaAnswerHistory(entry) {
+  const history = getArenaAnswerHistory();
+
+  history.push(entry);
+
+  localStorage.setItem(
+    accountStorageKey(ARENA_ANSWER_HISTORY_KEY),
+    JSON.stringify(history.slice(-500))
+  );
+}
 
 let arenaCards = [];
 let arenaIndex = 0;
@@ -4492,9 +4534,19 @@ function checkArenaAnswer() {
     return;
   }
 
-  const isCorrect =
+   const isCorrect =
     userAnswer.trim().toLowerCase() ===
     card.answer.trim().toLowerCase();
+
+  saveArenaAnswerHistory({
+    date: new Date().toISOString(),
+    question: card.question,
+    userAnswer: userAnswer,
+    correctAnswer: card.answer,
+    isCorrect: isCorrect,
+    difficulty: document.getElementById("arenaDifficulty").value
+  });
+
   let xpMessage = "";
   const difficulty = document.getElementById("arenaDifficulty").value;
 
@@ -4547,6 +4599,108 @@ function nextArenaCard() {
   document.getElementById("arenaStart").textContent =
     "Generate More Cards →";
 }
+  function showArenaAnswerHistory() {
+  const history = getArenaAnswerHistory().slice().reverse();
+
+  const oldModal = document.getElementById("arenaHistoryModal");
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "arenaHistoryModal";
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    background:rgba(0,0,0,0.65);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  `;
+
+  const historyContent = history.length
+    ? history.map((item, index) => `
+        <div style="
+          background:var(--card);
+          border:1px solid var(--border);
+          border-radius:14px;
+          padding:15px;
+          margin-bottom:12px;
+        ">
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-bottom:10px;
+          ">
+            <strong>Question ${history.length - index}</strong>
+            <span style="
+              color:${item.isCorrect ? "#16a34a" : "#dc2626"};
+              font-weight:700;
+            ">
+              ${item.isCorrect ? "✓ Correct" : "✗ Incorrect"}
+            </span>
+          </div>
+
+          <p style="font-weight:600;margin-bottom:10px">
+            ${escapeHTML(item.question || "")}
+          </p>
+
+          <p style="margin-bottom:6px">
+            <strong>Your answer:</strong>
+            ${escapeHTML(item.userAnswer || "No answer")}
+          </p>
+
+          <p style="margin-bottom:6px">
+            <strong>Correct answer:</strong>
+            ${escapeHTML(item.correctAnswer || "")}
+          </p>
+
+          <p style="font-size:12px;color:var(--muted)">
+            ${escapeHTML(item.difficulty || "Unknown difficulty")}
+            · ${item.date ? new Date(item.date).toLocaleString() : ""}
+          </p>
+        </div>
+      `).join("")
+    : `<p style="text-align:center;padding:25px;color:var(--muted)">
+         No Quiz Arena history yet. Complete a flashcard to see it here!
+       </p>`;
+
+  modal.innerHTML = `
+    <div style="
+      background:var(--bg);
+      color:var(--text);
+      width:100%;
+      max-width:650px;
+      max-height:85vh;
+      overflow-y:auto;
+      border-radius:18px;
+      padding:20px;
+    ">
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+        margin-bottom:18px;
+      ">
+        <h2 style="margin:0">📜 Quiz Arena History</h2>
+        <button class="btn btn-outline" id="closeArenaHistory">
+          ✕
+        </button>
+      </div>
+
+      ${historyContent}
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("closeArenaHistory")
+    .addEventListener("click", () => modal.remove());
+  }
+  
   function cancelArenaCards() {
   if (!confirm("Cancel this flashcard set and return to Quiz Arena setup?")) {
     return;
@@ -4688,7 +4842,9 @@ document.getElementById("arenaStart")
   .addEventListener("click", cancelArenaCards);
   
   updateArenaCooldown();
-
+  
+document.getElementById("arenaHistoryBtn")
+  ?.addEventListener("click", showArenaAnswerHistory);
 document.getElementById("arenaReveal")
   .addEventListener("click", revealArenaAnswer);
 document.getElementById("arenaSubmit")
@@ -5962,6 +6118,29 @@ function displayStudyQuiz(task) {
           score++;
         }
       });
+            if (!Array.isArray(task.quizHistory)) {
+        task.quizHistory = [];
+      }
+
+      const attemptHistory = {
+        date: new Date().toISOString(),
+        score: score,
+        total: task.quizQuestions.length,
+        answers: task.quizQuestions.map((q, index) => {
+          const selected = modal.querySelector(
+            `input[name="studyQuestion${index}"]:checked`
+          );
+
+          return {
+            question: q.question,
+            userAnswer: selected
+              ? q.options[Number(selected.value)]
+              : "No answer"
+          };
+        })
+      };
+
+      task.quizHistory.push(attemptHistory);
 
       task.testScore = score;
       task.verified = score >= 7;
@@ -5986,6 +6165,98 @@ document.addEventListener("click", function(event) {
     generateStudyQuiz(button.dataset.generateQuiz);
   }
 });
+  document.addEventListener("click", function(event) {
+  const button = event.target.closest("[data-task-history]");
+
+  if (button) {
+    showTaskQuizHistory(button.dataset.taskHistory);
+  }
+});
+  
+  function showTaskQuizHistory(taskId) {
+  const task = game.tasks.find(t => t.id === Number(taskId));
+  if (!task) return;
+
+  const history = Array.isArray(task.quizHistory)
+    ? task.quizHistory.slice().reverse()
+    : [];
+
+  const oldModal = document.getElementById("taskHistoryModal");
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "taskHistoryModal";
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    background:rgba(0,0,0,.78);
+    overflow-y:auto;
+    padding:16px;
+    color:var(--text);
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      max-width:760px;
+      margin:20px auto;
+      padding:24px;
+      border-radius:20px;
+      background:var(--panel);
+      border:1px solid var(--border);
+    ">
+      <h2>📜 Quiz History</h2>
+      <p class="muted">${escapeHTML(task.title)}</p>
+
+      ${
+        history.length
+          ? history.map((attempt, index) => `
+              <div style="
+                padding:16px;
+                margin-top:16px;
+                border:1px solid var(--border);
+                border-radius:14px;
+                background:var(--panel2);
+              ">
+                <h3>Attempt ${history.length - index}</h3>
+                <div class="task-meta">
+                  ${new Date(attempt.date).toLocaleString()}
+                </div>
+                <h3 style="margin-top:10px">
+                  Score: ${attempt.score}/${attempt.total}
+                </h3>
+
+                ${(attempt.answers || []).map((answer, qIndex) => `
+                  <div style="
+                    margin-top:14px;
+                    padding-top:12px;
+                    border-top:1px solid var(--border);
+                  ">
+                    <strong>Question ${qIndex + 1}</strong>
+                    <p>${escapeHTML(answer.question)}</p>
+                    <div class="task-meta">Your answer:</div>
+                    <p>${escapeHTML(answer.userAnswer)}</p>
+                  </div>
+                `).join("")}
+              </div>
+            `).join("")
+          : `<div class="empty" style="margin-top:20px">
+              📚 No quiz attempts yet. Complete a quiz to see your history here.
+            </div>`
+      }
+
+      <button class="btn" type="button" id="closeTaskHistory"
+        style="margin-top:20px">
+        Close History
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("closeTaskHistory")
+    .addEventListener("click", () => modal.remove());
+  }
 
   // ===============================
 // STUDYQUEST AUTHENTICATION
