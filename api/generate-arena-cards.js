@@ -139,36 +139,52 @@ Required format:
 }
 `;
 
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 1,
-            responseMimeType: "application/json"
-          }
-        })
-      }
-    );
+    
+let response;
+let data;
 
-    const data = await response.json();
+const maxAttempts = 3;
 
-    if (!response.ok) {
-      console.error("Gemini error:", data);
-
-      return res.status(response.status).json({
-        error: data.error?.message ||
-          "Gemini could not generate flashcards."
-      });
+for (let attempt = 0; attempt < maxAttempts; attempt++) {
+  response = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: 1,
+          responseMimeType: "application/json"
+        }
+      })
     }
+  );
+
+  data = await response.json();
+
+  if (response.ok) break;
+
+  const retryable = [429, 500, 502, 503, 504].includes(response.status);
+
+  if (!retryable || attempt === maxAttempts - 1) {
+    console.error("Gemini error:", data);
+
+    return res.status(response.status).json({
+      error: "Gemini is temporarily busy. Please try again in a moment."
+    });
+  }
+
+  await new Promise(resolve =>
+    setTimeout(resolve, 1500 * (attempt + 1))
+  );
+}
+
 
     const output =
       data.candidates?.[0]?.content?.parts?.[0]?.text;
