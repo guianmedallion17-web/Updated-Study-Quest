@@ -3207,6 +3207,7 @@ const viewTitles = {
   quiz:"Quiz Arena",
   focus:"Focus Room",
   achievements:"Achievement Hall",
+  leaderboard:"Student Leaderboard",
   settings:"Settings & Profile"
 };
 
@@ -6264,6 +6265,7 @@ let completedTreeJourneys = 0;
     </p>
   `;
     renderAdminGreenImpactActivities();
+    renderLeaderboard();
 }
   function renderAdminGreenImpactActivities() {
   const container = document.getElementById("adminGreenImpactActivities");
@@ -6627,13 +6629,22 @@ if (!containers.length) return;
   ) + 1;
 
   const leaderboardHTML = `
-    <div style="margin-bottom:20px;padding:14px;background:var(--panel2);border-radius:12px">
-      <strong>Your Current Rank:</strong>
-      <span style="color:var(--green);font-weight:800">
-        #${myRank || "—"}
-      </span>
-      <span class="muted"> out of ${students.length} students</span>
-    </div>
+${currentAccount?.role === "admin" ? `
+  <div style="margin-bottom:20px;padding:14px;background:var(--panel2);border-radius:12px">
+    <strong>Total Ranked Students:</strong>
+    <span style="color:var(--green);font-weight:800">
+      ${students.length}
+    </span>
+  </div>
+` : `
+  <div style="margin-bottom:20px;padding:14px;background:var(--panel2);border-radius:12px">
+    <strong>Your Current Rank:</strong>
+    <span style="color:var(--green);font-weight:800">
+      #${myRank || "—"}
+    </span>
+    <span class="muted"> out of ${students.length} students</span>
+  </div>
+`}
 
     <h3 style="margin-bottom:16px;text-align:center">
       🌟 Hall of Fame
