@@ -4228,13 +4228,13 @@ async function generateArenaCards() {
   const sourceSettings = getArenaSourceSettings();
 
   if (
-    sourceSettings.sourceMode === "files" &&
-    sourceSettings.materials.length === 0
-  ) {
+  ["files", "all"].includes(sourceSettings.sourceMode) &&
+  sourceSettings.materials.length === 0
+) {
     updateArenaFileWarning();
 
     document.getElementById("arenaCounter").textContent =
-      "Please upload and select at least one lesson file before generating.";
+      "Please upload and select at least one lesson file before generating flashcards from this source.";
 
     return;
   }
@@ -4580,9 +4580,9 @@ function updateArenaFileWarning() {
   const warning = document.getElementById("arenaFileWarning");
   const mode = document.getElementById("arenaSourceMode").value;
 
-  if (mode !== "files") {
-    warning.hidden = true;
-    return;
+  if (!["files", "all"].includes(mode)) {
+  warning.hidden = true;
+  return;
   }
 
   const availableFiles = game.tasks.filter(task =>
