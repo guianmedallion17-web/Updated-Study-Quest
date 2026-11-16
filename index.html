@@ -1823,7 +1823,14 @@ body.auth-locked .global-study-companion {
       <h1>Admin Dashboard</h1>
       <p class="muted">Monitor student accounts and their learning progress.</p>
     </div>
-    <button class="btn btn-danger" type="button" id="adminLogoutBtn">Log Out</button>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  <button class="btn" type="button" id="adminThemeBtn">
+    🌙 Dark Mode
+  </button>
+  <button class="btn btn-danger" type="button" id="adminLogoutBtn">
+    Log Out
+  </button>
+    </div>
   </header>
 
   <h2>Overview</h2>
@@ -2412,6 +2419,24 @@ body.auth-locked .global-study-companion {
 
   <div id="arenaFileSelection" hidden style="margin-top:15px">
     <p class="muted">Select the lesson files you want to include:</p>
+    
+<div
+  id="arenaFileWarning"
+  hidden
+  style="
+    margin:10px 0;
+    padding:12px 14px;
+    border:1px solid #e0a23b;
+    background:rgba(224,162,59,.10);
+    border-radius:12px;
+    color:var(--text);
+    font-size:13px;
+    line-height:1.5;
+  "
+>
+  ⚠️ No uploaded lesson files available. Upload a lesson file in My Tasks before generating flashcards.
+</div>
+    
     <div id="arenaFileOptions"></div>
   </div>
 
@@ -3239,11 +3264,21 @@ document.getElementById("gardenBtn").addEventListener("click", () => openView("g
 // ===============================
 // THEME
 // ===============================
+
 function applyTheme(theme) {
   document.body.classList.toggle("dark", theme === "dark");
   localStorage.setItem(THEME_KEY, theme);
-  document.getElementById("themeBtn").textContent = theme === "dark" ? "☀" : "☾";
+
+  document.getElementById("themeBtn").textContent =
+    theme === "dark" ? "☀" : "☾";
+
+  const adminThemeBtn = document.getElementById("adminThemeBtn");
+  if (adminThemeBtn) {
+    adminThemeBtn.textContent =
+      theme === "dark" ? "☀ Light Mode" : "🌙 Dark Mode";
+  }
 }
+
 applyTheme(localStorage.getItem(THEME_KEY) || "light");
 document.getElementById("themeBtn").addEventListener("click", () => {
   applyTheme(document.body.classList.contains("dark") ? "light" : "dark");
@@ -3252,6 +3287,10 @@ document.getElementById("themeBtn2").addEventListener("click", () => {
   applyTheme(document.body.classList.contains("dark") ? "light" : "dark");
 });
 
+document.getElementById("adminThemeBtn")?.addEventListener("click", () => {
+  applyTheme(document.body.classList.contains("dark") ? "light" : "dark");
+});
+  
 // ===============================
 // TASKS AND XP
 // ===============================
@@ -4182,8 +4221,41 @@ async function fetchArenaWithRetry(url, options, maxRetries = 2) {
   }
 }
   
+
 async function generateArenaCards() {
-    if (arenaGenerating) return;
+  if (arenaGenerating) return;
+
+  const sourceSettings = getArenaSourceSettings();
+
+  if (
+    sourceSettings.sourceMode === "files" &&
+    sourceSettings.materials.length === 0
+  ) {
+    updateArenaFileWarning();
+
+    document.getElementById("arenaCounter").textContent =
+      "Please upload and select at least one lesson file before generating.";
+
+    return;
+  }
+
+  if (
+    sourceSettings.sourceMode === "custom" &&
+    !sourceSettings.topic
+  ) {
+    document.getElementById("arenaCounter").textContent =
+      "Please enter a subject or topic first.";
+    return;
+  }
+
+  if (
+    sourceSettings.sourceMode === "all" &&
+    !sourceSettings.topic
+  ) {
+    document.getElementById("arenaCounter").textContent =
+      "Please enter a custom topic to use Combination of All.";
+    return;
+  }
 
   const cooldownUntil = Number(
     localStorage.getItem(accountStorageKey(ARENA_COOLDOWN_KEY)) || 0
@@ -4195,17 +4267,19 @@ async function generateArenaCards() {
   }
 
   arenaGenerating = true;
+
   localStorage.setItem(
-  accountStorageKey(ARENA_COOLDOWN_KEY),
-  Date.now() + ARENA_COOLDOWN_MS
-);
+    accountStorageKey(ARENA_COOLDOWN_KEY),
+    Date.now() + ARENA_COOLDOWN_MS
+  );
+
   updateArenaCooldown();
+
   const startButton = document.getElementById("arenaStart");
   const welcome = document.getElementById("arenaWelcome");
   const loading = document.getElementById("arenaLoading");
   const cardArea = document.getElementById("arenaCardArea");
 
-  
   welcome.hidden = true;
   cardArea.hidden = true;
   loading.hidden = false;
@@ -4217,31 +4291,7 @@ async function generateArenaCards() {
     "Generating a new set...";
 
   try {
-    const sourceSettings = getArenaSourceSettings();
-
-if (
-  sourceSettings.sourceMode === "files" &&
-  sourceSettings.materials.length === 0
-) {
-  throw new Error("Please select at least one uploaded lesson file.");
-}
-
-if (
-  sourceSettings.sourceMode === "custom" &&
-  !sourceSettings.topic
-) {
-  throw new Error("Please enter a subject or topic first.");
-}
-
-if (
-  sourceSettings.sourceMode === "all" &&
-  !sourceSettings.topic
-) {
-  throw new Error(
-    "Please enter a custom topic to use Combination of All."
-  );
-}
-
+    
 const response = await fetchArenaWithRetry(
   "https://updated-study-quest.vercel.app/api/generate-arena-cards",
   {
@@ -4525,6 +4575,37 @@ function nextArenaCard() {
   document.getElementById("arenaSubmit").hidden = true;
   document.getElementById("arenaReveal").hidden = false;
   }
+  
+function updateArenaFileWarning() {
+  const warning = document.getElementById("arenaFileWarning");
+  const mode = document.getElementById("arenaSourceMode").value;
+
+  if (mode !== "files") {
+    warning.hidden = true;
+    return;
+  }
+
+  const availableFiles = game.tasks.filter(task =>
+    typeof task.lessonText === "string" &&
+    task.lessonText.trim().length > 0
+  );
+
+  const selectedFiles = document.querySelectorAll(
+    ".arena-file-checkbox:checked"
+  );
+
+  warning.hidden = availableFiles.length > 0;
+
+  if (availableFiles.length === 0) {
+    warning.textContent =
+      "⚠️ No uploaded lesson files available. Upload a lesson file in My Tasks before generating flashcards.";
+  } else if (selectedFiles.length === 0) {
+    warning.hidden = false;
+    warning.textContent =
+      "⚠️ Please select at least one uploaded lesson file.";
+  }
+}
+  
 function updateArenaSourceControls() {
   const mode = document.getElementById("arenaSourceMode").value;
   const fileSelection = document.getElementById("arenaFileSelection");
@@ -4534,6 +4615,7 @@ function updateArenaSourceControls() {
   customTopic.hidden = !["custom", "all"].includes(mode);
 
   renderArenaFileOptions();
+  updateArenaFileWarning();
 }
 
 function renderArenaFileOptions() {
@@ -4595,7 +4677,10 @@ function renderArenaFileOptions() {
 
 document.getElementById("arenaSourceMode")
   .addEventListener("change", updateArenaSourceControls);
-
+  
+document.getElementById("arenaFileOptions")
+  .addEventListener("change", updateArenaFileWarning);
+  
 updateArenaSourceControls();
 document.getElementById("arenaStart")
   .addEventListener("click", generateArenaCards);
