@@ -3356,9 +3356,10 @@ function toggleTask(id, checked) {
   }
 
   task.done = checked;
+task.completedDate = checked ? localDate() : null;
 
-  if (checked) {
-    game.completedTotal++;
+if (checked) {
+  game.completedTotal++;
 
     if (!task.rewarded) {
       task.rewarded = true;
@@ -3709,7 +3710,7 @@ const questDefinitions = [
 ];
 
 function questProgress(q) {
-  if (q.id === "task") return Math.min(1, game.tasks.filter(t => t.done && t.created === localDate()).length);
+  if (q.id === "task") return Math.min(1, game.tasks.filter(t => t.done && t.completedDate === localDate()).length);
   if (q.id === "focus") return game.lastFocusDate === localDate() ? 1 : 0;
   if (q.id === "quiz") return Math.min(3, game.quizAnswered.filter(x => x.date === localDate() && x.correct).length);
   return 0;
@@ -4574,6 +4575,11 @@ function checkArenaAnswer() {
    const isCorrect =
     userAnswer.trim().toLowerCase() ===
     card.answer.trim().toLowerCase();
+  game.quizAnswered.push({
+  date: localDate(),
+  correct: isCorrect
+});
+save();
 
   arenaCurrentSession.questions.push({
   question: card.question,
@@ -6277,6 +6283,18 @@ function displayStudyQuiz(task) {
           score++;
         }
       });
+      task.quizQuestions.forEach((q, index) => {
+  const selected = modal.querySelector(
+    `input[name="studyQuestion${index}"]:checked`
+  );
+
+  if (selected) {
+    game.quizAnswered.push({
+      date: localDate(),
+      correct: Number(selected.value) === Number(q.answerIndex)
+    });
+  }
+});
             if (!Array.isArray(task.quizHistory)) {
         task.quizHistory = [];
       }
