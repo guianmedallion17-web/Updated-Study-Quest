@@ -3945,10 +3945,27 @@ function renderGarden() {
   const nextStage = treeStages[stageIndex + 1];
 
   document.querySelectorAll("#miniGarden").forEach(container => {
-    container.style.background = selected === "night"
-      ? "linear-gradient(180deg,#1d3148 0%,#344b30 65%,#42653c 65%,#304b2e 100%)"
-      : "";
-  });
+  container.style.background = selected === "night"
+    ? "linear-gradient(180deg,#1d3148 0%,#344b30 65%,#42653c 65%,#304b2e 100%)"
+    : "";
+
+  container.innerHTML = `
+    <div style="
+      width:150px;
+      height:150px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      position:relative;
+      z-index:1;
+    ">
+      ${getTreeArtwork(stageIndex).replace(
+        "<svg ",
+        '<svg style="width:100%;height:100%;display:block;" '
+      )}
+    </div>
+  `;
+});
 
   const fullGarden = document.getElementById("fullGarden");
   fullGarden.dataset.theme = selected;
