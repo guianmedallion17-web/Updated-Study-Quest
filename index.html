@@ -1933,7 +1933,19 @@ body.auth-locked .global-study-companion {
     </div>
   </div>
 </div>
+<section class="card" style="margin-top:24px;padding:20px">
+  <div class="section-heading">
+    <div>
+      <h2>♕ Student Leaderboard</h2>
+      <p>View student rankings based on their total XP.</p>
+    </div>
+    <span class="badge">TOP STUDENTS</span>
+  </div>
 
+  <div id="adminStudentLeaderboard">
+    <p class="muted">Loading student rankings...</p>
+  </div>
+</section>
   <section class="card" style="margin-top:24px;padding:20px">
     <h2>Our Green Impact</h2>
     <p class="muted">A summary of the trees planted and contributions made by StudyQuest students.</p>
@@ -2029,6 +2041,7 @@ body.auth-locked .global-study-companion {
       <button class="nav-btn" data-view="greenImpact"><span class="nav-icon">♣</span> Our Green Impact</button>
       <button class="nav-btn" data-view="focus"><span class="nav-icon">◷</span> Focus Room</button>
       <button class="nav-btn" data-view="achievements"><span class="nav-icon">♜</span> Achievements</button>
+      <button class="nav-btn" data-view="leaderboard"><span class="nav-icon">♕</span> Student Leaderboard</button>
       <button class="nav-btn" data-view="settings"><span class="nav-icon">⚙</span> Settings</button>
     </nav>
   </div>
@@ -2155,6 +2168,24 @@ body.auth-locked .global-study-companion {
   </div>
 </section>
 
+  
+<!-- STUDENT LEADERBOARD PAGE -->
+<section class="view" id="leaderboard">
+  <div class="section-heading">
+    <div>
+      <h2>🏆 Student Leaderboard</h2>
+      <p>Compete with fellow students and climb your way to the top!</p>
+    </div>
+    <span class="badge">TOP STUDENTS</span>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <div id="studentLeaderboardTab">
+      <p class="muted">Loading student rankings...</p>
+    </div>
+  </div>
+</section>
+  
 <!-- TASKS -->
 <section class="view" id="tasks">
   <div class="card">
@@ -6554,10 +6585,13 @@ greenImpactPhotoModal.addEventListener("click", (event) => {
   
 
 function renderLeaderboard() {
-  const container = document.getElementById("studentLeaderboard");
+  const containers = [
+  document.getElementById("studentLeaderboard"),
+  document.getElementById("studentLeaderboardTab"),
+  document.getElementById("adminStudentLeaderboard")
+].filter(Boolean);
 
-  if (!container) return;
-
+if (!containers.length) return;
   const students = accounts
     .filter(account => account.role === "student")
     .map(account => {
@@ -6573,9 +6607,11 @@ function renderLeaderboard() {
     .sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name));
 
   if (students.length === 0) {
-    container.innerHTML = `
-      <p class="muted">No student rankings available yet. Be the first to earn XP!</p>
-    `;
+    containers.forEach(container => {
+  container.innerHTML = `
+    <p class="muted">No student rankings available yet. Be the first to earn XP!</p>
+  `;
+});
     return;
   }
 
@@ -6590,7 +6626,7 @@ function renderLeaderboard() {
     student => student.id === currentAccount?.id
   ) + 1;
 
-  container.innerHTML = `
+  const leaderboardHTML = `
     <div style="margin-bottom:20px;padding:14px;background:var(--panel2);border-radius:12px">
       <strong>Your Current Rank:</strong>
       <span style="color:var(--green);font-weight:800">
@@ -6698,9 +6734,12 @@ width:100%;
         `).join("")}
       </div>
     ` : ""}
-  `;
-}
+   `;
 
+  containers.forEach(container => {
+    container.innerHTML = leaderboardHTML;
+  });
+}
 
   
 function renderAll() {
