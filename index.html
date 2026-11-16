@@ -4706,9 +4706,9 @@ function nextArenaCard() {
 
         <p>📅 ${new Date(session.date).toLocaleDateString()}</p>
         <p>🕒 ${new Date(session.date).toLocaleTimeString()}</p>
-        <p>**Difficulty:** ${escapeHTML(session.difficulty || "Unknown")}</p>
-        <p>**Topic:** ${escapeHTML(session.topic || "Not specified")}</p>
-        <p>**Source:** ${escapeHTML(session.source || "Unknown")}</p>
+        <p><strong>Difficulty:</strong> ${escapeHTML(session.difficulty || "Unknown")}</p>
+        <p><strong>Topic:</strong> ${escapeHTML(session.topic || "Not specified")}</p>
+        <p><strong>Source:</strong> ${escapeHTML(session.source || "Unknown")}</p>
       </div>
 
       <h3 style="margin-bottom:12px">Questions and Answers</h3>
