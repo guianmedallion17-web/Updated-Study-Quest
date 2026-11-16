@@ -4679,6 +4679,7 @@ function nextArenaCard() {
     <div style="
       background:var(--bg);
       color:var(--text);
+      font-size:16px;
       width:100%;
       max-width:650px;
       max-height:85vh;
@@ -4701,8 +4702,17 @@ function nextArenaCard() {
         margin-bottom:18px;
       ">
         <h3 style="margin-bottom:10px">
-          Score: ${session.score ?? 0}/${session.total ?? questions.length}
-        </h3>
+        <span style="
+         display:inline-block;
+         background:#dcfce7;
+         color:#166534;
+         padding:8px 14px;
+         border-radius:10px;
+         font-size:19px;
+      ">
+    🏆 Score: ${session.score ?? 0}/${session.total ?? questions.length}
+  </span>
+</h3>
 
         <p>📅 ${new Date(session.date).toLocaleDateString()}</p>
         <p>🕒 ${new Date(session.date).toLocaleTimeString()}</p>
@@ -4759,7 +4769,15 @@ function nextArenaCard() {
             ">
             <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
               <strong>Quiz Attempt ${history.length - index}</strong>
-              <strong>${item.score ?? 0}/${item.total ?? (item.questions || []).length}</strong>
+              <strong style="
+  background:#dcfce7;
+  color:#166534;
+  padding:7px 12px;
+  border-radius:10px;
+  font-size:17px;
+">
+  🏆 ${item.score ?? 0}/${item.total ?? (item.questions || []).length}
+</strong>
             </div>
 
             <p style="margin:10px 0 5px">
@@ -4793,6 +4811,7 @@ function nextArenaCard() {
     <div style="
       background:var(--bg);
       color:var(--text);
+      font-size:16px;
       width:100%;
       max-width:650px;
       max-height:85vh;
