@@ -5815,7 +5815,15 @@ const duplicateResponse = await fetch(
     body: JSON.stringify({
       taskTitle: title,
       lessonText: lessonText,
-      previousTasks: getUsedTaskRecords()
+   previousTasks: [
+  ...getUsedTaskRecords(),
+  ...game.tasks
+    .filter(task => task.lessonText)
+    .map(task => ({
+      title: normalizeTaskValue(task.title),
+      lesson: normalizeTaskValue(task.lessonText)
+    }))
+]
     })
   }
 );
