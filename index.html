@@ -5679,6 +5679,62 @@ function getUsedTaskFingerprints() {
     return [];
   }
 }
+  
+function getUsedTaskRecords() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(
+        accountStorageKey("studyQuestUsedTaskRecords_v1")
+      ) || "[]"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function saveUsedTaskRecord(title, lessonText) {
+  const records = getUsedTaskRecords();
+
+  records.push({
+    title: normalizeTaskValue(title),
+    lesson: normalizeTaskValue(lessonText)
+  });
+
+  localStorage.setItem(
+    accountStorageKey("studyQuestUsedTaskRecords_v1"),
+    JSON.stringify(records)
+  );
+}
+
+function calculateTextSimilarity(textA, textB) {
+  const wordsA = new Set(normalizeTaskValue(textA).split(" ").filter(Boolean));
+  const wordsB = new Set(normalizeTaskValue(textB).split(" ").filter(Boolean));
+
+  if (!wordsA.size || !wordsB.size) return 0;
+
+  const intersection = [...wordsA].filter(word => wordsB.has(word)).length;
+  const union = new Set([...wordsA, ...wordsB]).size;
+
+  return intersection / union;
+}
+
+function isSimilarPreviousTask(title, lessonText) {
+  const records = getUsedTaskRecords();
+
+  return records.some(record => {
+    const titleSimilarity = calculateTextSimilarity(
+      title,
+      record.title
+    );
+
+    const lessonSimilarity = calculateTextSimilarity(
+      lessonText,
+      record.lesson
+    );
+
+    return titleSimilarity >= 0.80 && lessonSimilarity >= 0.85;
+  });
+}
 
 function saveUsedTaskFingerprint(fingerprint) {
   const fingerprints = getUsedTaskFingerprints();
@@ -5742,6 +5798,15 @@ const alreadyExists =
     normalizeTaskValue(task.title) === normalizeTaskValue(title) &&
     normalizeTaskValue(task.lessonText) === normalizeTaskValue(lessonText)
   );
+    
+const similarTaskExists = isSimilarPreviousTask(title, lessonText);
+
+if (similarTaskExists) {
+  throw new Error(
+    "This task is too similar to a previously submitted task. Please provide a genuinely different task."
+  );
+}
+    
 
 if (alreadyExists) {
   throw new Error(
@@ -5765,6 +5830,7 @@ if (alreadyExists) {
       testScore: null
     });
     saveUsedTaskFingerprint(fingerprint);
+    saveUsedTaskRecord(title, lessonText);
 
     save();
     taskInput.value = "";
