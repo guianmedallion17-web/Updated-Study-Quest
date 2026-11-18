@@ -6773,6 +6773,10 @@ if (accountEmail) {
 
 function initializeStudentApp() {
   startQuiz();
+
+  document.getElementById("pageTitle").textContent =
+    "Welcome back, " + game.name + "! 👋";
+
   renderAll();
   displayTime();
 }
