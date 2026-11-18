@@ -5743,11 +5743,6 @@ const alreadyExists =
     normalizeTaskValue(task.lessonText) === normalizeTaskValue(lessonText)
   );
 
-  game.tasks.some(task =>
-    normalizeTaskValue(task.title) === normalizeTaskValue(title) &&
-    normalizeTaskValue(task.lessonText) === normalizeTaskValue(lessonText)
-  );
-
 if (alreadyExists) {
   throw new Error(
     "This task and lesson have already been submitted. Create a genuinely different task to continue."
@@ -5770,7 +5765,6 @@ if (alreadyExists) {
       testScore: null
     });
     saveUsedTaskFingerprint(fingerprint);
-    saveUsedTaskTitle(title);
 
     save();
     taskInput.value = "";
