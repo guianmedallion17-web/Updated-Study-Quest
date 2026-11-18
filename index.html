@@ -5718,6 +5718,7 @@ function calculateTextSimilarity(textA, textB) {
   return intersection / union;
 }
 
+
 function isSimilarPreviousTask(title, lessonText) {
   const records = getUsedTaskRecords();
 
@@ -5732,9 +5733,12 @@ function isSimilarPreviousTask(title, lessonText) {
       record.lesson
     );
 
-    return titleSimilarity >= 0.80 && lessonSimilarity >= 0.85;
+    // Only flag the same task title with highly similar lesson content.
+    // Reusing a lesson under a different task title remains allowed.
+    return titleSimilarity === 1 && lessonSimilarity >= 0.85;
   });
 }
+
 
 function saveUsedTaskFingerprint(fingerprint) {
   const fingerprints = getUsedTaskFingerprints();
