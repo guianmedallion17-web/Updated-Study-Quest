@@ -6745,8 +6745,11 @@ function showAuthForm(form) {
 
 function enterStudentAccount(account) {
   currentAccount = account;
-  game = loadGameForAccount(account);
-  game.name = account.name;
+game = loadGameForAccount(account);
+
+const savedName = account.game?.name || account.name || "Scholar";
+game.name = savedName;
+account.name = savedName;
   const accountEmail = document.getElementById("accountEmail");
 if (accountEmail) {
   accountEmail.textContent = account.email;
