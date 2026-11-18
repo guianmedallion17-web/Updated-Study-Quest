@@ -739,6 +739,77 @@ body.dark .quiz-option.wrong { background:#542c2b; color:#ffdfd9; }
   text-align:center;
 }
 .toast.show { opacity:1; transform:translate(-50%,0); }
+  .task-notice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.task-notice-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 26px 22px;
+  text-align: center;
+  box-shadow: 0 15px 50px #0003;
+  animation: taskNoticeAppear 0.2s ease-out;
+}
+
+.task-notice-icon {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 15px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff0df;
+  color: #c66b25;
+  font-size: 30px;
+}
+
+.task-notice-card h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.task-notice-card p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 22px;
+  overflow-wrap: anywhere;
+}
+
+.task-notice-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 11px;
+  background: var(--green);
+  color: white;
+  font-weight: 750;
+  font-size: 14px;
+}
+
+@keyframes taskNoticeAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 footer { text-align:center; padding:30px 10px 5px; color:var(--muted); font-size:11px; }
 [hidden] { display:none !important; }
 
@@ -3188,6 +3259,46 @@ function showToast(message) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
 }
+  function showTaskRejectionNotice(message) {
+  const existing = document.getElementById("taskRejectionNotice");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "taskRejectionNotice";
+  overlay.className = "task-notice-overlay";
+  overlay.setAttribute("role", "alertdialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-labelledby", "taskNoticeTitle");
+
+  const card = document.createElement("div");
+  card.className = "task-notice-card";
+
+  const icon = document.createElement("div");
+  icon.className = "task-notice-icon";
+  icon.textContent = "⚠️";
+
+  const title = document.createElement("h3");
+  title.id = "taskNoticeTitle";
+  title.textContent = "Task Not Accepted";
+
+  const description = document.createElement("p");
+  description.textContent = message;
+
+  const button = document.createElement("button");
+  button.className = "task-notice-button";
+  button.type = "button";
+  button.textContent = "OK";
+
+  button.addEventListener("click", () => {
+    overlay.remove();
+  });
+
+  card.append(icon, title, description, button);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  button.focus();
+  }
 
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, char => ({
@@ -5877,8 +5988,10 @@ if (alreadyExists) {
     renderAll();
     showToast("Lesson uploaded successfully! 🌱");
 
-  } catch (error) {
-    showToast(error.message || "Unable to read this file.");
+} catch (error) {
+  showTaskRejectionNotice(
+    error.message || "Unable to process this task. Please try again."
+  );
   }
 }, true);
   // ===============================
