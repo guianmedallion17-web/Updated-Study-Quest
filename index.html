@@ -5646,6 +5646,80 @@ async function extractLessonText(file) {
 
   throw new Error("Unsupported file format.");
 }
+  
+function normalizeTaskValue(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function createTaskFingerprint(title, lessonText) {
+  const normalizedTitle = normalizeTaskValue(title);
+  const normalizedLesson = normalizeTaskValue(lessonText);
+
+  const content = normalizedTitle + "::" + normalizedLesson;
+  const data = new TextEncoder().encode(content);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+
+  return Array.from(new Uint8Array(hash))
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function getUsedTaskFingerprints() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(
+        accountStorageKey("studyQuestUsedTaskFingerprints_v1")
+      ) || "[]"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function saveUsedTaskFingerprint(fingerprint) {
+  const fingerprints = getUsedTaskFingerprints();
+
+  if (!fingerprints.includes(fingerprint)) {
+    fingerprints.push(fingerprint);
+
+    localStorage.setItem(
+      accountStorageKey("studyQuestUsedTaskFingerprints_v1"),
+      JSON.stringify(fingerprints)
+    );
+  }
+}
+  
+function getUsedTaskTitles() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(
+        accountStorageKey("studyQuestUsedTaskTitles_v1")
+      ) || "[]"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function saveUsedTaskTitle(title) {
+  const titles = getUsedTaskTitles();
+  const normalizedTitle = normalizeTaskValue(title);
+
+  if (!titles.includes(normalizedTitle)) {
+    titles.push(normalizedTitle);
+
+    localStorage.setItem(
+      accountStorageKey("studyQuestUsedTaskTitles_v1"),
+      JSON.stringify(titles)
+    );
+  }
+}
+  
+  
 
 // Intercept task creation when a lesson file is attached
 taskForm.addEventListener("submit", async event => {
@@ -5684,6 +5758,31 @@ if (priority === "auto") {
     if (lessonText.trim().length < 150) {
       throw new Error("Not enough readable text in this file.");
     }
+    
+const fingerprint = await createTaskFingerprint(title, lessonText);
+
+const usedFingerprints = getUsedTaskFingerprints();
+    const usedTitles = getUsedTaskTitles();
+const normalizedTitle = normalizeTaskValue(title);
+
+const alreadyExists =
+  usedFingerprints.includes(fingerprint) ||
+  usedTitles.includes(normalizedTitle) ||
+  game.tasks.some(task =>
+    normalizeTaskValue(task.title) === normalizedTitle &&
+    normalizeTaskValue(task.lessonText) === normalizeTaskValue(lessonText)
+  );
+  game.tasks.some(task =>
+    normalizeTaskValue(task.title) === normalizeTaskValue(title) &&
+    normalizeTaskValue(task.lessonText) === normalizeTaskValue(lessonText)
+  );
+
+if (alreadyExists) {
+  throw new Error(
+    "This task and lesson have already been submitted. Create a genuinely different task to continue."
+  );
+}
+    
 
     game.tasks.push({
       id: game.nextId++,
@@ -5699,6 +5798,8 @@ if (priority === "auto") {
       quizQuestions: [],
       testScore: null
     });
+    saveUsedTaskFingerprint(fingerprint);
+    saveUsedTaskTitle(title);
 
     save();
     taskInput.value = "";
