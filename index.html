@@ -5803,11 +5803,36 @@ const alreadyExists =
     normalizeTaskValue(task.lessonText) === normalizeTaskValue(lessonText)
   );
     
-const similarTaskExists = isSimilarPreviousTask(title, lessonText);
+showToast("Checking if this is a new learning task... 🤖");
 
-if (similarTaskExists) {
+const duplicateResponse = await fetch(
+  "https://updated-study-quest.vercel.app/api/check-task-duplicate",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      taskTitle: title,
+      lessonText: lessonText,
+      previousTasks: getUsedTaskRecords()
+    })
+  }
+);
+
+const duplicateResult = await duplicateResponse.json();
+
+if (!duplicateResponse.ok) {
   throw new Error(
-    "This task is too similar to a previously submitted task. Please provide a genuinely different task."
+    duplicateResult.error ||
+    "Unable to check this task. Please try again."
+  );
+}
+
+if (duplicateResult.isDuplicate) {
+  throw new Error(
+    duplicateResult.reason ||
+    "This task appears to have already been submitted. Please create a genuinely different task."
   );
 }
     
