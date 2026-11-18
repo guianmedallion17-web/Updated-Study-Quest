@@ -5693,34 +5693,6 @@ function saveUsedTaskFingerprint(fingerprint) {
   }
 }
   
-function getUsedTaskTitles() {
-  try {
-    return JSON.parse(
-      localStorage.getItem(
-        accountStorageKey("studyQuestUsedTaskTitles_v1")
-      ) || "[]"
-    );
-  } catch {
-    return [];
-  }
-}
-
-function saveUsedTaskTitle(title) {
-  const titles = getUsedTaskTitles();
-  const normalizedTitle = normalizeTaskValue(title);
-
-  if (!titles.includes(normalizedTitle)) {
-    titles.push(normalizedTitle);
-
-    localStorage.setItem(
-      accountStorageKey("studyQuestUsedTaskTitles_v1"),
-      JSON.stringify(titles)
-    );
-  }
-}
-  
-  
-
 // Intercept task creation when a lesson file is attached
 taskForm.addEventListener("submit", async event => {
   const fileInput = document.getElementById("lessonFile");
@@ -5759,19 +5731,18 @@ if (priority === "auto") {
       throw new Error("Not enough readable text in this file.");
     }
     
+
 const fingerprint = await createTaskFingerprint(title, lessonText);
 
 const usedFingerprints = getUsedTaskFingerprints();
-    const usedTitles = getUsedTaskTitles();
-const normalizedTitle = normalizeTaskValue(title);
 
 const alreadyExists =
   usedFingerprints.includes(fingerprint) ||
-  usedTitles.includes(normalizedTitle) ||
   game.tasks.some(task =>
-    normalizeTaskValue(task.title) === normalizedTitle &&
+    normalizeTaskValue(task.title) === normalizeTaskValue(title) &&
     normalizeTaskValue(task.lessonText) === normalizeTaskValue(lessonText)
   );
+
   game.tasks.some(task =>
     normalizeTaskValue(task.title) === normalizeTaskValue(title) &&
     normalizeTaskValue(task.lessonText) === normalizeTaskValue(lessonText)
