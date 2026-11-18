@@ -3241,7 +3241,10 @@ function save() {
       const account = accounts.find(item => item.id === currentAccount.id);
 
       if (account) {
+        account.name = game.name;
+        currentAccount.name = game.name;
         account.game = game;
+
         saveAccounts();
       }
     } else if (!currentAccount) {
