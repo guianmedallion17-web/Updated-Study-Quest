@@ -6241,6 +6241,7 @@ function updateQuizLoader(seconds, progress, status, countdown) {
 
 window.STUDYQUEST_API_URL =
   "https://updated-study-quest.vercel.app/api/generate-quiz";
+  const studyQuizAnswerKeys = new Map();
 
 async function generateStudyQuiz(taskId) {
   const task = game.tasks.find(
@@ -6356,8 +6357,13 @@ async function generateStudyQuiz(taskId) {
       throw new Error("The AI did not return exactly 10 questions.");
     }
 
-    task.quizQuestions = result.questions;
-    save();
+studyQuizAnswerKeys.set(
+  task.id,
+  result.questions.map(q => Number(q.answerIndex))
+);
+
+task.quizQuestions = result.questions.map(({ answerIndex, ...question }) => question);
+save();
 
     completed = true;
 
