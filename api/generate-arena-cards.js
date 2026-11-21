@@ -277,14 +277,18 @@ for (let attempt = 0; attempt < maxAttempts; attempt++) {
         return false;
       });
 
-    const multipleChoiceCount = parsed.cards.filter(
-      card => card.type === "multiple_choice"
-    ).length;
+        const multipleChoiceCount = Array.isArray(parsed.cards)
+      ? parsed.cards.filter(
+          card => card.type === "multiple_choice"
+        ).length
+      : 0;
 
-    const typedCount = parsed.cards.filter(
-      card => card.type === "typed"
-    ).length;
-
+    const typedCount = Array.isArray(parsed.cards)
+      ? parsed.cards.filter(
+          card => card.type === "typed"
+        ).length
+      : 0;
+    
     const correctDifficultyFormat =
       difficulty === "easy"
         ? multipleChoiceCount === 10
