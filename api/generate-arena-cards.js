@@ -105,7 +105,7 @@ IMPORTANT RULES:
 5. General knowledge questions should cover varied topics such as science, history, geography, technology, culture, and everyday knowledge.
 6. Keep answers accurate, clear, and student-friendly.
 7. Each card must contain one question, one concise answer, and a short explanation.
-8. Do not create multiple-choice questions.
+8. Follow the DIFFICULTY INSTRUCTIONS exactly when choosing the question types and number of multiple-choice questions.
 9. Do not include duplicate questions within this batch.
 10. Return valid JSON only.
 11. Use "multiple_choice" for questions with choices.
