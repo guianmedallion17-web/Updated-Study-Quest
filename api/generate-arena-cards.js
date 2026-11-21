@@ -201,18 +201,73 @@ for (let attempt = 0; attempt < maxAttempts; attempt++) {
 
     const parsed = JSON.parse(output);
 
+    const validCardContent = parsed.cards.every(card => {
+      if (
+        !card ||
+        typeof card.question !== "string" ||
+        !card.question.trim() ||
+        typeof card.answer !== "string" ||
+        !card.answer.trim() ||
+        typeof card.explanation !== "string" ||
+        !card.explanation.trim()
+      ) {
+        return false;
+      }
+
+      if (card.type === "multiple_choice") {
+        return (
+          difficulty !== "hard" &&
+          Array.isArray(card.options) &&
+          card.options.length === 4 &&
+          card.options.every(
+            option => typeof option === "string" && option.trim()
+          ) &&
+          new Set(card.options).size === 4 &&
+          card.options.includes(card.answer)
+        );
+      }
+
+      if (card.type === "typed") {
+        return (
+          difficulty !== "easy" &&
+          Array.isArray(card.options) &&
+          card.options.length === 0 &&
+          Array.isArray(card.acceptedAnswers) &&
+          card.acceptedAnswers.length >= 2 &&
+          card.acceptedAnswers.length <= 4 &&
+          card.acceptedAnswers.every(
+            answer => typeof answer === "string" && answer.trim()
+          )
+        );
+      }
+
+      return false;
+    });
+
+    const multipleChoiceCount = parsed.cards.filter(
+      card => card.type === "multiple_choice"
+    ).length;
+
+    const typedCount = parsed.cards.filter(
+      card => card.type === "typed"
+    ).length;
+
+    const correctDifficultyFormat =
+      difficulty === "easy"
+        ? multipleChoiceCount === 10
+        : difficulty === "hard"
+        ? typedCount === 10
+        : multipleChoiceCount === 5 && typedCount === 5;
+
     if (
       !Array.isArray(parsed.cards) ||
       parsed.cards.length !== 10 ||
-      !parsed.cards.every(card =>
-        typeof card.question === "string" &&
-        card.question.trim() &&
-        typeof card.answer === "string" &&
-        card.answer.trim() &&
-        typeof card.explanation === "string"
-      )
+      !validCardContent ||
+      !correctDifficultyFormat
     ) {
-      throw new Error("Invalid flashcard format.");
+      return res.status(502).json({
+        error: "Some generated questions did not pass the quality checks. Please try generating a new set."
+      });
     }
 
     const normalize = value =>
