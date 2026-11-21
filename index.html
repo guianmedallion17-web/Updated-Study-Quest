@@ -6619,28 +6619,36 @@ function displayStudyQuiz(task) {
 
       let score = 0;
 
+            const answerKey = studyQuizAnswerKeys.get(task.id);
+
+      if (!Array.isArray(answerKey) || answerKey.length !== task.quizQuestions.length) {
+        showToast("The answer key is unavailable. Please generate a new test.");
+        return;
+      }
+
       task.quizQuestions.forEach((q, index) => {
         const selected = modal.querySelector(
           `input[name="studyQuestion${index}"]:checked`
         );
 
         if (selected &&
-            Number(selected.value) === Number(q.answerIndex)) {
+            Number(selected.value) === answerKey[index]) {
           score++;
         }
       });
-      task.quizQuestions.forEach((q, index) => {
-  const selected = modal.querySelector(
-    `input[name="studyQuestion${index}"]:checked`
-  );
 
-  if (selected) {
-    game.quizAnswered.push({
-      date: localDate(),
-      correct: Number(selected.value) === Number(q.answerIndex)
-    });
-  }
-});
+      task.quizQuestions.forEach((q, index) => {
+        const selected = modal.querySelector(
+          `input[name="studyQuestion${index}"]:checked`
+        );
+
+        if (selected) {
+          game.quizAnswered.push({
+            date: localDate(),
+            correct: Number(selected.value) === answerKey[index]
+          });
+        }
+      });
             if (!Array.isArray(task.quizHistory)) {
         task.quizHistory = [];
       }
