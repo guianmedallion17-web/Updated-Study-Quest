@@ -113,6 +113,20 @@ IMPORTANT RULES:
 13. For typed questions, options must be an empty array.
 14. The answer must match one of the provided options for multiple-choice questions.
 15. For typed questions, include an "acceptedAnswers" array containing 2 to 4 reasonable alternative answers that have the same meaning as the correct answer. Do not include answers that are only partially correct or have a different meaning.
+16. Prioritize well-established and verifiable facts. Do not invent dates, names, statistics, quotations, or historical events.
+17. For uploaded materials, base questions on the actual information provided. Do not add unsupported details or change the meaning of the material.
+18. Avoid questions with ambiguous wording or multiple defensible answers.
+19. Make sure every explanation supports the given correct answer and does not contradict it.
+20. If information is uncertain, incomplete, or conflicting, do not create a question about it.
+21. Do not treat an assumption or opinion as an established fact.
+22. Follow the DIFFICULTY INSTRUCTIONS exactly when choosing the question types and number of multiple-choice questions.
+23. Do not include duplicate questions within this batch.
+24. Return valid JSON only.
+25. Use "multiple_choice" for questions with choices.
+26. Use "typed" for questions requiring a written answer.
+27. For typed questions, options must be an empty array.
+28. The answer must match one of the provided options for multiple-choice questions.
+29. For typed questions, include an "acceptedAnswers" array containing 2 to 4 reasonable alternative answers that have the same meaning as the correct answer. Do not include answers that are only partially correct or have a different meaning.
 
 Required format:
 {
