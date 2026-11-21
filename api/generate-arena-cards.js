@@ -112,6 +112,7 @@ IMPORTANT RULES:
 12. Use "typed" for questions requiring a written answer.
 13. For typed questions, options must be an empty array.
 14. The answer must match one of the provided options for multiple-choice questions.
+15. For typed questions, include an "acceptedAnswers" array containing 2 to 4 reasonable alternative answers that have the same meaning as the correct answer. Do not include answers that are only partially correct or have a different meaning.
 
 Required format:
 {
@@ -128,13 +129,18 @@ Required format:
       "answer": "Correct option here",
       "explanation": "Brief explanation here."
     },
-    {
-      "type": "typed",
-      "question": "Question here?",
-      "options": [],
-      "answer": "Correct answer here",
-      "explanation": "Brief explanation here."
-    }
+{
+  "type": "typed",
+  "question": "Question here?",
+  "options": [],
+  "answer": "Correct answer here",
+  "acceptedAnswers": [
+    "Equivalent answer 1",
+    "Equivalent answer 2",
+    "Equivalent answer 3"
+  ],
+  "explanation": "Brief explanation here."
+}
   ]
 }
 `;
