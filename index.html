@@ -2360,16 +2360,17 @@ body.auth-locked .global-study-companion {
   <option value="low">🟢 Low</option>
   </select>
 
-  <div style="grid-column:1/-1">
-    <label for="lessonFile">📄 Upload your lesson (TXT, PDF, or DOCX)</label>
-    <input
-      id="lessonFile"
-      type="file"
-      accept=".txt,.pdf,.docx"
-      style="width:100%;margin-top:8px"
-    >
-    <small class="muted">Your uploaded lesson will be used to generate your practice test.</small>
-  </div>
+ <div style="grid-column:1/-1">
+  <label for="lessonFile">📄 Upload your lesson (TXT, PDF, or DOCX) *</label>
+  <input
+    id="lessonFile"
+    type="file"
+    accept=".txt,.pdf,.docx"
+    style="width:100%;margin-top:8px"
+    required
+  >
+  <small class="muted">Uploading a lesson file is required. StudyQuest will use it to generate your 10-question practice test.</small>
+ </div>
 
   <button class="btn" type="submit">+ Add Task</button>
 </form>
