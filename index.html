@@ -2908,6 +2908,25 @@ body.auth-locked .global-study-companion {
 <script>
 "use strict";
 
+// TEMPORARY STUDYQUEST ERROR DETECTOR
+window.addEventListener("error", function(event) {
+  const message = "JavaScript Error: " +
+    event.message +
+    " (Line: " + event.lineno + ")";
+
+  console.error(message);
+
+  const loginMessage = document.getElementById("loginMessage");
+  const registerMessage = document.getElementById("registerMessage");
+
+  if (loginMessage) loginMessage.textContent = message;
+  if (registerMessage) registerMessage.textContent = message;
+});
+
+window.addEventListener("unhandledrejection", function(event) {
+  console.error("Unhandled Promise Error:", event.reason);
+});
+
 
 // ===============================
 // STUDYQUEST ACCOUNT AND GAME DATA
