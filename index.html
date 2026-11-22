@@ -4516,10 +4516,18 @@ arenaCurrentSession = {
   id: Date.now(),
   date: new Date().toISOString(),
   difficulty: document.getElementById("arenaDifficulty").value,
-  topic: sourceSettings.topic ||
-    (sourceSettings.materials.length
-      ? sourceSettings.materials.map(file => file.title).join(", ")
-      : "General Knowledge"),
+topic:
+  sourceSettings.sourceMode === "general"
+    ? "General Knowledge"
+    : sourceSettings.sourceMode === "custom"
+    ? sourceSettings.topic
+    : sourceSettings.sourceMode === "files"
+    ? sourceSettings.materials.map(file => file.title).join(", ")
+    : [
+        "General Knowledge",
+        ...sourceSettings.materials.map(file => file.title),
+        sourceSettings.topic
+      ].filter(Boolean).join(", "),
   source: sourceLabels[sourceSettings.sourceMode],
   questions: []
 };
