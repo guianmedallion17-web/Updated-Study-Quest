@@ -4660,11 +4660,16 @@ function checkArenaAnswer() {
 
      const normalizeAnswer = value => {
     let normalized = String(value || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+  .toLowerCase()
+  .replace(/[^a-z0-9\s.-]/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
 
+// Treat equivalent Celsius formats as the same numeric answer
+normalized = normalized.replace(
+  /^(-?\d+(?:\.\d+)?)\s*(?:degrees?\s*celsius|celsius|c)$/,
+  "$1"
+);
     const romanNumerals = {
       i: "1",
       ii: "2",
