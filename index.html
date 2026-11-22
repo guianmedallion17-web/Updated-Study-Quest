@@ -3236,21 +3236,51 @@ function saveAccounts() {
   localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
 }
 
+
+function safeProgressNumber(value, fallback = 0, minimum = 0) {
+  const number = Number(value);
+
+  if (!Number.isSafeInteger(number) || number < minimum) {
+    return fallback;
+  }
+
+  return Math.min(number, 1000000000);
+}
+
 function prepareGameData(saved) {
   const base = newGame();
 
-  if (!saved || typeof saved !== "object") {
+  if (!saved || typeof saved !== "object" || Array.isArray(saved)) {
     return base;
   }
 
   return {
     ...base,
     ...saved,
+
+    xp: safeProgressNumber(saved.xp),
+    completedTotal: safeProgressNumber(saved.completedTotal),
+    focusSessions: safeProgressNumber(saved.focusSessions),
+    focusMinutes: safeProgressNumber(saved.focusMinutes),
+    quizBest: safeProgressNumber(saved.quizBest),
+    quizCorrect: safeProgressNumber(saved.quizCorrect),
+    nextId: safeProgressNumber(saved.nextId, 1, 1),
+
     tasks: Array.isArray(saved.tasks) ? saved.tasks : [],
-    questClaims: Array.isArray(saved.questClaims) ? saved.questClaims : [],
-    quizAnswered: Array.isArray(saved.quizAnswered) ? saved.quizAnswered : []
+    questClaims: Array.isArray(saved.questClaims)
+      ? [...new Set(saved.questClaims.filter(item => typeof item === "string"))]
+      : [],
+    quizAnswered: Array.isArray(saved.quizAnswered)
+      ? saved.quizAnswered.filter(item =>
+          item &&
+          typeof item === "object" &&
+          typeof item.correct === "boolean" &&
+          typeof item.date === "string"
+        )
+      : []
   };
 }
+
 
 function loadGame() {
   try {
