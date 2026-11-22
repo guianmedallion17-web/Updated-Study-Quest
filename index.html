@@ -6633,17 +6633,32 @@ function displayStudyQuiz(task) {
       task.quizHistory.push(attemptHistory);
 
       task.testScore = score;
-      task.verified = score >= 7;
+task.verified = score >= 7;
 
-      save();
-      modal.remove();
-      renderAll();
+if (task.verified && !task.done) {
+  task.done = true;
+  task.completedDate = localDate();
+  game.completedTotal++;
 
-      if (task.verified) {
-        showToast(`Excellent! ${score}/10. Task verified! 🎉`);
-      } else {
-        showToast(`${score}/10. Review your lesson and try again! 📚`);
-      }
+  if (!task.rewarded) {
+    task.rewarded = true;
+    game.xp += 30;
+  }
+}
+
+save();
+modal.remove();
+renderAll();
+
+if (task.verified) {
+  showToast(
+    task.completedDate === localDate()
+      ? `Excellent! ${score}/10. Task completed! 🎉`
+      : `Excellent! ${score}/10. Quiz passed! 🎉`
+  );
+} else {
+  showToast(`${score}/10. Review your lesson and try again! 📚`);
+}
     });
 }
   
