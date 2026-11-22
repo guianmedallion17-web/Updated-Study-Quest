@@ -3475,12 +3475,6 @@ function taskMarkup(task) {
 
   return `
     <div class="task-row ${task.done ? "done" : ""}">
-      <input class="task-check"
-        type="checkbox"
-        data-check="${task.id}"
-        ${task.done ? "checked" : ""}
-        ${task.lessonText && !task.verified ? "disabled" : ""}
-        aria-label="Complete ${escapeHTML(task.title)}">
 
       <div class="task-info">
         <div class="task-title">${escapeHTML(task.title)}</div>
