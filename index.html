@@ -3383,17 +3383,37 @@ function getXPToNext() {
   return 100 - xpIntoLevel();
 }
 
+
 function awardXP(amount, message) {
+  if (
+    !Number.isSafeInteger(amount) ||
+    amount <= 0 ||
+    amount > 10000
+  ) {
+    console.warn("Invalid XP reward rejected:", amount);
+    return false;
+  }
+
   const before = getLevel();
-  game.xp += amount;
+
+  game.xp = safeProgressNumber(game.xp) + amount;
+
   save();
   renderAll();
+
   const after = getLevel();
+
   showToast(message + " +" + amount + " XP!");
+
   if (after > before) {
-    setTimeout(() => showToast("🎉 LEVEL UP! You reached Level " + after + "!"), 650);
+    setTimeout(() => {
+      showToast("🎉 LEVEL UP! You reached Level " + after + "!");
+    }, 650);
   }
+
+  return true;
 }
+
 
 function refreshDailyQuests() {
   const today = localDate();
