@@ -4277,7 +4277,7 @@ function getArenaXPHistory() {
 
 function hasArenaXPReward(question) {
   const normalize = value =>
-    value.toLowerCase().replace(/[^a-z0-9]/g, "");
+    String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
   const key = normalize(question);
 
@@ -4289,12 +4289,21 @@ function hasArenaXPReward(question) {
 function saveArenaXPReward(question) {
   const history = getArenaXPHistory();
 
-  history.push(question);
+  const normalize = value =>
+    String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  const key = normalize(question);
+
+  if (!key || history.some(savedQuestion => normalize(savedQuestion) === key)) {
+    return;
+  }
+
+  history.push(key);
 
   localStorage.setItem(
-  accountStorageKey(ARENA_XP_HISTORY_KEY),
-  JSON.stringify(history.slice(-500))
-);
+    accountStorageKey(ARENA_XP_HISTORY_KEY),
+    JSON.stringify(history)
+  );
 }
 function startQuiz() {
   arenaCards = [];
