@@ -4630,6 +4630,11 @@ function checkArenaAnswer() {
   const feedback = document.getElementById("arenaFeedback");
   const submit = document.getElementById("arenaSubmit");
 
+  // Prevent duplicate submissions or invalid session states
+  if (!card || !arenaCurrentSession || submit.hidden) {
+    return;
+  }
+
   let userAnswer = "";
 
   if (card.type === "multiple_choice") {
