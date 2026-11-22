@@ -3457,37 +3457,6 @@ const taskPriority = document.getElementById("taskPriority");
 document.getElementById("taskFilter").addEventListener("change", renderTasks);
 
 
-  const task = game.tasks.find(item => item.id === id);
-  if (!task || task.done === checked) return;
-
-  // Require the AI quiz before completing uploaded lessons
-  if (checked && task.lessonText && !task.verified) {
-    showToast("Pass the AI quiz first! You need at least 7/10.");
-    renderAll();
-    return;
-  }
-
-  task.done = checked;
-task.completedDate = checked ? localDate() : null;
-
-if (checked) {
-  game.completedTotal++;
-
-    if (!task.rewarded) {
-      task.rewarded = true;
-      game.xp += 30;
-      showToast("Mission complete! +30 XP ⚡");
-    } else {
-      showToast("Mission marked complete again.");
-    }
-  } else {
-    showToast("Mission reopened. Your earned XP stays yours.");
-  }
-
-  save();
-  renderAll();
-}
-
 function deleteTask(id) {
   if (!confirm("Delete this mission?")) return;
   game.tasks = game.tasks.filter(task => task.id !== id);
