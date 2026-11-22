@@ -3421,42 +3421,6 @@ const taskInput = document.getElementById("taskInput");
 const taskDate = document.getElementById("taskDate");
 const taskPriority = document.getElementById("taskPriority");
   
-taskForm.addEventListener("submit", event => {
-  event.preventDefault();
-  const title = taskInput.value.trim();
-  if (!title) return;
-  let priority = taskPriority.value;
-
-if (priority === "auto") {
-  if (!taskDate.value) {
-    priority = "low";
-  } else {
-    const daysUntilDue = Math.ceil(
-      (new Date(taskDate.value + "T12:00:00") -
-       new Date(localDate() + "T12:00:00")) / 86400000
-    );
-
-    priority =
-      daysUntilDue <= 1 ? "high" :
-      daysUntilDue <= 3 ? "medium" : "low";
-  }
-}
-  game.tasks.push({
-    id: game.nextId++,
-    title,
-    date: taskDate.value,
-    priority,
-    done: false,
-    rewarded: false,
-    created: localDate()
-  });
-  save();
-taskInput.value = "";
-  taskDate.value = "";
-  renderAll();
-  showToast("New mission added! Good luck. 📚");
-});
-
 document.getElementById("taskFilter").addEventListener("change", renderTasks);
 
 function toggleTask(id, checked) {
