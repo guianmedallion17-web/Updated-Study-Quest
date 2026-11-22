@@ -3423,7 +3423,7 @@ const taskPriority = document.getElementById("taskPriority");
   
 document.getElementById("taskFilter").addEventListener("change", renderTasks);
 
-function toggleTask(id, checked) {
+
   const task = game.tasks.find(item => item.id === id);
   if (!task || task.done === checked) return;
 
@@ -3532,10 +3532,7 @@ function taskMarkup(task) {
 }
 
 function bindTaskActions(container) {
-  container.querySelectorAll("[data-check]").forEach(input => {
-    input.addEventListener("change", () =>
-      toggleTask(Number(input.dataset.check), input.checked));
-  });
+  
   container.querySelectorAll("[data-delete]").forEach(button => {
     button.addEventListener("click", () => deleteTask(Number(button.dataset.delete)));
   });
