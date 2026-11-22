@@ -252,26 +252,21 @@ for (let attempt = 0; attempt < maxAttempts; attempt++) {
         }
 
         if (card.type === "typed") {
-          if (
-            difficulty === "easy" ||
-            !Array.isArray(card.options) ||
-            card.options.length !== 0 ||
-            !Array.isArray(card.acceptedAnswers) ||
-            card.acceptedAnswers.length < 2 ||
-            card.acceptedAnswers.length > 4 ||
-            !card.acceptedAnswers.every(
-              answer => typeof answer === "string" && answer.trim()
-            )
-          ) {
-            return false;
-          }
+  if (
+    difficulty === "easy" ||
+    !Array.isArray(card.options) ||
+    card.options.length !== 0 ||
+    (card.acceptedAnswers !== undefined &&
+      (!Array.isArray(card.acceptedAnswers) ||
+       card.acceptedAnswers.length > 4 ||
+       !card.acceptedAnswers.every(
+         answer => typeof answer === "string" && answer.trim()
+       )))
+  ) {
+    return false;
+  }
 
-          const allAnswers = [
-            card.answer,
-            ...card.acceptedAnswers
-          ].map(normalizeValidationAnswer);
-
-          return new Set(allAnswers).size === allAnswers.length;
+  return true;
         }
 
         return false;
