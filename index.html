@@ -2906,6 +2906,18 @@ body.auth-locked .global-study-companion {
 
 
 <script>
+window.addEventListener("error", function(event) {
+  const message = "JavaScript Error: " +
+    event.message +
+    " (Line: " + event.lineno + ")";
+
+  const loginMessage = document.getElementById("loginMessage");
+
+  if (loginMessage) {
+    loginMessage.textContent = message;
+  }
+});
+  
 "use strict";
 
 // TEMPORARY STUDYQUEST ERROR DETECTOR
