@@ -4632,7 +4632,7 @@ function renderArenaCard() {
 
   saveArenaQuestion(card.question);
 }
-function checkArenaAnswer() {
+async function checkArenaAnswer() {
   const card = arenaCards[arenaIndex];
   const options = document.getElementById("arenaOptions");
   const typedAnswer = document.getElementById("arenaTypedAnswer");
@@ -4640,8 +4640,13 @@ function checkArenaAnswer() {
   const submit = document.getElementById("arenaSubmit");
 
   // Prevent duplicate submissions or invalid session states
-  if (!card || !arenaCurrentSession || submit.hidden) {
-    return;
+  if (
+  !card ||
+  !arenaCurrentSession ||
+  submit.hidden ||
+  submit.disabled
+) {
+  return;
   }
 
   let userAnswer = "";
@@ -4711,9 +4716,58 @@ normalized = normalized.replace(
 
   const normalizedUserAnswer = normalizeAnswer(userAnswer);
 
-  const isCorrect = acceptedAnswers.some(
-    answer => normalizeAnswer(answer) === normalizedUserAnswer
-  );
+let isCorrect = acceptedAnswers.some(
+  answer => normalizeAnswer(answer) === normalizedUserAnswer
+);
+
+// Use AI to evaluate typed answers with different wording
+if (card.type === "typed" && !isCorrect) {
+  submit.disabled = true;
+  feedback.textContent = "Checking your answer...";
+  feedback.hidden = false;
+
+  try {
+    const evaluationResponse = await fetch(
+      "https://updated-study-quest.vercel.app/api/evaluate-arena-answer",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          question: card.question,
+          userAnswer: userAnswer,
+          correctAnswer: card.answer,
+          explanation: card.explanation
+        })
+      }
+    );
+
+    const evaluation = await evaluationResponse.json();
+
+    if (!evaluationResponse.ok) {
+      throw new Error(
+        evaluation.error || "Unable to evaluate your answer."
+      );
+    }
+
+    if (typeof evaluation.correct !== "boolean") {
+      throw new Error("Invalid answer evaluation.");
+    }
+
+    isCorrect = evaluation.correct;
+
+  } catch (error) {
+    console.error("Answer evaluation error:", error);
+
+    feedback.textContent =
+      "We couldn't check your answer right now. Please try again.";
+
+    feedback.hidden = false;
+    submit.disabled = false;
+    return;
+  }
+}
   game.quizAnswered.push({
   date: localDate(),
   correct: isCorrect,
