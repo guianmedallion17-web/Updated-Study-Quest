@@ -152,19 +152,24 @@ Required format:
 `;
 
     
-let response;
-let data;
+
+let response = null;
+let data = null;
+let lastError = null;
 
 const models = [
   "gemini-3.1-flash-lite",
   "gemini-3.5-flash"
 ];
 
-for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
-  const model = models[modelIndex];
-  const maxAttempts = modelIndex === 0 ? 3 : 1;
+for (const model of models) {
+  const controller = new AbortController();
 
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, 18000);
+
+  try {
     response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
@@ -173,6 +178,7 @@ for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
           "Content-Type": "application/json",
           "x-goog-api-key": apiKey
         },
+        signal: controller.signal,
         body: JSON.stringify({
           contents: [{
             parts: [{ text: prompt }]
@@ -187,40 +193,45 @@ for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
 
     data = await response.json();
 
-    if (response.ok) break;
+  } catch (error) {
+    response = null;
+    data = null;
+    lastError = error;
 
-    const retryable = [500, 502, 503, 504].includes(response.status);
-    const quotaLimited = response.status === 429;
+    console.warn(`Model ${model} timed out or failed:`, error.message);
 
-    if (!retryable && !quotaLimited) {
-      console.error("Gemini error:", data);
+    continue;
 
-      return res.status(response.status).json({
-        error: "Gemini is temporarily busy. Please try again in a moment."
-      });
-    }
-
-    if (quotaLimited || attempt === maxAttempts - 1) {
-      break;
-    }
-
-    await new Promise(resolve =>
-      setTimeout(resolve, 5000 * (2 ** attempt))
-    );
+  } finally {
+    clearTimeout(timeoutId);
   }
 
-  if (response.ok) break;
+  if (response.ok) {
+    break;
+  }
+
+  const retryable = [500, 502, 503, 504].includes(response.status);
+  const quotaLimited = response.status === 429;
+
+  if (!retryable && !quotaLimited) {
+    console.error("Gemini error:", data);
+
+    return res.status(response.status).json({
+      error: "Unable to generate flashcards. Please try again."
+    });
+  }
 
   console.warn(`Model ${model} failed. Trying the next Gemini model.`);
 }
 
-if (!response.ok) {
-  console.error("All Gemini models failed:", data);
+if (!response?.ok) {
+  console.error("All Gemini models failed:", lastError || data);
 
-  return res.status(response.status).json({
+  return res.status(503).json({
     error: "Gemini is temporarily busy. Please try again in a moment."
   });
 }
+    
 
 
     const output =
