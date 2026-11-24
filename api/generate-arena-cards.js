@@ -182,7 +182,7 @@ for (let attempt = 0; attempt < maxAttempts; attempt++) {
 
   if (response.ok) break;
 
-  const retryable = [429, 500, 502, 503, 504].includes(response.status);
+  const retryable = [500, 502, 503, 504].includes(response.status);
 
   if (!retryable || attempt === maxAttempts - 1) {
     console.error("Gemini error:", data);
