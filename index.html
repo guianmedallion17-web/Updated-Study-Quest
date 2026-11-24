@@ -4388,16 +4388,7 @@ async function fetchArenaWithRetry(url, options, maxRetries = 2) {
 
       clearTimeout(timeout);
 
-      if (
-        response.ok ||
-        (response.status < 500 && response.status !== 429)
-      ) {
-        return response;
-      }
-
-      if (attempt === maxRetries) {
-        return response;
-      }
+            return response;
 
     } catch (error) {
       clearTimeout(timeout);
