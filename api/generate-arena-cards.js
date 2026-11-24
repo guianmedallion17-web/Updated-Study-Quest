@@ -193,7 +193,7 @@ for (let attempt = 0; attempt < maxAttempts; attempt++) {
   }
 
   await new Promise(resolve =>
-    setTimeout(resolve, 3000 * (2 ** attempt))
+    setTimeout(resolve, 5000 * (2 ** attempt))
   );
 }
 
