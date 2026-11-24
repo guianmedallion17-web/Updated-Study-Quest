@@ -159,7 +159,7 @@ const maxAttempts = 3;
 
 for (let attempt = 0; attempt < maxAttempts; attempt++) {
   response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
     {
       method: "POST",
       headers: {
