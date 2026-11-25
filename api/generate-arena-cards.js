@@ -101,7 +101,7 @@ IMPORTANT RULES:
 1. Every question must be different.
 2. Never repeat or closely rephrase a previously used question.
 3. Randomize the subjects and topics.
-4. Use information from ALL provided files.
+4. Review ALL provided files, but use ONLY information that is genuinely relevant to the lesson, subject matter, or educational discussion. Ignore unrelated administrative and formatting content.
 5. General knowledge questions should cover varied topics such as science, history, geography, technology, culture, and everyday knowledge.
 6. Keep answers accurate, clear, and student-friendly.
 7. Each card must contain one question, one concise answer, and a short explanation.
