@@ -341,6 +341,84 @@ REGENERATION ATTEMPT ${attempt}:
         ? typedCount === 10
         : multipleChoiceCount === 5 && typedCount === 5;
 
+        const validationDetails = {
+      difficulty,
+      cardCount: Array.isArray(parsed.cards)
+        ? parsed.cards.length
+        : "Not an array",
+      multipleChoiceCount,
+      typedCount,
+      correctDifficultyFormat,
+      cardIssues: Array.isArray(parsed.cards)
+        ? parsed.cards.map((card, index) => {
+            const issues = [];
+
+            if (!card || typeof card !== "object") {
+              issues.push("Invalid card object");
+            } else {
+              if (!card.question?.trim()) {
+                issues.push("Missing question");
+              }
+
+              if (!card.answer?.trim()) {
+                issues.push("Missing answer");
+              }
+
+              if (!card.explanation?.trim()) {
+                issues.push("Missing explanation");
+              }
+
+              if (card.type === "multiple_choice") {
+                if (difficulty === "hard") {
+                  issues.push("Multiple choice not allowed in Hard");
+                }
+
+                if (!Array.isArray(card.options) ||
+                    card.options.length !== 4) {
+                  issues.push("Not exactly 4 options");
+                } else {
+                  const normalized = card.options.map(
+                    normalizeValidationAnswer
+                  );
+
+                  if (new Set(normalized).size !== 4) {
+                    issues.push("Duplicate or equivalent options");
+                  }
+
+                  if (!normalized.includes(
+                    normalizeValidationAnswer(card.answer)
+                  )) {
+                    issues.push("Answer does not match an option");
+                  }
+                }
+              } else if (card.type === "typed") {
+                if (difficulty === "easy") {
+                  issues.push("Typed question not allowed in Easy");
+                }
+
+                if (!Array.isArray(card.options) ||
+                    card.options.length !== 0) {
+                  issues.push("Typed question has invalid options");
+                }
+              } else {
+                issues.push("Unknown question type");
+              }
+            }
+
+            return {
+              card: index + 1,
+              type: card?.type,
+              issues
+            };
+          }).filter(item => item.issues.length > 0)
+        : []
+    };
+
+    console.warn(
+      `Attempt ${attempt}: Validation details:`,
+      JSON.stringify(validationDetails)
+    );
+    
     if (
       !Array.isArray(parsed.cards) ||
       parsed.cards.length !== 10 ||
