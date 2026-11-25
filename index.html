@@ -4372,13 +4372,18 @@ function startQuiz() {
   document.getElementById("arenaProgress").style.width = "0%";
 }
 
+  const STUDYQUEST_API_BASE_URL =
+  window.location.hostname.endsWith(".vercel.app")
+    ? window.location.origin
+    : "https://updated-study-quest.vercel.app";
+  
 async function fetchArenaWithRetry(url, options, maxRetries = 2) {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const controller = new AbortController();
 
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 45000);
+    }, 150000);
 
     try {
       const response = await fetch(url, {
@@ -4482,7 +4487,7 @@ async function generateArenaCards() {
   try {
     
 const response = await fetchArenaWithRetry(
-  "https://updated-study-quest.vercel.app/api/generate-arena-cards",
+`${STUDYQUEST_API_BASE_URL}/api/generate-arena-cards`,
   {
     method: "POST",
     headers: {
@@ -4777,7 +4782,7 @@ if (card.type === "typed" && !isCorrect) {
 
   try {
     const evaluationResponse = await fetch(
-      "https://updated-study-quest.vercel.app/api/evaluate-arena-answer",
+    `${STUDYQUEST_API_BASE_URL}/api/evaluate-arena-answer`,
       {
         method: "POST",
         headers: {

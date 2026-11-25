@@ -101,7 +101,7 @@ IMPORTANT RULES:
 1. Every question must be different.
 2. Never repeat or closely rephrase a previously used question.
 3. Randomize the subjects and topics.
-4. Use information from ALL provided files.
+4. Review ALL provided files, but use ONLY information that is genuinely relevant to the lesson, subject matter, or educational discussion. Ignore unrelated administrative and formatting content.
 5. General knowledge questions should cover varied topics such as science, history, geography, technology, culture, and everyday knowledge.
 6. Keep answers accurate, clear, and student-friendly.
 7. Each card must contain one question, one concise answer, and a short explanation.
@@ -114,7 +114,12 @@ IMPORTANT RULES:
 14. The answer must match one of the provided options for multiple-choice questions.
 15. For typed questions, include an "acceptedAnswers" array containing 2 to 4 reasonable alternative answers that have the same meaning as the correct answer. Do not include answers that are only partially correct or have a different meaning.
 16. Prioritize well-established and verifiable facts. Do not invent dates, names, statistics, quotations, or historical events.
-17. For uploaded materials, base questions on the actual information provided. Do not add unsupported details or change the meaning of the material.
+17. For uploaded materials, identify and prioritize the actual lesson, subject matter, topics, concepts, and discussions.
+18. Ignore headers, footers, page numbers, page labels, school names, student names, dates, document titles, copyright notices, file metadata, and repeated formatting text unless they contain information that is genuinely part of the lesson.
+19. Do not create questions about document formatting, administrative details, or unrelated text. A sentence appearing in the uploaded file does not automatically make it a valid study topic.
+20. Focus on meaningful educational content, including definitions, explanations, processes, examples, important facts, principles, and key concepts.
+21. Select questions only from information that is clearly connected to the actual lesson or discussion. If a section is unclear or unrelated, skip it.
+22. Do not invent lesson content to fill gaps. If the uploaded materials do not contain enough relevant information, prioritize accuracy and relevance over unrelated details.
 18. Avoid questions with ambiguous wording or multiple defensible answers.
 19. Make sure every explanation supports the given correct answer and does not contradict it.
 20. If information is uncertain, incomplete, or conflicting, do not create a question about it.
@@ -182,6 +187,114 @@ const normalizeValidationOption = value =>
 const normalize = value =>
   value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
+    async function verifyArenaCards(cards) {
+  const controller = new AbortController();
+
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+    }, 8000);
+
+  const verificationPrompt = `
+You are an independent fact-checker reviewing AI-generated study flashcards.
+
+Check every card for:
+1. Factual accuracy of the question and answer.
+2. Whether the answer is actually correct.
+3. Whether the explanation is accurate and supports the answer.
+4. Whether the question has one clear and defensible answer.
+5. Whether multiple-choice questions have exactly one correct option.
+6. Whether typed answers and accepted alternatives are correct.
+7. Whether the question is genuinely connected to the actual lesson, discussion, or custom topic.
+8. Whether the question is based on meaningful educational content rather than document formatting or administrative details.
+9. Whether the question avoids irrelevant headers, footers, page numbers, school names, student names, dates, file titles, and repeated text.
+10. Whether the question is supported by the uploaded material when the selected source mode requires it.
+
+SOURCE MODE: ${sourceMode}
+CUSTOM TOPIC: ${topic || "None"}
+
+UPLOADED MATERIALS:
+${sourceMode === "general" || sourceMode === "custom"
+  ? "Not applicable."
+  : lessonContent.slice(0, 12000) || "No uploaded materials."}
+
+CARDS TO VERIFY:
+${JSON.stringify(cards)}
+
+Return JSON only, using this exact structure:
+{
+  "passed": true,
+  "issues": []
+}
+
+If any card contains a factual error, incorrect answer, unsupported claim,
+ambiguous question, incorrect explanation, or content unrelated to the actual lesson or selected topic, set passed to false.
+If uploaded materials are being used, reject cards based on headers, footers, page numbers, school names, student names, dates, file titles, administrative details, or formatting artifacts unless they are genuinely part of the lesson.
+If a card cannot be clearly supported by the relevant source material, reject it rather than assuming it is correct.
+List the affected card numbers and brief reasons in issues.
+If you are uncertain whether a claim is correct or relevant, do not approve it.
+Do not rewrite or modify the cards.
+`;
+
+  try {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: verificationPrompt }]
+          }],
+          generationConfig: {
+            temperature: 0,
+            responseMimeType: "application/json"
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Verification request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const output = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!output) {
+      throw new Error("Empty verification response.");
+    }
+
+    const result = JSON.parse(output);
+
+    if (
+      typeof result.passed !== "boolean" ||
+      !Array.isArray(result.issues)
+    ) {
+      throw new Error("Invalid verification response.");
+    }
+
+    return {
+      passed: result.passed && result.issues.length === 0,
+      issues: result.issues
+    };
+
+  } catch (error) {
+    console.warn("Quiz Arena verification failed:", error.message);
+
+    return {
+      passed: false,
+      issues: ["Verification unavailable or invalid."]
+    };
+
+  } finally {
+    clearTimeout(timeoutId);
+  }
+    }
+    
 for (let attempt = 1; attempt <= 3; attempt++) {
   let response = null;
   let data = null;
@@ -202,7 +315,7 @@ REGENERATION ATTEMPT ${attempt}:
 
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 8000);
+        }, 15000);
 
     try {
       response = await fetch(
@@ -465,6 +578,26 @@ console.warn(lastError.message);
 console.warn(lastError.message);
       continue;
     }
+    console.log(`Attempt ${attempt}: Starting AI verification.`);
+
+        const verification = await verifyArenaCards(filteredCards);
+
+    if (!verification.passed) {
+      lastError = new Error(
+        `Attempt ${attempt}: AI verification failed.`
+      );
+
+      console.warn(
+        "Quiz Arena rejected an unverified batch:",
+        verification.issues
+      );
+
+      continue;
+    }
+
+    console.log(
+      `Attempt ${attempt}: AI verification passed.`
+    );
 
     uniqueCards = filteredCards;
     break;
