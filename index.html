@@ -4782,7 +4782,7 @@ if (card.type === "typed" && !isCorrect) {
 
   try {
     const evaluationResponse = await fetch(
-      "https://updated-study-quest.vercel.app/api/evaluate-arena-answer",
+    `${STUDYQUEST_API_BASE_URL}/api/evaluate-arena-answer`,
       {
         method: "POST",
         headers: {
