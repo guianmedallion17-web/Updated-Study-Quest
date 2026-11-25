@@ -153,8 +153,8 @@ Required format:
 
     
 
-let response = null;
-let data = null;
+
+let uniqueCards = null;
 let lastError = null;
 
 const models = [
@@ -162,78 +162,97 @@ const models = [
   "gemini-3.5-flash"
 ];
 
-for (const model of models) {
-  const controller = new AbortController();
+const normalizeValidationAnswer = value =>
+  String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 
-  const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, 18000);
+const normalize = value =>
+  value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+for (let attempt = 1; attempt <= 3; attempt++) {
+  let response = null;
+  let data = null;
+
+  const attemptPrompt = attempt === 1
+    ? prompt
+    : prompt + `
+
+REGENERATION ATTEMPT ${attempt}:
+- Carefully follow every required format and difficulty rule.
+- Return exactly 10 valid and unique cards.
+- Double-check all answers, options, and question types.
+- Do not repeat previously used questions.
+`;
+
+  for (const model of models) {
+    const controller = new AbortController();
+
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 8000);
+
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: attemptPrompt }]
+            }],
+            generationConfig: {
+              temperature: 1,
+              responseMimeType: "application/json"
+            }
+          })
+        }
+      );
+
+      data = await response.json();
+
+    } catch (error) {
+      response = null;
+      data = null;
+      lastError = error;
+
+      console.warn(`Model ${model} failed:`, error.message);
+
+      continue;
+
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (response.ok) {
+      break;
+    }
+
+    const retryable = [500, 502, 503, 504].includes(response.status);
+    const quotaLimited = response.status === 429;
+
+    if (!retryable && !quotaLimited) {
+      console.error("Gemini error:", data);
+
+      return res.status(response.status).json({
+        error: "Unable to generate flashcards. Please try again."
+      });
+    }
+
+    console.warn(`Model ${model} failed. Trying the next model.`);
+  }
+
+  if (!response?.ok) {
+    console.warn(`Generation attempt ${attempt} failed.`);
+    continue;
+  }
 
   try {
-    response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 1,
-            responseMimeType: "application/json"
-          }
-        })
-      }
-    );
-
-    data = await response.json();
-
-  } catch (error) {
-    response = null;
-    data = null;
-    lastError = error;
-
-    console.warn(`Model ${model} timed out or failed:`, error.message);
-
-    continue;
-
-  } finally {
-    clearTimeout(timeoutId);
-  }
-
-  if (response.ok) {
-    break;
-  }
-
-  const retryable = [500, 502, 503, 504].includes(response.status);
-  const quotaLimited = response.status === 429;
-
-  if (!retryable && !quotaLimited) {
-    console.error("Gemini error:", data);
-
-    return res.status(response.status).json({
-      error: "Unable to generate flashcards. Please try again."
-    });
-  }
-
-  console.warn(`Model ${model} failed. Trying the next Gemini model.`);
-}
-
-if (!response?.ok) {
-  console.error("All Gemini models failed:", lastError || data);
-
-  return res.status(503).json({
-    error: "Gemini is temporarily busy. Please try again in a moment."
-  });
-}
-    
-
-
     const output =
       data.candidates?.[0]?.content?.parts?.[0]?.text;
 
@@ -242,11 +261,6 @@ if (!response?.ok) {
     }
 
     const parsed = JSON.parse(output);
-
-        const normalizeValidationAnswer = value =>
-      String(value || "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "");
 
     const validCardContent =
       Array.isArray(parsed.cards) &&
@@ -288,27 +302,27 @@ if (!response?.ok) {
         }
 
         if (card.type === "typed") {
-  if (
-    difficulty === "easy" ||
-    !Array.isArray(card.options) ||
-    card.options.length !== 0 ||
-    (card.acceptedAnswers !== undefined &&
-      (!Array.isArray(card.acceptedAnswers) ||
-       card.acceptedAnswers.length > 4 ||
-       !card.acceptedAnswers.every(
-         answer => typeof answer === "string" && answer.trim()
-       )))
-  ) {
-    return false;
-  }
+          if (
+            difficulty === "easy" ||
+            !Array.isArray(card.options) ||
+            card.options.length !== 0 ||
+            (card.acceptedAnswers !== undefined &&
+              (!Array.isArray(card.acceptedAnswers) ||
+               card.acceptedAnswers.length > 4 ||
+               !card.acceptedAnswers.every(
+                 answer => typeof answer === "string" && answer.trim()
+               )))
+          ) {
+            return false;
+          }
 
-  return true;
+          return true;
         }
 
         return false;
       });
 
-        const multipleChoiceCount = Array.isArray(parsed.cards)
+    const multipleChoiceCount = Array.isArray(parsed.cards)
       ? parsed.cards.filter(
           card => card.type === "multiple_choice"
         ).length
@@ -319,7 +333,7 @@ if (!response?.ok) {
           card => card.type === "typed"
         ).length
       : 0;
-    
+
     const correctDifficultyFormat =
       difficulty === "easy"
         ? multipleChoiceCount === 10
@@ -333,18 +347,16 @@ if (!response?.ok) {
       !validCardContent ||
       !correctDifficultyFormat
     ) {
-      return res.status(502).json({
-        error: "Some generated questions did not pass the quality checks. Please try generating a new set."
-      });
+      console.warn(
+        `Attempt ${attempt}: Generated cards failed validation.`
+      );
+      continue;
     }
-
-    const normalize = value =>
-      value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
     const used = new Set(history.map(normalize));
     const batch = new Set();
 
-    const uniqueCards = parsed.cards.filter(card => {
+    const filteredCards = parsed.cards.filter(card => {
       const key = normalize(card.question);
 
       if (used.has(key) || batch.has(key)) return false;
@@ -353,11 +365,36 @@ if (!response?.ok) {
       return true;
     });
 
-    if (uniqueCards.length < 10) {
-      return res.status(503).json({
-        error: "Some questions were repeated. Please generate a fresh set."
-      });
+    if (filteredCards.length !== 10) {
+      console.warn(
+        `Attempt ${attempt}: Duplicate questions detected.`
+      );
+      continue;
     }
+
+    uniqueCards = filteredCards;
+    break;
+
+  } catch (error) {
+    lastError = error;
+
+    console.warn(
+      `Attempt ${attempt}: Could not process generated questions:`,
+      error.message
+    );
+  }
+}
+
+if (!uniqueCards) {
+  console.error("All Quiz Arena generation attempts failed:", lastError);
+
+  return res.status(503).json({
+    error: "Quiz Arena is having trouble preparing your questions. Please try again in a moment."
+  });
+}
+    
+
+        
 
     // Shuffle the cards before sending them.
     for (let i = uniqueCards.length - 1; i > 0; i--) {
