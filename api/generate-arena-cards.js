@@ -315,7 +315,7 @@ REGENERATION ATTEMPT ${attempt}:
 
     const timeoutId = setTimeout(() => {
       controller.abort();
-        }, 5000);
+        }, 15000);
 
     try {
       response = await fetch(
