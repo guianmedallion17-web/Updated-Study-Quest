@@ -202,7 +202,7 @@ REGENERATION ATTEMPT ${attempt}:
 
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 8000);
+        }, 6000);
 
     try {
       response = await fetch(
