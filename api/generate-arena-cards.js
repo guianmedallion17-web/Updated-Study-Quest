@@ -347,9 +347,11 @@ REGENERATION ATTEMPT ${attempt}:
       !validCardContent ||
       !correctDifficultyFormat
     ) {
-      console.warn(
-        `Attempt ${attempt}: Generated cards failed validation.`
-      );
+      lastError = new Error(
+  `Attempt ${attempt}: Generated cards failed validation.`
+);
+
+console.warn(lastError.message);
       continue;
     }
 
@@ -366,9 +368,11 @@ REGENERATION ATTEMPT ${attempt}:
     });
 
     if (filteredCards.length !== 10) {
-      console.warn(
-        `Attempt ${attempt}: Duplicate questions detected.`
-      );
+      lastError = new Error(
+  `Attempt ${attempt}: Duplicate questions detected.`
+);
+
+console.warn(lastError.message);
       continue;
     }
 
