@@ -114,7 +114,12 @@ IMPORTANT RULES:
 14. The answer must match one of the provided options for multiple-choice questions.
 15. For typed questions, include an "acceptedAnswers" array containing 2 to 4 reasonable alternative answers that have the same meaning as the correct answer. Do not include answers that are only partially correct or have a different meaning.
 16. Prioritize well-established and verifiable facts. Do not invent dates, names, statistics, quotations, or historical events.
-17. For uploaded materials, base questions on the actual information provided. Do not add unsupported details or change the meaning of the material.
+17. For uploaded materials, identify and prioritize the actual lesson, subject matter, topics, concepts, and discussions.
+18. Ignore headers, footers, page numbers, page labels, school names, student names, dates, document titles, copyright notices, file metadata, and repeated formatting text unless they contain information that is genuinely part of the lesson.
+19. Do not create questions about document formatting, administrative details, or unrelated text. A sentence appearing in the uploaded file does not automatically make it a valid study topic.
+20. Focus on meaningful educational content, including definitions, explanations, processes, examples, important facts, principles, and key concepts.
+21. Select questions only from information that is clearly connected to the actual lesson or discussion. If a section is unclear or unrelated, skip it.
+22. Do not invent lesson content to fill gaps. If the uploaded materials do not contain enough relevant information, prioritize accuracy and relevance over unrelated details.
 18. Avoid questions with ambiguous wording or multiple defensible answers.
 19. Make sure every explanation supports the given correct answer and does not contradict it.
 20. If information is uncertain, incomplete, or conflicting, do not create a question about it.
