@@ -204,6 +204,10 @@ Check every card for:
 4. Whether the question has one clear and defensible answer.
 5. Whether multiple-choice questions have exactly one correct option.
 6. Whether typed answers and accepted alternatives are correct.
+7. Whether the question is genuinely connected to the actual lesson, discussion, or custom topic.
+8. Whether the question is based on meaningful educational content rather than document formatting or administrative details.
+9. Whether the question avoids irrelevant headers, footers, page numbers, school names, student names, dates, file titles, and repeated text.
+10. Whether the question is supported by the uploaded material when the selected source mode requires it.
 
 SOURCE MODE: ${sourceMode}
 CUSTOM TOPIC: ${topic || "None"}
