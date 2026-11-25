@@ -172,7 +172,13 @@ const normalizeValidationAnswer = value =>
   String(value || "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
-
+    
+const normalizeValidationOption = value =>
+  String(value || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/\s+/g, "");
+    
 const normalize = value =>
   value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
@@ -296,8 +302,8 @@ REGENERATION ATTEMPT ${attempt}:
           }
 
           const normalizedOptions = card.options.map(
-            normalizeValidationAnswer
-          );
+  normalizeValidationOption
+);
 
           return (
             new Set(normalizedOptions).size === 4 &&
@@ -384,8 +390,8 @@ REGENERATION ATTEMPT ${attempt}:
                   issues.push("Not exactly 4 options");
                 } else {
                   const normalized = card.options.map(
-                    normalizeValidationAnswer
-                  );
+  normalizeValidationOption
+);
 
                   if (new Set(normalized).size !== 4) {
                     issues.push("Duplicate or equivalent options");
