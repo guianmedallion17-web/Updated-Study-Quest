@@ -4383,7 +4383,7 @@ async function fetchArenaWithRetry(url, options, maxRetries = 2) {
 
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 45000);
+    }, 90000);
 
     try {
       const response = await fetch(url, {
