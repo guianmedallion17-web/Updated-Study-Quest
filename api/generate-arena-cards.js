@@ -308,8 +308,8 @@ REGENERATION ATTEMPT ${attempt}:
           return (
             new Set(normalizedOptions).size === 4 &&
             normalizedOptions.includes(
-              normalizeValidationAnswer(card.answer)
-            )
+  normalizeValidationOption(card.answer)
+)
           );
         }
 
@@ -398,8 +398,8 @@ REGENERATION ATTEMPT ${attempt}:
                   }
 
                   if (!normalized.includes(
-                    normalizeValidationAnswer(card.answer)
-                  )) {
+  normalizeValidationOption(card.answer)
+)) {
                     issues.push("Answer does not match an option");
                   }
                 }
