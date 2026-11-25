@@ -4487,7 +4487,7 @@ async function generateArenaCards() {
   try {
     
 const response = await fetchArenaWithRetry(
-  "https://updated-study-quest.vercel.app/api/generate-arena-cards",
+`${STUDYQUEST_API_BASE_URL}/api/generate-arena-cards`,
   {
     method: "POST",
     headers: {
