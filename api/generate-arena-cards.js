@@ -567,6 +567,7 @@ console.warn(lastError.message);
 console.warn(lastError.message);
       continue;
     }
+    console.log(`Attempt ${attempt}: Starting AI verification.`);
 
         const verification = await verifyArenaCards(filteredCards);
 
