@@ -227,9 +227,11 @@ Return JSON only, using this exact structure:
 }
 
 If any card contains a factual error, incorrect answer, unsupported claim,
-ambiguous question, or incorrect explanation, set passed to false.
+ambiguous question, incorrect explanation, or content unrelated to the actual lesson or selected topic, set passed to false.
+If uploaded materials are being used, reject cards based on headers, footers, page numbers, school names, student names, dates, file titles, administrative details, or formatting artifacts unless they are genuinely part of the lesson.
+If a card cannot be clearly supported by the relevant source material, reject it rather than assuming it is correct.
 List the affected card numbers and brief reasons in issues.
-If you are uncertain whether a claim is correct, do not approve it.
+If you are uncertain whether a claim is correct or relevant, do not approve it.
 Do not rewrite or modify the cards.
 `;
 
