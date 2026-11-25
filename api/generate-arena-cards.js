@@ -192,7 +192,7 @@ const normalize = value =>
 
   const timeoutId = setTimeout(() => {
     controller.abort();
-    }, 3000);
+    }, 8000);
 
   const verificationPrompt = `
 You are an independent fact-checker reviewing AI-generated study flashcards.
