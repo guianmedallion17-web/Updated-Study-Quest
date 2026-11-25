@@ -119,6 +119,12 @@ IMPORTANT RULES:
 19. Make sure every explanation supports the given correct answer and does not contradict it.
 20. If information is uncertain, incomplete, or conflicting, do not create a question about it.
 21. Do not treat an assumption or opinion as an established fact.
+22. For every multiple-choice question, all 4 options must be genuinely different answers.
+23. Never include duplicate answers, synonyms, equivalent expressions, or different representations of the same value as separate choices.
+24. For mathematics questions, simplify and compare all 4 options before returning them. For trigonometry, check equivalent angles and equivalent degree/radian representations.
+25. Every multiple-choice question must have exactly one mathematically correct answer under the conditions stated in the question.
+26. Incorrect options must be plausible answers based on common mistakes, not random or unrelated values.
+27. Check every option individually before returning the question. If two options are equivalent or more than one is correct, replace the invalid options.
 
 Required format:
 {
