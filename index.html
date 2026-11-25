@@ -4372,6 +4372,11 @@ function startQuiz() {
   document.getElementById("arenaProgress").style.width = "0%";
 }
 
+  const STUDYQUEST_API_BASE_URL =
+  window.location.hostname.endsWith(".vercel.app")
+    ? window.location.origin
+    : "https://updated-study-quest.vercel.app";
+  
 async function fetchArenaWithRetry(url, options, maxRetries = 2) {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const controller = new AbortController();
