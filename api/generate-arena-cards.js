@@ -187,7 +187,7 @@ const normalize = value =>
 
   const timeoutId = setTimeout(() => {
     controller.abort();
-  }, 6000);
+    }, 3000);
 
   const verificationPrompt = `
 You are an independent fact-checker reviewing AI-generated study flashcards.
@@ -304,7 +304,7 @@ REGENERATION ATTEMPT ${attempt}:
 
     const timeoutId = setTimeout(() => {
       controller.abort();
-        }, 6000);
+        }, 5000);
 
     try {
       response = await fetch(
@@ -567,6 +567,25 @@ console.warn(lastError.message);
 console.warn(lastError.message);
       continue;
     }
+
+        const verification = await verifyArenaCards(filteredCards);
+
+    if (!verification.passed) {
+      lastError = new Error(
+        `Attempt ${attempt}: AI verification failed.`
+      );
+
+      console.warn(
+        "Quiz Arena rejected an unverified batch:",
+        verification.issues
+      );
+
+      continue;
+    }
+
+    console.log(
+      `Attempt ${attempt}: AI verification passed.`
+    );
 
     uniqueCards = filteredCards;
     break;
