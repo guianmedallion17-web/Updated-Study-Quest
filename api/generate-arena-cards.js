@@ -182,6 +182,108 @@ const normalizeValidationOption = value =>
 const normalize = value =>
   value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
+    async function verifyArenaCards(cards) {
+  const controller = new AbortController();
+
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, 6000);
+
+  const verificationPrompt = `
+You are an independent fact-checker reviewing AI-generated study flashcards.
+
+Check every card for:
+1. Factual accuracy of the question and answer.
+2. Whether the answer is actually correct.
+3. Whether the explanation is accurate and supports the answer.
+4. Whether the question has one clear and defensible answer.
+5. Whether multiple-choice questions have exactly one correct option.
+6. Whether typed answers and accepted alternatives are correct.
+
+SOURCE MODE: ${sourceMode}
+CUSTOM TOPIC: ${topic || "None"}
+
+UPLOADED MATERIALS:
+${sourceMode === "general" || sourceMode === "custom"
+  ? "Not applicable."
+  : lessonContent.slice(0, 12000) || "No uploaded materials."}
+
+CARDS TO VERIFY:
+${JSON.stringify(cards)}
+
+Return JSON only, using this exact structure:
+{
+  "passed": true,
+  "issues": []
+}
+
+If any card contains a factual error, incorrect answer, unsupported claim,
+ambiguous question, or incorrect explanation, set passed to false.
+List the affected card numbers and brief reasons in issues.
+If you are uncertain whether a claim is correct, do not approve it.
+Do not rewrite or modify the cards.
+`;
+
+  try {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: verificationPrompt }]
+          }],
+          generationConfig: {
+            temperature: 0,
+            responseMimeType: "application/json"
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Verification request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const output = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!output) {
+      throw new Error("Empty verification response.");
+    }
+
+    const result = JSON.parse(output);
+
+    if (
+      typeof result.passed !== "boolean" ||
+      !Array.isArray(result.issues)
+    ) {
+      throw new Error("Invalid verification response.");
+    }
+
+    return {
+      passed: result.passed && result.issues.length === 0,
+      issues: result.issues
+    };
+
+  } catch (error) {
+    console.warn("Quiz Arena verification failed:", error.message);
+
+    return {
+      passed: false,
+      issues: ["Verification unavailable or invalid."]
+    };
+
+  } finally {
+    clearTimeout(timeoutId);
+  }
+    }
+    
 for (let attempt = 1; attempt <= 3; attempt++) {
   let response = null;
   let data = null;
